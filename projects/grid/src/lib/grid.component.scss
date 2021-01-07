@@ -1,0 +1,24 @@
+ktd-grid {
+    display: block;
+    position: relative;
+    width: 100%;
+
+    ktd-grid-item {
+        &.grid-elem-dragging {
+            z-index: 1000;
+        }
+
+        &.no-transitions {
+            transition: none !important;
+        }
+    }
+
+    .dragging-pos-element {
+        position: absolute;
+        background-color: darkred;
+        opacity: 0.6;
+        z-index: 0;
+        transition-property: transform;
+        transition: all 150ms ease;
+    }
+}

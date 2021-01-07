@@ -1,0 +1,13 @@
+<h1>Demo app</h1>
+<div class="grid-container">
+    <ktd-grid [config]="gridConfig" (configUpdated)="onConfigUpdated($event)">
+        <ktd-grid-item *ngFor="let item of gridItems; trackBy:trackById"
+                       [id]="item.id"
+                       [draggable]="item.draggable"
+                       [removable]="item.removable"
+                       [resizable]="item.resizable">
+            <div class="grid-item-content">{{item.id}}</div>
+        </ktd-grid-item>
+    </ktd-grid>
+</div>
+

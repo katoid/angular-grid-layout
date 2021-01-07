@@ -1,6 +1,7 @@
 {
   "extends": "tslint:recommended",
   "rulesDirectory": [
+    "./tslint-rules/dist",
     "codelyzer"
   ],
   "rules": {
@@ -11,59 +12,83 @@
       ]
     },
     "array-type": false,
+    "arrow-parens": false,
     "arrow-return-shorthand": true,
-    "curly": true,
+    "ban-comma-operator": true,
+    "ban-ts-ignore": true,
     "deprecation": {
       "severity": "warning"
     },
-    "eofline": true,
-    "import-blacklist": [
+    "comment-format": [
       true,
-      "rxjs/Rx"
+      "check-space"
     ],
+    "comment-type": [
+      true,
+      "singleline",
+      "multiline",
+      "doc"
+    ],
+    "component-class-suffix": true,
+    "contextual-lifecycle": true,
+    "curly": true,
+    "directive-class-suffix": true,
+    "eofline": true,
+    "import-blacklist": [true, "rxjs/Rx"],
     "import-spacing": true,
     "indent": {
       "options": [
         "spaces"
       ]
     },
+    "interface-name": false,
+    "jsdoc-format": [
+      true,
+      "check-multiline-start"
+    ],
     "max-classes-per-file": false,
     "max-line-length": [
-      true,
-      140
+      false
     ],
+    "member-access": false,
     "member-ordering": [
       true,
       {
         "order": [
-          "static-field",
-          "instance-field",
-          "static-method",
-          "instance-method"
+          "public-static-field",
+          "public-static-method",
+          "protected-static-field",
+          "protected-static-method",
+          "private-static-field",
+          "private-static-method",
+          "public-instance-field",
+          "protected-instance-field",
+          "private-instance-field",
+          "public-constructor",
+          "protected-constructor",
+          "private-constructor",
+          "public-instance-method",
+          "protected-instance-method",
+          "private-instance-method"
         ]
       }
     ],
-    "no-console": [
-      true,
-      "debug",
-      "info",
-      "time",
-      "timeEnd",
-      "trace"
-    ],
+    "no-consecutive-blank-lines": false,
+    "no-console": [true, "debug", "info", "time", "timeEnd", "trace"],
     "no-empty": false,
-    "no-inferrable-types": [
-      true,
-      "ignore-params"
-    ],
-    "no-non-null-assertion": true,
+    "no-inferrable-types": false,
+    "no-invalid-this": true,
+    "no-non-null-assertion": false,
     "no-redundant-jsdoc": true,
+    "no-this-assignment": true,
     "no-switch-case-fall-through": true,
     "no-var-requires": false,
     "object-literal-key-quotes": [
       true,
       "as-needed"
     ],
+    "object-literal-sort-keys": false,
+    "ordered-imports": false,
     "quotemark": [
       true,
       "single"
@@ -82,10 +107,13 @@
         "named": "never"
       }
     },
-    "typedef": [
+    "trailing-comma": false,
+    "prefer-function-over-method": [
       true,
-      "call-signature"
+      "allow-public",
+      "allow-protected"
     ],
+    "prefer-object-spread": true,
     "typedef-whitespace": {
       "options": [
         {
@@ -104,26 +132,14 @@
         }
       ]
     },
-    "variable-name": {
-      "options": [
-        "ban-keywords",
-        "check-format",
-        "allow-pascal-case"
-      ]
-    },
-    "whitespace": {
-      "options": [
-        "check-branch",
-        "check-decl",
-        "check-operator",
-        "check-separator",
-        "check-type",
-        "check-typecast"
-      ]
-    },
-    "component-class-suffix": true,
-    "contextual-lifecycle": true,
-    "directive-class-suffix": true,
+    "variable-name": [
+      true,
+      "check-format",
+      "allow-leading-underscore",
+      "ban-keywords"
+    ],
+    "directive-selector": [true, "attribute", "ktd", "camelCase"],
+    "component-selector": [true, "element", "ktd", "kebab-case"],
     "no-conflicting-lifecycle": true,
     "no-host-metadata-property": true,
     "no-input-rename": true,
@@ -135,6 +151,17 @@
     "template-banana-in-box": true,
     "template-no-negated-async": true,
     "use-lifecycle-interface": true,
-    "use-pipe-transform-interface": true
+    "use-pipe-transform-interface": true,
+    "ktd-prefix-code": true,
+    "whitespace": {
+      "options": [
+        "check-branch",
+        "check-decl",
+        "check-operator",
+        "check-separator",
+        "check-type",
+        "check-typecast"
+      ]
+    }
   }
 }

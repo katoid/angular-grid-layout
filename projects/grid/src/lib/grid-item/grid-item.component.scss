@@ -1,0 +1,44 @@
+:host {
+    // This display none is used as a 'hack' to hide this element until 'someone' calls the function setStyles().
+    display: none;
+    position: absolute;
+    z-index: 1;
+
+    div {
+        position: absolute;
+        user-select: none;
+        z-index: 10;
+
+        &.grid-item-remove-icon {
+            cursor: pointer;
+            top: 2px;
+            right: 2px;
+
+            &::after {
+                content: 'x';
+                color: #000;
+                font-weight: 300;
+                font-family: Arial, sans-serif;
+            }
+        }
+
+        &.grid-item-resize-icon {
+            cursor: se-resize;
+            width: 20px;
+            height: 20px;
+            bottom: 0;
+            right: 0;
+
+            &::after {
+                content: "";
+                position: absolute;
+                right: 3px;
+                bottom: 3px;
+                width: 5px;
+                height: 5px;
+                border-right: 2px solid rgba(0, 0, 0, 0.4);
+                border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+            }
+        }
+    }
+}
