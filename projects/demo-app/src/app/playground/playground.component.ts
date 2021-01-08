@@ -39,6 +39,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         {id: '10', x: 2, y: 4, w: 1, h: 4},
         {id: '11', x: 0, y: 0, w: 2, h: 4}
     ];
+    disableDrag = false;
+    disableResize = false;
     autoResize = true;
     resizeSubscription: Subscription;
 
@@ -66,6 +68,14 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onCompactTypeChange(change: MatSelectChange) {
         console.log('onCompactTypeChange', change);
         this.compactType = change.value;
+    }
+
+    onDisableDragChange(checked: boolean) {
+        this.disableDrag = checked;
+    }
+
+    onDisableResizeChange(checked: boolean) {
+        this.disableResize = checked;
     }
 
     onAutoResizeChange(checked: boolean) {

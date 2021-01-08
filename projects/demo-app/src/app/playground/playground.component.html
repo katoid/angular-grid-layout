@@ -1,7 +1,6 @@
 <h1>Angular Grid Layout - Playground</h1>
 <div class="playground-container">
     <div class="layout-json">
-        AAA
     </div>
     <h3>Controls</h3>
     <div class="controls-container">
@@ -19,6 +18,16 @@
             <input matInput type="number" [value]="rowHeight + ''" (input)="onRowHeightChange($event)">
         </mat-form-field>
         <mat-checkbox color="accent"
+                      [checked]="disableDrag"
+                      (change)="onDisableDragChange($event.checked)">
+            Disable drag
+        </mat-checkbox>
+        <mat-checkbox color="accent"
+                      [checked]="disableResize"
+                      (change)="onDisableResizeChange($event.checked)">
+            Disable resize
+        </mat-checkbox>
+        <mat-checkbox color="accent"
                       [checked]="autoResize"
                       (change)="onAutoResizeChange($event.checked)">
             Auto resize
@@ -33,9 +42,9 @@
                   (configUpdated)="onConfigUpdated($event)">
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            [id]="item.id"
-                           [draggable]="true"
+                           [draggable]="!disableDrag"
                            [removable]="false"
-                           [resizable]="true">
+                           [resizable]="!disableResize">
                 <div class="grid-item-content">{{item.id}}</div>
             </ktd-grid-item>
         </ktd-grid>

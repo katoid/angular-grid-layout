@@ -14,9 +14,11 @@
     .controls-container {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
 
         & > * {
-            margin-right: 12px;
+            margin: 8px 24px 8px 0;
         }
     }
 
@@ -39,6 +41,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
+    }
+
+    // Add custom drag mouse styles
+    ktd-grid-item {
+        cursor: grab;
+
+        &.grid-item-dragging {
+            cursor: grabbing;
+        }
     }
 
 

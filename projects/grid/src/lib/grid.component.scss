@@ -4,7 +4,7 @@ ktd-grid {
     width: 100%;
 
     ktd-grid-item {
-        &.grid-elem-dragging {
+        &.grid-item-dragging {
             z-index: 1000;
         }
 

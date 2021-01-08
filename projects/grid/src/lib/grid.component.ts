@@ -264,7 +264,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     const dragElemClientRect: ClientRect = (gridItem.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
 
                     this.renderer.addClass(gridItem.elementRef.nativeElement, 'no-transitions');
-                    this.renderer.addClass(gridItem.elementRef.nativeElement, 'grid-elem-dragging');
+                    this.renderer.addClass(gridItem.elementRef.nativeElement, 'grid-item-dragging');
 
                     // Create placeholder element. This element would represent the position where the dragged/resized element would be if the action ends
                     const placeholderElement: HTMLDivElement = this.renderer.createElement('div');
@@ -323,7 +323,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                 this.ngZone.run(() => {
                                     // remove drag classes
                                     this.renderer.removeClass(gridItem.elementRef.nativeElement, 'no-transitions');
-                                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'grid-elem-dragging');
+                                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'grid-item-dragging');
 
                                     // remove placeholder element from the dom
                                     // NOTE: If we don't put the removeChild inside the zone it would not work... This may be a bug from angular or maybe is the intended behaviour, although strange
