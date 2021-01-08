@@ -1,8 +1,8 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { KtdAppComponent } from './app.component';
-import { KtdGridModule } from 'grid';
+import { KtdAppRoutingModule } from './app-routing.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
     declarations: [
@@ -10,7 +10,8 @@ import { KtdGridModule } from 'grid';
     ],
     imports: [
         BrowserModule,
-        KtdGridModule
+        BrowserAnimationsModule,
+        KtdAppRoutingModule
     ],
     providers: [],
     bootstrap: [KtdAppComponent]

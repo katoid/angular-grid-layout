@@ -68,6 +68,7 @@
               "projects/demo-app/src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
               "projects/demo-app/src/styles.scss"
             ],
             "scripts": []
@@ -131,6 +132,7 @@
               "projects/demo-app/src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/purple-green.css",
               "projects/demo-app/src/styles.scss"
             ],
             "scripts": []

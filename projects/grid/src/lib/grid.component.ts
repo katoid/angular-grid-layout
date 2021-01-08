@@ -1,14 +1,17 @@
 import {
     AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, NgZone,
-    OnChanges, OnDestroy, Output, QueryList, Renderer2, ViewEncapsulation
+    OnChanges, OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewEncapsulation
 } from '@angular/core';
 import { coerceNumberProperty } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { merge, Observable, Observer, Subscription } from 'rxjs';
 import { startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { ktdGridItemDragging, ktdGridItemResizing } from './grid.utils';
-import { CompactType } from './react-grid-layout.utils';
-import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridCfg, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayoutItem } from './grid.definitions';
+import { compact, CompactType } from './react-grid-layout.utils';
+import {
+    GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout,
+    KtdGridLayoutItem
+} from './grid.definitions';
 import { ktdMouseOrTouchEnd, ktdMouseOrTouchMove } from './pointer.utils';
 import { KtdDictionary } from '../types';
 
@@ -27,6 +30,10 @@ function layoutToRenderItems(config: KtdGridCfg, width: number, height: number):
         };
     }
     return renderItems;
+}
+
+function getGridHeight(layout: KtdGridLayout, rowHeight: number): number {
+    return layout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight), 0);
 }
 
 // tslint:disable-next-line
@@ -74,38 +81,85 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     @ContentChildren(KtdGridItemComponent, {descendants: true}) _gridItems: QueryList<KtdGridItemComponent>;
     @Output() configUpdated: EventEmitter<KtdGridCfg> = new EventEmitter<KtdGridCfg>();
 
-    /** Number of columns being rendered. */
-    private _cols: number;
+    @Input() compactOnPropsChange = true;
 
-    /** Row height value passed in by user. */
-    private _rowHeight: number;
+    @Input()
+    get compactType(): KtdGridCompactType {
+        return this._compactType;
+    }
 
-    /** Grid configuration */
-    private _config: KtdGridCfg;
+    set compactType(val: KtdGridCompactType) {
+        this._compactType = val;
+    }
 
-    private compactionType: CompactType = 'vertical';
+    private _compactType: KtdGridCompactType = 'vertical';
+
+    @Input()
+    get rowHeight(): number { return this._rowHeight; }
+
+    set rowHeight(val: number) {
+        this._rowHeight = Math.max(1, Math.round(coerceNumberProperty(val)));
+    }
+
+    private _rowHeight: number = 100;
+
+    @Input()
+    get cols(): number { return this._cols; }
+
+    set cols(val: number) {
+        this._cols = Math.max(1, Math.round(coerceNumberProperty(val)));
+    }
+
+    private _cols: number = 6;
+
+    @Input()
+    get layout(): KtdGridLayout { return this._layout; }
+
+    set layout(layout: KtdGridLayout) {
+        this._layout = layout;
+    }
+
+    private _layout: KtdGridLayout;
+
+
+    get config(): KtdGridCfg {
+        return {
+            cols: this.cols,
+            rowHeight: this.rowHeight,
+            layout: this.layout
+        };
+    }
+    set config(config: KtdGridCfg) {
+        this.layout = config.layout;
+        this.cols = config.cols;
+        this.rowHeight = config.rowHeight;
+    }
+
+    /** Total height of the grid */
+    private _height: number;
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
     private subscriptions: Subscription[];
-
-
-    /** Amount of columns in the grid list. */
-    @Input()
-    get config(): KtdGridCfg {
-        return this._config;
-    }
-
-    set config(val: KtdGridCfg) {
-        this._config = val;
-
-        this._cols = Math.max(1, Math.round(coerceNumberProperty(this._config.cols)));
-        this._rowHeight = this._config.rowHeight; // `${this._config.rowHeight == null ? '' : this._config.rowHeight}`;
-    }
 
     constructor(private elementRef: ElementRef, private renderer: Renderer2, private ngZone: NgZone) {
 
     }
 
-    ngOnChanges() {
+    ngOnChanges(changes: SimpleChanges) {
+        let pendingCompactLayout = false;
+        // TODO: refactor and this when/how to compact layout
+        if (changes.compactType && !changes.compactType.firstChange) {
+            pendingCompactLayout = true;
+        }
+        if (changes.rowHeight && !changes.rowHeight.firstChange) {
+            pendingCompactLayout = true;
+        }
+        if (changes.layout && !changes.layout.firstChange) {
+            pendingCompactLayout = true;
+        }
+
+        if (pendingCompactLayout) {
+            this.compactLayout();
+        }
         this.calculateRenderData();
     }
 
@@ -114,25 +168,40 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     ngAfterContentChecked() {
-        this.updateGridItemsStyles();
+        this.render();
+    }
+
+    resize() {
+        this.calculateRenderData();
+        this.render();
     }
 
     ngOnDestroy() {
         this.subscriptions.forEach(sub => sub.unsubscribe());
     }
 
+    compactLayout() {
+        console.log('compact layout', this.compactType);
+        this.layout = compact(
+            this.layout.map((item) => ({...item, i: item.id})),
+            this.compactType,
+            this.cols
+        ).map((item) => ({...item, id: item.i}));
+    }
+
     getItemRenderData(itemId: string): KtdGridItemRenderData<number> | undefined {
         return this._gridItemsRenderData[itemId];
     }
 
-    updateLayout() {
-        this.calculateRenderData();
-        this.updateGridItemsStyles();
-    }
-
     calculateRenderData() {
         const clientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
-        this._gridItemsRenderData = layoutToRenderItems(this._config, clientRect.width, clientRect.height);
+        this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, clientRect.height);
+        this._height = getGridHeight(this.layout, this.rowHeight);
+    }
+
+    render() {
+        this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${this._height}px`);
+        this.updateGridItemsStyles();
     }
 
     private updateGridItemsStyles() {
@@ -167,7 +236,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     );
                 })
             ).subscribe((newConfig: KtdGridCfg) => {
-                this._config = newConfig;
+                this.config = newConfig;
                 this.calculateRenderData();
                 this.configUpdated.next(newConfig);
             })
@@ -221,7 +290,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                     layout: newLayout || this.config.layout
                                 };
 
-                                const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, config, this.compactionType, {
+                                const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, config, this.compactType, {
                                     pointerDownEvent,
                                     pointerDragEvent,
                                     parentElemClientRect,
@@ -265,7 +334,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                     }
 
                                     observer.next({
-                                        ...this._config,
+                                        ...this.config,
                                         layout: newLayout
                                     });
                                 });

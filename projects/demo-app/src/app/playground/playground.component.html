@@ -1,0 +1,44 @@
+<h1>Angular Grid Layout - Playground</h1>
+<div class="playground-container">
+    <div class="layout-json">
+        AAA
+    </div>
+    <h3>Controls</h3>
+    <div class="controls-container">
+        <button mat-raised-button (click)="generateLayout()">Generate layout</button>
+        <mat-form-field color="accent">
+            <mat-label>Compact type</mat-label>
+            <mat-select [value]="compactType" (selectionChange)="onCompactTypeChange($event)">
+                <mat-option [value]="'vertical'">vertical</mat-option>
+                <mat-option [value]="'horizontal'">horizontal</mat-option>
+                <mat-option [value]="'none'">-</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field color="accent">
+            <mat-label>Row height</mat-label>
+            <input matInput type="number" [value]="rowHeight + ''" (input)="onRowHeightChange($event)">
+        </mat-form-field>
+        <mat-checkbox color="accent"
+                      [checked]="autoResize"
+                      (change)="onAutoResizeChange($event.checked)">
+            Auto resize
+        </mat-checkbox>
+    </div>
+
+    <div class="grid-container">
+        <ktd-grid [cols]="cols"
+                  [rowHeight]="rowHeight"
+                  [layout]="layout"
+                  [compactType]="compactType"
+                  (configUpdated)="onConfigUpdated($event)">
+            <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
+                           [id]="item.id"
+                           [draggable]="true"
+                           [removable]="false"
+                           [resizable]="true">
+                <div class="grid-item-content">{{item.id}}</div>
+            </ktd-grid-item>
+        </ktd-grid>
+    </div>
+
+</div>

@@ -1,4 +1,5 @@
 import { InjectionToken } from '@angular/core';
+import { CompactType } from './react-grid-layout.utils';
 
 export interface KtdGridLayoutItem {
     id: string;
@@ -8,11 +9,15 @@ export interface KtdGridLayoutItem {
     h: number;
 }
 
+export type KtdGridCompactType = CompactType;
+
 export interface KtdGridCfg {
     cols: number;
     rowHeight: number; // row height in pixels
     layout: KtdGridLayoutItem[];
 }
+
+export type KtdGridLayout = KtdGridLayoutItem[];
 
 // TODO: Remove this interface. If can't remove, move and rename this interface in the core module or similar.
 export interface KtdGridItemRect {
