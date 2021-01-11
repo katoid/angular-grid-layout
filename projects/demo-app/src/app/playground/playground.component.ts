@@ -1,9 +1,10 @@
 import { Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { KtdGridCfg, KtdGridLayout } from '../../../../../dist/grid/lib/grid.definitions';
+import { KtdGridCfg, KtdGridLayout, KtdGridLayoutItem } from '../../../../../dist/grid/lib/grid.definitions';
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import { KtdGridComponent } from 'grid';
+import { ktdArrayRemoveItem } from '../utils';
 
 interface GridItem {
     id: string;
@@ -41,6 +42,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     ];
     disableDrag = false;
     disableResize = false;
+    disableRemove = false;
     autoResize = true;
     resizeSubscription: Subscription;
 
@@ -63,6 +65,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onConfigUpdated(event: KtdGridCfg) {
         console.log('on config updated', event);
+        this.layout = event.layout;
     }
 
     onCompactTypeChange(change: MatSelectChange) {
@@ -76,6 +79,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onDisableResizeChange(checked: boolean) {
         this.disableResize = checked;
+    }
+
+    onDisableRemoveChange(checked: boolean) {
+        this.disableRemove = checked;
     }
 
     onAutoResizeChange(checked: boolean) {
@@ -101,5 +108,30 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         }
         console.log('layout', layout);
         this.layout = layout;
+    }
+
+    /** Adds a grid item to the layout */
+    addItemToLayout() {
+        const maxId = this.layout.reduce((acc, cur) => Math.max(acc, parseInt(cur.id, 10)), -1);
+        const nextId = maxId + 1;
+
+        const newLayoutItem: KtdGridLayoutItem = {
+            id: nextId.toString(),
+            x: 0,
+            y: 0,
+            w: 2,
+            h: 2
+        };
+
+        // Important: Don't mutate the array, create new instance. This way notifies the Grid component that the layout has changed.
+        this.layout = [
+            newLayoutItem,
+            ...this.layout
+        ];
+    }
+
+    /** Removes the item from the layout */
+    removeItem(id: string) {
+        this.layout = ktdArrayRemoveItem(this.layout, (item) => item.id === id);
     }
 }

@@ -14,7 +14,6 @@ import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from 
 })
 export class KtdGridItemComponent implements OnInit {
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
-    @Output() removeClicked: EventEmitter<{ id: string }> = new EventEmitter<{ id: string }>();
 
     @Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
 
@@ -51,17 +50,6 @@ export class KtdGridItemComponent implements OnInit {
 
     private _resizable: boolean;
 
-    @Input()
-    get removable(): boolean {
-        return this._removable;
-    }
-
-    set removable(val: boolean) {
-        this._removable = val;
-    }
-
-    private _removable: boolean;
-
     private _id: string;
 
     constructor(public elementRef: ElementRef, private renderer: Renderer2, @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
@@ -71,11 +59,6 @@ export class KtdGridItemComponent implements OnInit {
     ngOnInit() {
         const gridItemRenderData = this.getItemRenderData(this.id)!;
         this.setStyles(gridItemRenderData);
-    }
-
-    removeIconClicked(event) {
-        event.stopImmediatePropagation();
-        this.removeClicked.emit({id: this.id});
     }
 
     setStyles({top, left, width, height}: { top: string, left: string, width?: string, height?: string }) {
