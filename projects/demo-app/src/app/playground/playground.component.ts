@@ -4,15 +4,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import { KtdGridComponent } from 'grid';
-import { ktdArrayRemoveItem } from '../utils';
-
-interface GridItem {
-    id: string;
-}
-
-function ktdTrackById(index: number, item: GridItem) {
-    return item.id;
-}
+import { ktdArrayRemoveItem, ktdTrackById } from '../utils';
 
 @Component({
     selector: 'ktd-playground',

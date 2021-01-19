@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { KtdPlaygroundModule } from './playground/playground.module';
+import { KtdCustomHandlesModule } from './custom-handles/custom-handles.module';
 
 const routes: Routes = [
     {
@@ -9,8 +10,8 @@ const routes: Routes = [
         pathMatch: 'full'
     },
     {
-        path: 'custom-handlers',
-        redirectTo: 'custom-handlers',
+        path: 'custom-handles',
+        redirectTo: 'custom-handles',
         pathMatch: 'full'
     },
     {
@@ -22,6 +23,7 @@ const routes: Routes = [
 @NgModule({
     imports: [
         KtdPlaygroundModule,
+        KtdCustomHandlesModule,
         RouterModule.forRoot(routes, {
         enableTracing: false
     })],

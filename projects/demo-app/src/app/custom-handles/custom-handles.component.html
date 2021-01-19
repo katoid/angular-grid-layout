@@ -1,0 +1,18 @@
+<h1>Angular Grid Layout - Custom handles</h1>
+<a [routerLink]="['/playground']"><- Playground example</a>
+<div class="grid-container">
+    <ktd-grid [cols]="cols"
+              [rowHeight]="rowHeight"
+              [layout]="layout"
+              [compactType]="compactType"
+              (configUpdated)="onConfigUpdated($event)">
+        <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
+                       [id]="item.id">
+            <div ktdGridDragHandle class="handle-1">Handle 1</div>
+            <div class="grid-item-content">
+                <div ktdGridDragHandle class="handle-2">Handle 2</div>
+            </div>
+            <mat-icon ktdGridResizeHandle class="resize-handle-1">open_in_full</mat-icon>
+        </ktd-grid-item>
+    </ktd-grid>
+</div>

@@ -223,14 +223,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     return merge(
                         // move
                         merge(...gridItems.map((gridItem) => {
-                                return this.performDragAction$(gridItem, gridItem.dragStart$(),
+                                return this.performDragAction$(gridItem, gridItem.dragStart$,
                                     (gridItemId, config, compactionType, draggingData) => ktdGridItemDragging(gridItemId, config, compactionType, draggingData));
                             })
                         ),
 
                         // resize
                         merge(...gridItems.map((gridItem) => {
-                            return this.performDragAction$(gridItem, gridItem.resizeStart$(),
+                            return this.performDragAction$(gridItem, gridItem.resizeStart$,
                                 (gridItemId, config, compactionType, draggingData) => ktdGridItemResizing(gridItemId, config, compactionType, draggingData));
                         }))
                     );
