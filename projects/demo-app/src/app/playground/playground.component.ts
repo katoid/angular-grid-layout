@@ -32,6 +32,17 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         {id: '10', x: 2, y: 4, w: 1, h: 4},
         {id: '11', x: 0, y: 0, w: 2, h: 4}
     ];
+    transitions: {name: string, value: string}[] = [
+        {name: 'custom', value: 'transform 500ms ease, width 500ms linear, height 500ms linear'},
+        {name: 'linear', value: 'transform 500ms linear, width 500ms linear, height 500ms linear'},
+        {name: 'ease', value: 'transform 500ms ease, width 500ms ease, height 500ms ease'},
+        {name: 'ease-out', value: 'transform 500ms ease-out, width 500ms ease-out, height 500ms ease-out'},
+        {name: 'overflowing', value: 'transform 500ms cubic-bezier(.28,.49,.79,1.35), width 500ms cubic-bezier(.28,.49,.79,1.35), height 500ms cubic-bezier(.28,.49,.79,1.35)'},
+        {name: 'fast', value: 'transform 200ms ease, width 200ms linear, height 200ms linear'},
+        {name: 'slow-motion', value: 'transform 1000ms linear, width 1000ms linear, height 1000ms linear'},
+    ];
+    currentTransition: string = this.transitions[0].value;
+
     disableDrag = false;
     disableResize = false;
     disableRemove = false;
@@ -63,6 +74,11 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onCompactTypeChange(change: MatSelectChange) {
         console.log('onCompactTypeChange', change);
         this.compactType = change.value;
+    }
+
+    onTransitionChange(change: MatSelectChange) {
+        console.log('onTransitionChange', change);
+        this.currentTransition = change.value;
     }
 
     onDisableDragChange(checked: boolean) {
