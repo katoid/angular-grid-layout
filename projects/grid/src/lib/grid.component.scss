@@ -4,7 +4,7 @@ ktd-grid {
     width: 100%;
 
     ktd-grid-item {
-        &.grid-item-dragging {
+        &.ktd-grid-item-dragging {
             z-index: 1000;
         }
 
@@ -13,7 +13,7 @@ ktd-grid {
         }
     }
 
-    .dragging-pos-element {
+    .ktd-grid-dragging-placeholder {
         position: absolute;
         background-color: darkred;
         opacity: 0.6;

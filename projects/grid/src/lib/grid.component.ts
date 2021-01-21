@@ -264,7 +264,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     const dragElemClientRect: ClientRect = (gridItem.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
 
                     this.renderer.addClass(gridItem.elementRef.nativeElement, 'no-transitions');
-                    this.renderer.addClass(gridItem.elementRef.nativeElement, 'grid-item-dragging');
+                    this.renderer.addClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
                     // Create placeholder element. This element would represent the position where the dragged/resized element would be if the action ends
                     const placeholderElement: HTMLDivElement = this.renderer.createElement('div');
@@ -272,7 +272,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     placeholderElement.style.height = `${dragElemClientRect.height}px`;
                     placeholderElement.style.transform = `translateX(${dragElemClientRect.left - parentElemClientRect.left}px) translateY(${dragElemClientRect.top - parentElemClientRect.top}px)`;
 
-                    this.renderer.addClass(placeholderElement, 'dragging-pos-element');
+                    this.renderer.addClass(placeholderElement, 'ktd-grid-dragging-placeholder');
                     this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
 
                     let newLayout: KtdGridLayoutItem[];
@@ -323,7 +323,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                 this.ngZone.run(() => {
                                     // remove drag classes
                                     this.renderer.removeClass(gridItem.elementRef.nativeElement, 'no-transitions');
-                                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'grid-item-dragging');
+                                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
                                     // remove placeholder element from the dom
                                     // NOTE: If we don't put the removeChild inside the zone it would not work... This may be a bug from angular or maybe is the intended behaviour, although strange
