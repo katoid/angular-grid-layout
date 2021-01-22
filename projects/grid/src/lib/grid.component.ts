@@ -5,7 +5,7 @@ import {
 import { coerceNumberProperty } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { merge, Observable, Observer, Subscription } from 'rxjs';
-import { startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { exhaustMap, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { ktdGridItemDragging, ktdGridItemResizing } from './grid.utils';
 import { compact, CompactType } from './react-grid-layout.utils';
 import {
@@ -256,7 +256,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
         return new Observable<KtdGridCfg>((observer: Observer<KtdGridCfg>) => {
             const subscription = this.ngZone.runOutsideAngular(() => source$.pipe(
-                switchMap((pointerDownEvent: MouseEvent | TouchEvent) => {
+                exhaustMap((pointerDownEvent: MouseEvent | TouchEvent) => {
                     pointerDownEvent.preventDefault();
                     pointerDownEvent.stopImmediatePropagation();
                     // Retrieve grid (parent) and gridItem (draggedElem) client rects.

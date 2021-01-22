@@ -4,6 +4,7 @@
     "scripts": {
         "ng": "ng",
         "start": "ng serve --port 1234",
+        "start:public": "ng serve --host 0.0.0.0 --port 1234",
         "build": "ng build",
         "build:grid": "ng build grid",
         "build:grid:watch": "ng build grid --watch",

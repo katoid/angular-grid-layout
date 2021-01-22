@@ -50,12 +50,12 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     resizeSubscription: Subscription;
 
     constructor(private ngZone: NgZone) {
-        this.ngZone.onUnstable.subscribe(() => console.log('UnStable'));
+        // this.ngZone.onUnstable.subscribe(() => console.log('UnStable'));
     }
 
     ngOnInit() {
         this.resizeSubscription = fromEvent(window, 'resize').pipe(
-            debounceTime(300),
+            debounceTime(50),
             filter(() => this.autoResize)
         ).subscribe(() => {
             this.grid.resize();
@@ -140,6 +140,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     /** Removes the item from the layout */
     removeItem(id: string) {
+        // Important: Don't mutate the array. Let Angular know that the layout has changed creating a new reference.
         this.layout = ktdArrayRemoveItem(this.layout, (item) => item.id === id);
     }
 }
