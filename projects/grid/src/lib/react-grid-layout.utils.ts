@@ -358,6 +358,7 @@ export function getFirstCollision(
             return layout[i];
         }
     }
+    return null;
 }
 
 export function getAllCollisions(

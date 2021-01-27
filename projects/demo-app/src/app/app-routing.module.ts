@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { KtdPlaygroundModule } from './playground/playground.module';
 import { KtdCustomHandlesModule } from './custom-handles/custom-handles.module';
+import { KtdRealLifeExampleComponent } from './real-life-example/real-life-example.component';
+import { KtdRealLifeExampleModule } from './real-life-example/real-life-example.module';
 
 const routes: Routes = [
     {
@@ -15,6 +17,11 @@ const routes: Routes = [
         pathMatch: 'full'
     },
     {
+        path: 'real-life-example',
+        redirectTo: 'real-life-example',
+        pathMatch: 'full'
+    },
+    {
         path: '**',
         redirectTo: 'playground'
     },
@@ -24,6 +31,7 @@ const routes: Routes = [
     imports: [
         KtdPlaygroundModule,
         KtdCustomHandlesModule,
+        KtdRealLifeExampleModule,
         RouterModule.forRoot(routes, {
         enableTracing: false
     })],

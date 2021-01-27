@@ -51,7 +51,7 @@ export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number
 export function __gridItemGetRenderDataFactoryFunc(gridCmp: KtdGridComponent) {
     // tslint:disable-next-line:only-arrow-functions
     return function(id: string) {
-        return parseRenderItemToPixels(gridCmp.getItemRenderData(id)!);
+        return parseRenderItemToPixels(gridCmp.getItemRenderData(id));
     };
 }
 
@@ -189,7 +189,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         ).map((item) => ({...item, id: item.i}));
     }
 
-    getItemRenderData(itemId: string): KtdGridItemRenderData<number> | undefined {
+    getItemsRenderData(): KtdDictionary<KtdGridItemRenderData<number>> {
+        return {...this._gridItemsRenderData};
+    }
+
+    getItemRenderData(itemId: string): KtdGridItemRenderData<number> {
         return this._gridItemsRenderData[itemId];
     }
 

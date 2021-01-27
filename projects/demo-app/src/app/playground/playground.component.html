@@ -1,11 +1,7 @@
 <h1>Angular Grid Layout - Playground</h1>
-<a [routerLink]="['/custom-handles']">
-    custom handlers example
-</a>
 <div class="playground-container">
     <div class="layout-json">
     </div>
-    <h3>Controls</h3>
     <div class="controls-container">
         <button mat-raised-button (click)="generateLayout()">Generate layout</button>
         <button mat-raised-button (click)="addItemToLayout()">Add item</button>
@@ -65,5 +61,9 @@
             </ktd-grid-item>
         </ktd-grid>
     </div>
-
+</div>
+<h2 style="margin-top: 16px">Other examples: </h2>
+<div style="display: flex; flex-direction: column">
+    <a [routerLink]="['/custom-handles']">Custom handles</a>
+    <a [routerLink]="['/real-life-example']">Real life example</a>
 </div>

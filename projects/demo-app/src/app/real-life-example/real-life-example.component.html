@@ -1,0 +1,86 @@
+<h1>Angular Grid Layout - Real life example</h1>
+<div class="grid-container">
+    <ktd-grid [cols]="cols"
+              [rowHeight]="rowHeight"
+              [layout]="layout"
+              [compactType]="compactType"
+              (configUpdated)="onConfigUpdated($event)">
+        <ktd-grid-item id="0" >
+            <ngx-charts-bar-vertical-stacked
+                [view]="layoutSizes['0']"
+                [scheme]="colorScheme2"
+                [results]="countriesPopulationByYear"
+                [gradient]="false"
+                [xAxis]="xAxis"
+                [yAxis]="yAxis"
+                [legend]="true"
+                [showXAxisLabel]="showXAxisLabel"
+                [showYAxisLabel]="showYAxisLabel"
+                [xAxisLabel]="xAxisLabel"
+                [yAxisLabel]="yAxisLabel"
+                [animations]="animations"
+                (select)="onSelect('0', $event)">
+            </ngx-charts-bar-vertical-stacked>
+        </ktd-grid-item>
+        <ktd-grid-item id="1">
+            <ngx-charts-bar-horizontal-2d
+                [view]="layoutSizes['1']"
+                [scheme]="colorSchemeGradientLinear"
+                [schemeType]="'linear'"
+                [results]="countriesPopulationByYear"
+                [gradient]="false"
+                [xAxis]="xAxis"
+                [yAxis]="yAxis"
+                [legend]="false"
+                [legendPosition]="'below'"
+                [showXAxisLabel]="showXAxisLabel"
+                [showYAxisLabel]="showYAxisLabel"
+                [xAxisLabel]="yAxisLabel"
+                [yAxisLabel]="xAxisLabel"
+                (select)="onSelect('1', $event)"
+                (activate)="onActivate('1', $event)"
+                (deactivate)="onDeactivate('1', $event)">
+            </ngx-charts-bar-horizontal-2d>
+        </ktd-grid-item>
+        <ktd-grid-item id="2">
+            <ngx-charts-tree-map
+                [view]="layoutSizes['2']"
+                [scheme]="colorScheme"
+                [results]="countriesPopulation"
+                [gradient]="false"
+                [animations]="true"
+                [labelFormatting]="labelFormatting"
+                (select)="onSelect('2', $event)">
+            </ngx-charts-tree-map>
+        </ktd-grid-item>
+        <ktd-grid-item id="3">
+            <div class="ktd-grid-img-container">
+                <img src="assets/icons/katoid-icon-192x192.png">
+            </div>
+        </ktd-grid-item>
+        <ktd-grid-item class="ktd-grid-item-table" id="4">
+            <ktd-table-sorting></ktd-table-sorting>
+        </ktd-grid-item>
+        <ktd-grid-item id="5">
+            <ngx-charts-pie-chart
+                [view]="layoutSizes['5']"
+                [scheme]="colorScheme"
+                [results]="countriesPopulation"
+                [gradient]="false"
+                [legend]="false"
+                [labels]="showLabels"
+                [doughnut]="false"
+                (select)="onSelect('5', $event)"
+                (activate)="onActivate('5', $event)"
+                (deactivate)="onDeactivate('5', $event)">
+            </ngx-charts-pie-chart>
+        </ktd-grid-item>
+    </ktd-grid>
+</div>
+<h2 style="margin-top: 16px">Other examples: </h2>
+<div style="display: flex; flex-direction: column">
+    <a [routerLink]="['/playground']">Playground</a>
+    <a [routerLink]="['/custom-handles']">Custom handles</a>
+</div>
+
+

@@ -147,7 +147,7 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     });
 
     return {
-        layout: compact(newLayoutItems, compactionType, config.cols).map((item) => ({...item, id: item.i})),
+        layout: compact(newLayoutItems, compactionType, config.cols).map((item) => ktdLayoutItemToGridLayoutItem(item)),
         draggedItemPos: {
             top: dragElemClientRect.top - parentElemClientRect.top,
             left: dragElemClientRect.left - parentElemClientRect.left,
