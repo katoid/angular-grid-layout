@@ -71,5 +71,10 @@
         }
     }
 
+    mat-chip-list, mat-chip {
+        pointer-events: none;
+        user-select: none;
+    }
+
 
 }

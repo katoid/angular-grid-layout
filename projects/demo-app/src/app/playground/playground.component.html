@@ -43,6 +43,10 @@
                       (change)="onAutoResizeChange($event.checked)">
             Auto resize
         </mat-checkbox>
+        <mat-chip-list>
+            <mat-chip color="accent" [selected]="isDragging">isDragging</mat-chip>
+            <mat-chip color="accent" [selected]="isResizing">isResizing</mat-chip>
+        </mat-chip-list>
     </div>
 
     <div class="grid-container">
@@ -50,6 +54,10 @@
                   [rowHeight]="rowHeight"
                   [layout]="layout"
                   [compactType]="compactType"
+                  (dragStarted)="onDragStarted($event)"
+                  (resizeStarted)="onResizeStarted($event)"
+                  (dragEnded)="onDragEnded($event)"
+                  (resizeEnded)="onResizeEnded($event)"
                   (configUpdated)="onConfigUpdated($event)">
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            [id]="item.id"

@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
+import { MatChipsModule } from '@angular/material/chips';
 
 const routes: Routes = [
     {path: 'playground', component: KtdPlaygroundComponent},
@@ -22,7 +23,8 @@ const routes: Routes = [
         MatButtonModule,
         MatSelectModule,
         MatCheckboxModule,
-        MatInputModule
+        MatInputModule,
+        MatChipsModule
     ]
 })
 export class KtdPlaygroundModule {}

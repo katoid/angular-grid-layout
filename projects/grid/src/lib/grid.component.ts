@@ -15,6 +15,36 @@ import {
 import { ktdMouseOrTouchEnd, ktdMouseOrTouchMove } from './pointer.utils';
 import { KtdDictionary } from '../types';
 
+export interface KtdDragStart {
+    layoutItem: KtdGridLayoutItem;
+    gridItemRef: KtdGridItemComponent;
+}
+
+export type KtdResizeStart = KtdDragStart;
+
+function getDragResizeStartData(gridItem: KtdGridItemComponent, layout: KtdGridLayout): KtdDragStart | KtdResizeStart {
+    return {
+        layoutItem: layout.find((item) => item.id === gridItem.id)!,
+        gridItemRef: gridItem
+    };
+}
+
+export interface KtdDragEnd {
+    layout: KtdGridLayout;
+    layoutItem: KtdGridLayoutItem;
+    gridItemRef: KtdGridItemComponent;
+}
+
+export type KtdResizeEnd = KtdDragEnd;
+
+function getDragResizeEndData(gridItem: KtdGridItemComponent, layout: KtdGridLayout): KtdDragEnd | KtdResizeEnd {
+    return {
+        layout,
+        layoutItem: layout.find((item) => item.id === gridItem.id)!,
+        gridItemRef: gridItem
+    };
+}
+
 
 function layoutToRenderItems(config: KtdGridCfg, width: number, height: number): KtdDictionary<KtdGridItemRenderData<number>> {
     const {cols, rowHeight, layout} = config;
@@ -81,6 +111,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     @ContentChildren(KtdGridItemComponent, {descendants: true}) _gridItems: QueryList<KtdGridItemComponent>;
     @Output() configUpdated: EventEmitter<KtdGridCfg> = new EventEmitter<KtdGridCfg>();
 
+    @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+    @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+    @Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+    @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+
     @Input() compactOnPropsChange = true;
 
     @Input()
@@ -129,6 +164,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             layout: this.layout
         };
     }
+
     set config(config: KtdGridCfg) {
         this.layout = config.layout;
         this.cols = config.cols;
@@ -181,7 +217,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     compactLayout() {
-        console.log('compact layout', this.compactType);
         this.layout = compact(
             this.layout.map((item) => ({...item, i: item.id})),
             this.compactType,
@@ -227,22 +262,32 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     return merge(
                         // move
                         merge(...gridItems.map((gridItem) => {
-                                return this.performDragAction$(gridItem, gridItem.dragStart$,
-                                    (gridItemId, config, compactionType, draggingData) => ktdGridItemDragging(gridItemId, config, compactionType, draggingData));
+                                return this.performDragAction$(
+                                    gridItem,
+                                    gridItem.dragStart$.pipe(tap(() => this.dragStarted.emit(getDragResizeStartData(gridItem, this.layout)))),
+                                    (gridItemId, config, compactionType, draggingData) => ktdGridItemDragging(gridItemId, config, compactionType, draggingData)
+                                ).pipe(
+                                    tap((gridCfg) => this.dragEnded.emit(getDragResizeEndData(gridItem, gridCfg.layout)))
+                                );
                             })
                         ),
 
                         // resize
                         merge(...gridItems.map((gridItem) => {
-                            return this.performDragAction$(gridItem, gridItem.resizeStart$,
-                                (gridItemId, config, compactionType, draggingData) => ktdGridItemResizing(gridItemId, config, compactionType, draggingData));
+                            return this.performDragAction$(
+                                gridItem,
+                                gridItem.resizeStart$.pipe(tap(() => this.resizeStarted.emit(getDragResizeStartData(gridItem, this.layout)))),
+                                (gridItemId, config, compactionType, draggingData) => ktdGridItemResizing(gridItemId, config, compactionType, draggingData)
+                            ).pipe(
+                                tap((gridCfg) => this.resizeEnded.emit(getDragResizeEndData(gridItem, gridCfg.layout)))
+                            );
                         }))
                     );
                 })
             ).subscribe((newConfig: KtdGridCfg) => {
                 this.config = newConfig;
                 this.calculateRenderData();
-                this.configUpdated.next(newConfig);
+                this.configUpdated.emit(newConfig);
             })
 
         ];
@@ -256,7 +301,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * @param calcNewStateFunc function that return the new layout state and the drag element position
      */
     private performDragAction$(gridItem: KtdGridItemComponent, source$: Observable<MouseEvent | TouchEvent>,
-                               calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }) {
+                               calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridCfg> {
 
         return new Observable<KtdGridCfg>((observer: Observer<KtdGridCfg>) => {
             const subscription = this.ngZone.runOutsideAngular(() => source$.pipe(

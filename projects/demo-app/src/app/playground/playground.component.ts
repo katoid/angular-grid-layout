@@ -3,7 +3,7 @@ import { KtdGridCfg, KtdGridLayout, KtdGridLayoutItem } from '../../../../../dis
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
-import { KtdGridComponent } from 'grid';
+import { KtdDragEnd, KtdDragStart, KtdGridComponent, KtdResizeEnd, KtdResizeStart } from 'grid';
 import { ktdArrayRemoveItem, ktdTrackById } from '../utils';
 
 @Component({
@@ -47,6 +47,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     disableResize = false;
     disableRemove = false;
     autoResize = true;
+    isDragging = false;
+    isResizing = false;
     resizeSubscription: Subscription;
 
     constructor(private ngZone: NgZone) {
@@ -64,6 +66,22 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.resizeSubscription.unsubscribe();
+    }
+
+    onDragStarted(event: KtdDragStart) {
+        this.isDragging = true;
+    }
+
+    onResizeStarted(event: KtdResizeStart) {
+        this.isResizing = true;
+    }
+
+    onDragEnded(event: KtdDragEnd) {
+        this.isDragging = false;
+    }
+
+    onResizeEnded(event: KtdResizeEnd) {
+        this.isResizing = false;
     }
 
     onConfigUpdated(event: KtdGridCfg) {
