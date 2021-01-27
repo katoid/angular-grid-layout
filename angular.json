@@ -3,38 +3,38 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "grid": {
+    "angular-grid-layout": {
       "projectType": "library",
-      "root": "projects/grid",
-      "sourceRoot": "projects/grid/src",
+      "root": "projects/angular-grid-layout",
+      "sourceRoot": "projects/angular-grid-layout/src",
       "prefix": "lib",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
-            "tsConfig": "projects/grid/tsconfig.lib.json",
-            "project": "projects/grid/ng-package.json"
+            "tsConfig": "projects/angular-grid-layout/tsconfig.lib.json",
+            "project": "projects/angular-grid-layout/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/grid/tsconfig.lib.prod.json"
+              "tsConfig": "projects/angular-grid-layout/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/grid/src/test.ts",
-            "tsConfig": "projects/grid/tsconfig.spec.json",
-            "karmaConfig": "projects/grid/karma.conf.js"
+            "main": "projects/angular-grid-layout/src/test.ts",
+            "tsConfig": "projects/angular-grid-layout/tsconfig.spec.json",
+            "karmaConfig": "projects/angular-grid-layout/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/grid/tsconfig.lib.json",
-              "projects/grid/tsconfig.spec.json"
+              "projects/angular-grid-layout/tsconfig.lib.json",
+              "projects/angular-grid-layout/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -168,5 +168,5 @@
   "cli": {
     "analytics": false
   },
-  "defaultProject": "grid"
+  "defaultProject": "angular-grid-layout"
 }

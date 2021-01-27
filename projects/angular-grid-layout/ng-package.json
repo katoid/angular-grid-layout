@@ -1,6 +1,6 @@
 {
   "$schema": "../../node_modules/ng-packagr/ng-package.schema.json",
-  "dest": "../../dist/grid",
+  "dest": "../../dist/angular-grid-layout",
   "lib": {
     "entryFile": "src/public-api.ts"
   }

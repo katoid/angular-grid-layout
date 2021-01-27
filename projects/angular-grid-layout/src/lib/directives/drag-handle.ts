@@ -1,5 +1,4 @@
-import { Directive, ElementRef, InjectionToken, OnDestroy, } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Directive, ElementRef, InjectionToken } from '@angular/core';
 
 /**
  * Injection token that can be used to reference instances of `KtdGridDragHandle`. It serves as

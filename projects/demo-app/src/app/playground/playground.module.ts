@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { KtdPlaygroundComponent } from './playground.component';
 import { RouterModule, Routes } from '@angular/router';
-import { KtdGridModule } from 'grid';
+import { KtdGridModule } from '@katoid/angular-grid-layout';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';

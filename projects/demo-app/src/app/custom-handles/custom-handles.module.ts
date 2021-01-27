@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { KtdCustomHandlesComponent } from './custom-handles.component';
-import { KtdGridModule } from 'grid';
+import { KtdGridModule } from '@katoid/angular-grid-layout';
 import { RouterModule, Routes } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 

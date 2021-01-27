@@ -1,14 +1,13 @@
 {
-    "name": "katoid-public",
-    "version": "0.0.0",
+    "name": "angular-grid-layout-src",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --port 1234",
         "start:public": "ng serve --host 0.0.0.0 --port 1234",
         "build": "ng build",
-        "build:grid": "ng build grid",
-        "build:grid:watch": "ng build grid --watch",
-        "build:grid:prod": "ng build --prod grid",
+        "build:grid": "ng build angular-grid-layout",
+        "build:grid:watch": "ng build angular-grid-layout --watch",
+        "build:grid:prod": "ng build --prod angular-grid-layout",
         "test": "ng test",
         "lint": "ng lint",
         "lint:build": "tsc -p tsconfig.lint.json",

@@ -1,9 +1,8 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ktdTrackById } from '../utils';
-import { KtdGridCfg } from '../../../../../dist/grid/lib/grid.definitions';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { KtdGridComponent } from 'grid';
+import { KtdGridComponent, KtdGridCfg, KtdGridLayout } from '@katoid/angular-grid-layout';
 
 @Component({
     selector: 'ktd-custom-handles',
@@ -16,7 +15,7 @@ export class KtdCustomHandlesComponent implements OnInit, OnDestroy {
     cols = 12;
     rowHeight = 50;
     compactType: 'vertical' | 'horizontal' | null = 'vertical';
-    layout = [
+    layout: KtdGridLayout = [
         {id: '0', x: 0, y: 0, w: 3, h: 3},
         {id: '1', x: 3, y: 0, w: 3, h: 4},
         {id: '2', x: 6, y: 0, w: 3, h: 5},

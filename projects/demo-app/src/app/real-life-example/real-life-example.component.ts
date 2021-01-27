@@ -1,11 +1,9 @@
 import { Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { KtdGridComponent } from 'grid';
+import { KtdGridComponent, KtdGridCfg } from '@katoid/angular-grid-layout';
 import { ktdTrackById } from '../utils';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { KtdGridCfg } from '../../../../../dist/grid/lib/grid.definitions';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';
-import { KtdDictionary } from '../../../../../dist/grid/types';
 import { AreaChartStackedComponent } from '@swimlane/ngx-charts';
 
 @Component({
@@ -30,7 +28,7 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
         {id: '4', x: 8, y: 5, w: 4, h: 10}
     ];
 
-    layoutSizes: KtdDictionary<[number, number]> = {};
+    layoutSizes: {[id: string]: [number, number]} = {};
 
 
     countriesPopulation: any[] = countriesPopulation;

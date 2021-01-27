@@ -1,0 +1,29 @@
+{
+    "name": "@katoid/angular-grid-layout",
+    "description": "Grid Layout with draggable and resizable items for Angular",
+    "homepage": "https://github.com/katoid/angular-grid-layout",
+    "bugs": {
+        "url": "https://github.com/katoid/angular-grid-layout/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/katoid/angular-grid-layout.git"
+    },
+    "license": "MIT",
+    "version": "0.0.1",
+    "keywords": [
+        "angular",
+        "grid",
+        "drag",
+        "angular-grid",
+        "angular-drag",
+        "angular-layout"
+    ],
+    "peerDependencies": {
+        "@angular/common": "^11.0.6",
+        "@angular/core": "^11.0.6"
+    },
+    "dependencies": {
+        "tslib": "^2.0.0"
+    }
+}

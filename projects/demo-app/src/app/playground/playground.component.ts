@@ -1,9 +1,8 @@
 import { Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { KtdGridCfg, KtdGridLayout, KtdGridLayoutItem } from '../../../../../dist/grid/lib/grid.definitions';
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
-import { KtdDragEnd, KtdDragStart, KtdGridComponent, KtdResizeEnd, KtdResizeStart } from 'grid';
+import { KtdDragEnd, KtdDragStart, KtdGridComponent, KtdResizeEnd, KtdResizeStart, KtdGridCfg, KtdGridLayout, KtdGridLayoutItem } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem, ktdTrackById } from '../utils';
 
 @Component({
@@ -18,7 +17,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     cols = 12;
     rowHeight = 50;
     compactType: 'vertical' | 'horizontal' | null = 'vertical';
-    layout = [
+    layout: KtdGridLayout = [
         {id: '0', x: 5, y: 0, w: 2, h: 3},
         {id: '1', x: 2, y: 2, w: 1, h: 2},
         {id: '2', x: 3, y: 7, w: 1, h: 2},
