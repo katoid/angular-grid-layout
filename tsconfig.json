@@ -21,7 +21,6 @@
         ],
         "paths": {
             "@katoid/angular-grid-layout": [
-                "dist/angular-grid-layout/angular-grid-layout",
                 "dist/angular-grid-layout"
             ]
         }

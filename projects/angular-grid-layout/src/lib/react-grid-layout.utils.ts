@@ -12,7 +12,7 @@ export type LayoutItem = {
     h: number;
     x: number;
     y: number;
-    i: string;
+    id: string;
     minW?: number;
     minH?: number;
     maxW?: number;
@@ -108,7 +108,7 @@ export function cloneLayoutItem(layoutItem: LayoutItem): LayoutItem {
         h: layoutItem.h,
         x: layoutItem.x,
         y: layoutItem.y,
-        i: layoutItem.i,
+        id: layoutItem.id,
         moved: !!layoutItem.moved,
         static: !!layoutItem.static,
     };
@@ -128,7 +128,7 @@ export function cloneLayoutItem(layoutItem: LayoutItem): LayoutItem {
  * Given two layoutitems, check if they collide.
  */
 export function collides(l1: LayoutItem, l2: LayoutItem): boolean {
-    if (l1.i === l2.i) {
+    if (l1.id === l2.id) {
         return false;
     } // same element
     if (l1.x + l1.w <= l2.x) {
@@ -204,9 +204,9 @@ function resolveCompactionCollision(
     item[axis] += 1;
     const itemIndex = layout
         .map(layoutItem => {
-            return layoutItem.i;
+            return layoutItem.id;
         })
-        .indexOf(item.i);
+        .indexOf(item.id);
 
     // Go through each item we collide with.
     for (let i = itemIndex + 1; i < layout.length; i++) {
@@ -335,7 +335,7 @@ export function getLayoutItem(
     id: string,
 ): LayoutItem | null | undefined {
     for (let i = 0, len = layout.length; i < len; i++) {
-        if (layout[i].i === id) {
+        if (layout[i].id === id) {
             return layout[i];
         }
     }
@@ -407,7 +407,7 @@ export function moveElement(
     }
 
     log(
-        `Moving element ${l.i} to [${String(x)},${String(y)}] from [${l.x},${
+        `Moving element ${l.id} to [${String(x)},${String(y)}] from [${l.x},${
             l.y
         }]`,
     );
@@ -441,7 +441,7 @@ export function moveElement(
 
     // There was a collision; abort
     if (preventCollision && collisions.length) {
-        log(`Collision prevented on ${l.i}, reverting.`);
+        log(`Collision prevented on ${l.id}, reverting.`);
         l.x = oldX;
         l.y = oldY;
         l.moved = false;
@@ -452,8 +452,8 @@ export function moveElement(
     for (let i = 0, len = collisions.length; i < len; i++) {
         const collision = collisions[i];
         log(
-            `Resolving collision between ${l.i} at [${l.x},${l.y}] and ${
-                collision.i
+            `Resolving collision between ${l.id} at [${l.x},${l.y}] and ${
+                collision.id
             } at [${collision.x},${collision.y}]`,
         );
 
@@ -525,13 +525,13 @@ export function moveElementAwayFromCollision(
                 : itemToMove.y,
             w: itemToMove.w,
             h: itemToMove.h,
-            i: '-1',
+            id: '-1',
         };
 
         // No collision? If so, we can go up there; otherwise, we'll end up moving down as normal
         if (!getFirstCollision(layout, fakeItem)) {
             log(
-                `Doing reverse collision on ${itemToMove.i} up to [${
+                `Doing reverse collision on ${itemToMove.id} up to [${
                     fakeItem.x
                 },${fakeItem.y}].`,
             );
@@ -663,7 +663,7 @@ export function validateLayout(
                 );
             }
         }
-        if (item.i && typeof item.i !== 'string') {
+        if (item.id && typeof item.id !== 'string') {
             throw new Error(
                 'ReactGridLayout: ' +
                 contextName +

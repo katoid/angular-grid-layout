@@ -11,19 +11,9 @@ function screenYPosToGridValue(screenYPos: number, rowHeight: number, height: nu
     return Math.round(screenYPos / rowHeight);
 }
 
-export function ktdLayoutItemToGridLayoutItem(item: LayoutItem): KtdGridLayoutItem {
-    return {
-        id: item.i,
-        x: item.x,
-        y: item.y,
-        w: item.w,
-        h: item.h
-    };
-}
-
 /** Returns a Dictionary where the key is the id and the value is the change applied to that item. If no changes Dictionary is empty. */
-export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayoutB: KtdGridLayoutItem[]): KtdDictionary<{change: 'move' | 'resize' | 'moveresize'}> {
-    const diff: KtdDictionary<{change: 'move' | 'resize' | 'moveresize'}> = {};
+export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayoutB: KtdGridLayoutItem[]): KtdDictionary<{ change: 'move' | 'resize' | 'moveresize' }> {
+    const diff: KtdDictionary<{ change: 'move' | 'resize' | 'moveresize' }> = {};
 
     gridLayoutA.forEach(itemA => {
         const itemB = gridLayoutB.find(_itemB => _itemB.id === itemA.id);
@@ -79,8 +69,8 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
     }
 
     // Parse to LayoutItem array data in order to use 'react.grid-layout' utils
-    const layoutItems: LayoutItem[] = config.layout.map((item) => ({...item, i: item.id}));
-    const draggedLayoutItem: LayoutItem = layoutItems.find(item => item.i === gridItemId)!;
+    const layoutItems: LayoutItem[] = config.layout;
+    const draggedLayoutItem: LayoutItem = layoutItems.find(item => item.id === gridItemId)!;
 
     let newLayoutItems: LayoutItem[] = moveElement(
         layoutItems,
@@ -96,7 +86,7 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
     newLayoutItems = compact(newLayoutItems, compactionType, config.cols);
 
     return {
-        layout: newLayoutItems.map((item) => ktdLayoutItemToGridLayoutItem(item)),
+        layout: newLayoutItems,
         draggedItemPos: {
             top: gridRelYPos,
             left: gridRelXPos,
@@ -143,11 +133,11 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     }
 
     const newLayoutItems: LayoutItem[] = config.layout.map((item) => {
-        return item.id === gridItemId ? {...layoutItem, i: item.id} : {...item, i: item.id};
+        return item.id === gridItemId ? layoutItem : item;
     });
 
     return {
-        layout: compact(newLayoutItems, compactionType, config.cols).map((item) => ktdLayoutItemToGridLayoutItem(item)),
+        layout: compact(newLayoutItems, compactionType, config.cols),
         draggedItemPos: {
             top: dragElemClientRect.top - parentElemClientRect.top,
             left: dragElemClientRect.left - parentElemClientRect.left,
