@@ -62,7 +62,7 @@
                   (resizeStarted)="onResizeStarted($event)"
                   (dragEnded)="onDragEnded($event)"
                   (resizeEnded)="onResizeEnded($event)"
-                  (configUpdated)="onConfigUpdated($event)">
+                  (layoutUpdated)="onLayoutUpdated($event)">
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            [id]="item.id"
                            [transition]="currentTransition"
@@ -70,7 +70,11 @@
                            [draggable]="!disableDrag"
                            [resizable]="!disableResize">
                 <div class="grid-item-content">{{item.id}}</div>
-                <div class="grid-item-remove-handle" *ngIf="!disableRemove" (click)="removeItem(item.id)"></div>
+                <div class="grid-item-remove-handle"
+                     *ngIf="!disableRemove"
+                     (mousedown)="stopEventPropagation($event)"
+                     (click)="removeItem(item.id)">
+                </div>
             </ktd-grid-item>
         </ktd-grid>
     </div>

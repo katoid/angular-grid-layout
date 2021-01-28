@@ -2,7 +2,9 @@ import { Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
-import { KtdDragEnd, KtdDragStart, KtdGridComponent, KtdResizeEnd, KtdResizeStart, KtdGridCfg, KtdGridLayout, KtdGridLayoutItem } from '@katoid/angular-grid-layout';
+import {
+    KtdDragEnd, KtdDragStart, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart
+} from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem, ktdTrackById } from '../utils';
 
 @Component({
@@ -31,12 +33,15 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         {id: '10', x: 2, y: 4, w: 1, h: 4},
         {id: '11', x: 0, y: 0, w: 2, h: 4}
     ];
-    transitions: {name: string, value: string}[] = [
+    transitions: { name: string, value: string }[] = [
         {name: 'custom', value: 'transform 500ms ease, width 500ms linear, height 500ms linear'},
         {name: 'linear', value: 'transform 500ms linear, width 500ms linear, height 500ms linear'},
         {name: 'ease', value: 'transform 500ms ease, width 500ms ease, height 500ms ease'},
         {name: 'ease-out', value: 'transform 500ms ease-out, width 500ms ease-out, height 500ms ease-out'},
-        {name: 'overflowing', value: 'transform 500ms cubic-bezier(.28,.49,.79,1.35), width 500ms cubic-bezier(.28,.49,.79,1.35), height 500ms cubic-bezier(.28,.49,.79,1.35)'},
+        {
+            name: 'overflowing',
+            value: 'transform 500ms cubic-bezier(.28,.49,.79,1.35), width 500ms cubic-bezier(.28,.49,.79,1.35), height 500ms cubic-bezier(.28,.49,.79,1.35)'
+        },
         {name: 'fast', value: 'transform 200ms ease, width 200ms linear, height 200ms linear'},
         {name: 'slow-motion', value: 'transform 1000ms linear, width 1000ms linear, height 1000ms linear'},
     ];
@@ -84,9 +89,9 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         this.isResizing = false;
     }
 
-    onConfigUpdated(event: KtdGridCfg) {
-        console.log('on config updated', event);
-        this.layout = event.layout;
+    onLayoutUpdated(layout: KtdGridLayout) {
+        console.log('on layout updated', layout);
+        this.layout = layout;
     }
 
     onCompactTypeChange(change: MatSelectChange) {
@@ -158,6 +163,16 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
             newLayoutItem,
             ...this.layout
         ];
+    }
+
+    /**
+     * Fired when a mousedown happens on the remove grid item button.
+     * Stops the event from propagating an causing the drag to start.
+     * We don't want to drag when mousedown is fired on remove icon button.
+     */
+    stopEventPropagation(event: Event) {
+        event.preventDefault();
+        event.stopPropagation();
     }
 
     /** Removes the item from the layout */

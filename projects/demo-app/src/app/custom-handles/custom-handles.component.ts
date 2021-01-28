@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ktdTrackById } from '../utils';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { KtdGridComponent, KtdGridCfg, KtdGridLayout } from '@katoid/angular-grid-layout';
+import { KtdGridComponent, KtdGridLayout } from '@katoid/angular-grid-layout';
 
 @Component({
     selector: 'ktd-custom-handles',
@@ -22,8 +22,7 @@ export class KtdCustomHandlesComponent implements OnInit, OnDestroy {
         {id: '3', x: 9, y: 0, w: 3, h: 6}
     ];
 
-
-    resizeSubscription: Subscription;
+    private resizeSubscription: Subscription;
 
     constructor() { }
 
@@ -39,8 +38,8 @@ export class KtdCustomHandlesComponent implements OnInit, OnDestroy {
         this.resizeSubscription.unsubscribe();
     }
 
-    onConfigUpdated(event: KtdGridCfg) {
-        this.layout = event.layout;
+    onLayoutUpdated(layout: KtdGridLayout) {
+        this.layout = layout;
     }
 
 }

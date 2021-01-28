@@ -30,11 +30,14 @@
         background: #313131;
     }
 
+    ktd-grid-item {
+        color: #121212;
+    }
+
     .grid-item-content {
         box-sizing: border-box;
         background: #ccc;
-        border: 1px solid black;
-        color: black;
+        border: 1px solid;
         width: 100%;
         height: 100%;
         user-select: none;

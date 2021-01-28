@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { KtdGridComponent, KtdGridCfg } from '@katoid/angular-grid-layout';
+import { KtdGridComponent, KtdGridLayout } from '@katoid/angular-grid-layout';
 import { ktdTrackById } from '../utils';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
@@ -84,8 +84,8 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
         ];
     }
 
-    onConfigUpdated(event: KtdGridCfg) {
-        this.layout = event.layout;
+    onLayoutUpdated(layout: KtdGridLayout) {
+        this.layout = layout;
         this.calculateLayoutSizes();
     }
 

@@ -10,25 +10,13 @@
         user-select: none;
         z-index: 10;
 
-        &.grid-item-remove-icon {
-            cursor: pointer;
-            top: 2px;
-            right: 2px;
-
-            &::after {
-                content: 'x';
-                color: #000;
-                font-weight: 300;
-                font-family: Arial, sans-serif;
-            }
-        }
-
         &.grid-item-resize-icon {
             cursor: se-resize;
             width: 20px;
             height: 20px;
             bottom: 0;
             right: 0;
+            color: inherit;
 
             &::after {
                 content: "";
@@ -37,8 +25,8 @@
                 bottom: 3px;
                 width: 5px;
                 height: 5px;
-                border-right: 2px solid rgba(0, 0, 0, 0.6);
-                border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+                border-right: 2px solid;
+                border-bottom: 2px solid;
             }
         }
     }

@@ -98,7 +98,7 @@ export function ktdGridItemGetRenderDataFactoryFunc(gridCmp: KtdGridComponent) {
 export class KtdGridComponent implements OnChanges, AfterContentInit, AfterContentChecked, OnDestroy {
     /** Query list of grid items that are being rendered. */
     @ContentChildren(KtdGridItemComponent, {descendants: true}) _gridItems: QueryList<KtdGridItemComponent>;
-    @Output() configUpdated: EventEmitter<KtdGridCfg> = new EventEmitter<KtdGridCfg>();
+    @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
 
     @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
     @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
@@ -252,16 +252,15 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
                         return this.performDragAction$(gridItem, of(event), (gridItemId, config, compactionType, draggingData) =>
                             calcNewStateFunc(gridItemId, config, compactionType, draggingData)
-                        ).pipe(
-                            tap((gridCfg) => (type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(gridItem, gridCfg.layout)))
-                        );
+                        ).pipe(map((gridCfg) => ({gridCfg, gridItem, type})));
 
                     }));
                 })
-            ).subscribe((newConfig: KtdGridCfg) => {
-                this.config = newConfig;
+            ).subscribe(({gridCfg, gridItem, type}) => {
+                this.config = gridCfg;
                 this.calculateRenderData();
-                this.configUpdated.emit(newConfig);
+                (type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(gridItem, gridCfg.layout));
+                this.layoutUpdated.emit(gridCfg.layout);
             })
 
         ];
@@ -358,6 +357,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                             // Prune react-grid-layout compact extra properties.
                                             layout: newLayout.map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}))
                                         });
+                                    } else {
+                                        // TODO: Need we really to emit if there is no layout change?
+                                        observer.next(this.config);
                                     }
 
                                     observer.complete();
