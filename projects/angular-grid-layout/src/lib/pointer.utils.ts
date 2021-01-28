@@ -49,7 +49,7 @@ export function ktdPointerClient(event: MouseEvent | TouchEvent): {clientX: numb
  * @param touchNumber number of the touch to track the event, default to the first one.
  * @param passive, sets the touchstart options to be passive or not. See: https://developers.google.com/web/tools/lighthouse/audits/passive-event-listeners?hl=es
  */
-export function ktdMouseOrTouchDown(element, touchNumber = 1, passive = true): Observable<MouseEvent | TouchEvent> {
+export function ktdMouseOrTouchDown(element, touchNumber = 1, passive = false): Observable<MouseEvent | TouchEvent> {
     return iif(
         () => ktdIsMobileOrTablet(),
         fromEvent<TouchEvent>(element, 'touchstart', {passive}).pipe(
@@ -77,7 +77,7 @@ export function ktdMouseOrTouchEnter(element, touchNumber = 1): Observable<Mouse
     return iif(
         () => ktdIsMobileOrTablet(),
         // https://developers.google.com/web/tools/lighthouse/audits/passive-event-listeners?hl=es
-        fromEvent<TouchEvent>(element, 'touchstart', {passive: true}).pipe(
+        fromEvent<TouchEvent>(element, 'touchstart', {passive: false}).pipe(
             filter((touchEvent) => touchEvent.touches.length === touchNumber),
         ),
         fromEvent<MouseEvent>(element, 'mouseenter')
@@ -92,7 +92,7 @@ export function ktdMouseOrTouchEnter(element, touchNumber = 1): Observable<Mouse
 export function ktdMouseOrTouchMove(element, touchNumber = 1): Observable<MouseEvent | TouchEvent> {
     return iif(
         () => ktdIsMobileOrTablet(),
-        fromEvent<TouchEvent>(element, 'touchmove', {passive: true}).pipe(
+        fromEvent<TouchEvent>(element, 'touchmove', {passive: false}).pipe(
             filter((touchEvent) => touchEvent.touches.length === touchNumber),
         ),
         fromEvent<MouseEvent>(element, 'mousemove')

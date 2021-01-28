@@ -114,10 +114,21 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                                 merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1, false))),
                                 ktdMouseOrTouchDown(this.elementRef.nativeElement, 1, false)
                             ).pipe(exhaustMap((startEvent) => {
+                                // If the event started from an element with the native HTML drag&drop, it'll interfere
+                                // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
+                                // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
+                                // it's flaky and it fails if the user drags it away quickly. Also note that we only want
+                                // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
+                                // events from firing on touch devices.
+                                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
+                                    startEvent.preventDefault();
+                                }
+
                                 const startPointer = ktdPointerClient(startEvent);
                                 return ktdMouseOrTouchMove(window, 1).pipe(
                                     takeUntil(ktdMouseOrTouchEnd(window, 1)),
                                     filter((moveEvent) => {
+                                        moveEvent.preventDefault();
                                         const movePointer = ktdPointerClient(moveEvent);
                                         const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
                                         const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);

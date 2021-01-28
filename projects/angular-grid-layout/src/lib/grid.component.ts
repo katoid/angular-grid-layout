@@ -279,8 +279,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         return new Observable<KtdGridCfg>((observer: Observer<KtdGridCfg>) => {
             const subscription = this.ngZone.runOutsideAngular(() => source$.pipe(
                 exhaustMap((pointerDownEvent: MouseEvent | TouchEvent) => {
-                    pointerDownEvent.preventDefault();
-                    pointerDownEvent.stopImmediatePropagation();
                     // Retrieve grid (parent) and gridItem (draggedElem) client rects.
                     const parentElemClientRect: ClientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
                     const dragElemClientRect: ClientRect = (gridItem.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
@@ -302,6 +300,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     return ktdMouseOrTouchMove(window).pipe(
                         takeUntil(ktdMouseOrTouchEnd(window)),
                         tap((pointerDragEvent: MouseEvent | TouchEvent) => {
+                                pointerDragEvent.preventDefault();
                                 /**
                                  * Set the new layout to be the layout in which the calcNewStateFunc would be executed.
                                  * NOTE: using the mutated layout is the way to go by 'react-grid-layout' utils. If we don't use the previous layout,
