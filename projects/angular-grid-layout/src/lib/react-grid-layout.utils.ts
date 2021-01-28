@@ -339,6 +339,7 @@ export function getLayoutItem(
             return layout[i];
         }
     }
+    return null;
 }
 
 /**
