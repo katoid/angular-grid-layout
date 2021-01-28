@@ -1,7 +1,19 @@
 import { compact, CompactType, LayoutItem, moveElement } from './react-grid-layout.utils';
-import { KtdGridCfg, KtdGridItemRect, KtdGridLayoutItem } from './grid.definitions';
+import { KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from './grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../types';
+
+/**
+ * Call react-grid-layout utils 'compact()' function and return the compacted layout.
+ * @param layout to be compacted.
+ * @param compactType, type of compaction.
+ * @param cols, number of columns of the grid.
+ */
+export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
+    return compact(layout, compactType, cols)
+        // Prune react-grid-layout compact extra properties.
+        .map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}));
+}
 
 function screenXPosToGridValue(screenXPos: number, cols: number, width: number): number {
     return Math.round((screenXPos * cols) / width);
@@ -58,7 +70,7 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
         x: screenXPosToGridValue(gridRelXPos, config.cols, parentElemClientRect.width),
         y: screenYPosToGridValue(gridRelYPos, config.rowHeight, parentElemClientRect.height)
     };
-
+    // console.log({clientX: (pointerDragEvent as MouseEvent).clientX, clientY: (pointerDragEvent as MouseEvent).clientY, pageX: (pointerDragEvent as MouseEvent).pageX, pageY: (pointerDragEvent as MouseEvent).pageY});
     // console.log({clientX, clientY, offsetX, offsetY, gridRelXPos, gridRelYPos, parentElemClientRect, layoutItem});
 
     // Correct the values if they overflow, since 'moveElement' function doesn't do it

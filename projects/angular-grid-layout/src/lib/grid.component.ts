@@ -171,7 +171,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     ngOnChanges(changes: SimpleChanges) {
         let pendingCompactLayout = false;
-        // TODO: refactor and this when/how to compact layout
+        // TODO: refactor/re-think logic of when/how to compact layout. also does fist change need to be compacted?
         if (changes.compactType && !changes.compactType.firstChange) {
             pendingCompactLayout = true;
         }
@@ -182,15 +182,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             pendingCompactLayout = true;
         }
 
-        // TODO: do some kind of _internalLayout modified.
-        if (pendingCompactLayout) {
+        if (this.compactOnPropsChange && pendingCompactLayout) {
             this.compactLayout();
         }
         this.calculateRenderData();
     }
 
     ngAfterContentInit() {
-        this.initSubscriptionsProposal();
+        this.initSubscriptions();
     }
 
     ngAfterContentChecked() {
@@ -246,52 +245,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 startWith(this._gridItems),
                 switchMap((gridItems: QueryList<KtdGridItemComponent>) => {
                     return merge(
-                        // move
-                        merge(...gridItems.map((gridItem) => {
-                                return this.performDragAction$(
-                                    gridItem,
-                                    gridItem.dragStart$.pipe(tap(() => this.dragStarted.emit(getDragResizeEventData(gridItem, this.layout)))),
-                                    (gridItemId, config, compactionType, draggingData) => ktdGridItemDragging(gridItemId, config, compactionType, draggingData)
-                                ).pipe(
-                                    tap((gridCfg) => this.dragEnded.emit(getDragResizeEventData(gridItem, gridCfg.layout)))
-                                );
-                            })
-                        ),
-
-                        // resize
-                        merge(...gridItems.map((gridItem) => {
-                            return this.performDragAction$(
-                                gridItem,
-                                gridItem.resizeStart$.pipe(tap(() => this.resizeStarted.emit(getDragResizeEventData(gridItem, this.layout)))),
-                                (gridItemId, config, compactionType, draggingData) => ktdGridItemResizing(gridItemId, config, compactionType, draggingData)
-                            ).pipe(
-                                tap((gridCfg) => this.resizeEnded.emit(getDragResizeEventData(gridItem, gridCfg.layout)))
-                            );
-                        }))
-                    );
-                })
-            ).subscribe((newConfig: KtdGridCfg) => {
-                this.config = newConfig;
-                this.calculateRenderData();
-                this.configUpdated.emit(newConfig);
-            })
-
-        ];
-    }
-
-    private initSubscriptionsProposal() {
-        this.subscriptions = [
-            this._gridItems.changes.pipe(
-                startWith(this._gridItems),
-                switchMap((gridItems: QueryList<KtdGridItemComponent>) => {
-                    return merge(
                         ...gridItems.map((gridItem) => gridItem.dragStart$.pipe(map((event) => ({event, gridItem, type: 'drag'})))),
                         ...gridItems.map((gridItem) => gridItem.resizeStart$.pipe(map((event) => ({event, gridItem, type: 'resize'})))),
                     ).pipe(exhaustMap(({event, gridItem, type}) => {
                         (type === 'drag' ? this.dragStarted : this.resizeStarted).emit(getDragResizeEventData(gridItem, this.layout));
                         const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
                         return this.performDragAction$(gridItem, of(event), (gridItemId, config, compactionType, draggingData) =>
-                            calcNewStateFunc(gridItemId, config, compactionType, draggingData)).pipe(
+                            calcNewStateFunc(gridItemId, config, compactionType, draggingData)
+                        ).pipe(
                             tap((gridCfg) => (type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(gridItem, gridCfg.layout)))
                         );
 
@@ -391,14 +352,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                     // NOTE: If we don't put the removeChild inside the zone it would not work... This may be a bug from angular or maybe is the intended behaviour, although strange
                                     this.renderer.removeChild(this.elementRef.nativeElement, placeholderElement);
 
-                                    if (!newLayout) {
-                                        return;
+                                    if (newLayout) {
+                                        observer.next({
+                                            ...this.config,
+                                            // Prune react-grid-layout compact extra properties.
+                                            layout: newLayout.map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}))
+                                        });
                                     }
 
-                                    observer.next({
-                                        ...this.config,
-                                        layout: newLayout
-                                    });
                                     observer.complete();
                                 });
 

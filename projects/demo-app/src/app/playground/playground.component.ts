@@ -42,6 +42,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     ];
     currentTransition: string = this.transitions[0].value;
 
+    dragStartThreshold = 0;
     disableDrag = false;
     disableResize = false;
     disableRemove = false;
@@ -116,6 +117,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onRowHeightChange(event: Event) {
         this.rowHeight = parseInt((event.target as HTMLInputElement).value, 10);
+    }
+
+    onDragStartThresholdChange(event: Event) {
+        this.dragStartThreshold = parseInt((event.target as HTMLInputElement).value, 10);
     }
 
     generateLayout() {

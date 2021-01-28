@@ -36,6 +36,13 @@ export function ktdPointerClientY(event: MouseEvent | TouchEvent): number {
     return ktdIsMouseEvent(event) ? event.clientY : event.touches[0].clientY;
 }
 
+export function ktdPointerClient(event: MouseEvent | TouchEvent): {clientX: number, clientY: number} {
+    return  {
+        clientX: ktdIsMouseEvent(event) ? event.clientX : event.touches[0].clientX,
+        clientY: ktdIsMouseEvent(event) ? event.clientY : event.touches[0].clientY
+    };
+}
+
 /**
  * Emits when a mousedown or touchstart emits. Avoids conflicts between both events.
  * @param element, html element where to  listen the events.

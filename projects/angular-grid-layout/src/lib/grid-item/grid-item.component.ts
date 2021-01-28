@@ -1,11 +1,10 @@
 import {
-    AfterContentInit, AfterViewInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Inject, Input,
-    OnDestroy, OnInit,
-    Output, QueryList, Renderer2, ViewChild
+    AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Inject, Input, OnDestroy, OnInit, QueryList,
+    Renderer2, ViewChild
 } from '@angular/core';
-import { BehaviorSubject, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
-import { ktdMouseOrTouchDown } from '../pointer.utils';
+import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
+import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
+import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdMouseOrTouchMove, ktdPointerClient } from '../pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
@@ -23,6 +22,9 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
 
     @Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
+
+    /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
+    @Input() dragStartThreshold: number = 0;
 
     dragStart$: Observable<MouseEvent | TouchEvent>;
     resizeStart$: Observable<MouseEvent | TouchEvent>;
@@ -107,11 +109,26 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                     return this._dragHandles.changes.pipe(
                         startWith(this._dragHandles),
                         switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
-                            if (dragHandles.length > 0) {
-                                return merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1, false)));
-                            } else {
-                                return ktdMouseOrTouchDown(this.elementRef.nativeElement, 1, false);
-                            }
+                            return iif(
+                                () => dragHandles.length > 0,
+                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1, false))),
+                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1, false)
+                            ).pipe(exhaustMap((startEvent) => {
+                                const startPointer = ktdPointerClient(startEvent);
+                                return ktdMouseOrTouchMove(window, 1).pipe(
+                                    takeUntil(ktdMouseOrTouchEnd(window, 1)),
+                                    filter((moveEvent) => {
+                                        const movePointer = ktdPointerClient(moveEvent);
+                                        const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
+                                        const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);
+                                        // When this conditions returns true mean that we are over threshold.
+                                        return distanceX + distanceY >= this.dragStartThreshold;
+                                    }),
+                                    take(1),
+                                    // Return the original start event
+                                    map(() => startEvent)
+                                );
+                            }));
                         })
                     );
                 }

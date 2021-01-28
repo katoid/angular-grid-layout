@@ -18,6 +18,10 @@
             <input matInput type="number" [value]="rowHeight + ''" (input)="onRowHeightChange($event)">
         </mat-form-field>
         <mat-form-field color="accent">
+            <mat-label>Drag Threshold</mat-label>
+            <input matInput type="number" [value]="dragStartThreshold + ''" (input)="onDragStartThresholdChange($event)">
+        </mat-form-field>
+        <mat-form-field color="accent">
             <mat-label>Transition type</mat-label>
             <mat-select [value]="currentTransition" (selectionChange)="onTransitionChange($event)">
                 <mat-option *ngFor="let transition of transitions" [value]="transition.value">{{transition.name}}</mat-option>
@@ -62,6 +66,7 @@
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            [id]="item.id"
                            [transition]="currentTransition"
+                           [dragStartThreshold]="dragStartThreshold"
                            [draggable]="!disableDrag"
                            [resizable]="!disableResize">
                 <div class="grid-item-content">{{item.id}}</div>
