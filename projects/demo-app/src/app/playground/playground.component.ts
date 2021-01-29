@@ -3,9 +3,9 @@ import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import {
-    KtdDragEnd, KtdDragStart, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart
+    KtdDragEnd, KtdDragStart, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
 } from '@katoid/angular-grid-layout';
-import { ktdArrayRemoveItem, ktdTrackById } from '../utils';
+import { ktdArrayRemoveItem } from '../utils';
 
 @Component({
     selector: 'ktd-playground',

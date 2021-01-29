@@ -11,8 +11,3 @@ export function ktdArrayRemoveItem<T>(array: T[], condition: (item: T) => boolea
     }
     return arrayCopy;
 }
-
-
-export function ktdTrackById(index: number, item: {id: string}) {
-    return item.id;
-}

@@ -1,7 +1,8 @@
 # Angular Grid Layout
-Grid with draggable and resizable items for Angular.
+Grid with draggable and resizable items for Angular. Perfect fit with highly customizable dashboards.
 
-It is basically a port of the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library to Angular ecosystem.
+It's core functionalities are based in the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library. It can be considered a 'port' (with some changes) to the Angular ecosystem.
+Both cover the same necessities.
 
 ## Features
 - No dependencies
@@ -42,6 +43,21 @@ Use it in your template:
         <!-- Your grid item content goes here -->
     </ktd-grid-item>
 </ktd-grid>
+```
+
+Where template variables could be:
+```ts
+import { ktdTrackById } from '@katoid/angular-grid-layout';
+
+cols: number = 6;
+rowHeight: number = 100;
+layout: KtdGridLayout = [
+    {id: '0', x: 0, y: 0, w: 3, h: 3},
+    {id: '1', x: 3, y: 0, w: 3, h: 3},
+    {id: '2', x: 0, y: 3, w: 3, h: 3},
+    {id: '3', x: 3, y: 3, w: 3, h: 3},
+];
+trackById = ktdTrackById
 ```
 
 ## Demo
@@ -117,18 +133,20 @@ export class KtdGridItemComponent {
 ```
 
 
-## TODO List (issues)
+## TODO features
 
 - [x] Add delete feature to Playground page.
 - [x] Add example with custom drag handles.
 - [x] Add Real life example with charts and grid items with some kind of controls.
 - [x] Add dragStartThreshold option to grid items.
 - [ ] Add grid gap feature.
-- [ ] Deep customizable drag placeholder.
+- [ ] Customizable drag placeholder.
 - [ ] Grid support for static grid items.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Auto Scroll down if container is scrollable when dragging a grid item.
+
+
 
 ## Troubleshooting
 - Mutating the layout would cause an error like: 'ERROR TypeError: Cannot read property 'id' of undefined'. Never mutate the layout, always return a new instance when modifying it.

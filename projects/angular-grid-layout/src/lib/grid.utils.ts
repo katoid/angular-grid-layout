@@ -3,6 +3,11 @@ import { KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGrid
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../types';
 
+/** Tracks items by id. This function is mean to be used in conjunction with the ngFor that renders the 'ktd-grid-items' */
+export function ktdTrackById(index: number, item: {id: string}) {
+    return item.id;
+}
+
 /**
  * Call react-grid-layout utils 'compact()' function and return the compacted layout.
  * @param layout to be compacted.

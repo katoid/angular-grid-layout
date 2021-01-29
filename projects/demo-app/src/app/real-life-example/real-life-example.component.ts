@@ -1,6 +1,5 @@
 import { Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { KtdGridComponent, KtdGridLayout } from '@katoid/angular-grid-layout';
-import { ktdTrackById } from '../utils';
+import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';

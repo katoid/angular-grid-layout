@@ -1,8 +1,7 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { ktdTrackById } from '../utils';
 import { fromEvent, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { KtdGridComponent, KtdGridLayout } from '@katoid/angular-grid-layout';
+import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
 
 @Component({
     selector: 'ktd-custom-handles',
