@@ -159,19 +159,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _layout: KtdGridLayout;
 
-
     get config(): KtdGridCfg {
         return {
             cols: this.cols,
             rowHeight: this.rowHeight,
             layout: this.layout
         };
-    }
-
-    set config(config: KtdGridCfg) {
-        this.layout = config.layout;
-        this.cols = config.cols;
-        this.rowHeight = config.rowHeight;
     }
 
     /** Total height of the grid */
@@ -266,15 +259,15 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
                         return this.performDragAction$(gridItem, of(event), (gridItemId, config, compactionType, draggingData) =>
                             calcNewStateFunc(gridItemId, config, compactionType, draggingData)
-                        ).pipe(map((gridCfg) => ({gridCfg, gridItem, type})));
+                        ).pipe(map((layout) => ({layout, gridItem, type})));
 
                     }));
                 })
-            ).subscribe(({gridCfg, gridItem, type}) => {
-                this.config = gridCfg;
+            ).subscribe(({layout, gridItem, type}) => {
+                this.layout = layout;
                 this.calculateRenderData();
-                (type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(gridItem, gridCfg.layout));
-                this.layoutUpdated.emit(gridCfg.layout);
+                (type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(gridItem, layout));
+                this.layoutUpdated.emit(layout);
             })
 
         ];
@@ -288,9 +281,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * @param calcNewStateFunc function that return the new layout state and the drag element position
      */
     private performDragAction$(gridItem: KtdGridItemComponent, source$: Observable<MouseEvent | TouchEvent>,
-                               calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridCfg> {
+                               calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridLayout> {
 
-        return new Observable<KtdGridCfg>((observer: Observer<KtdGridCfg>) => {
+        return new Observable<KtdGridLayout>((observer: Observer<KtdGridLayout>) => {
             const subscription = this.ngZone.runOutsideAngular(() => source$.pipe(
                 exhaustMap((pointerDownEvent: MouseEvent | TouchEvent) => {
                     // Retrieve grid (parent) and gridItem (draggedElem) client rects.
@@ -320,12 +313,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                  * NOTE: using the mutated layout is the way to go by 'react-grid-layout' utils. If we don't use the previous layout,
                                  * some utilities from 'react-grid-layout' would not work as expected.
                                  */
-                                const config: KtdGridCfg = {
-                                    ...this.config,
-                                    layout: newLayout || this.config.layout
-                                };
+                                const currentLayout: KtdGridLayout = newLayout || this.layout;
 
-                                const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, config, this.compactType, {
+                                const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {layout: currentLayout, rowHeight: this.rowHeight, cols: this.cols}, this.compactType, {
                                     pointerDownEvent,
                                     pointerDragEvent,
                                     parentElemClientRect,
@@ -334,7 +324,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                 newLayout = layout;
 
                                 this._gridItemsRenderData = layoutToRenderItems({
-                                    ...this.config,
+                                    cols: this.cols,
+                                    rowHeight: this.rowHeight,
                                     layout: newLayout
                                 }, parentElemClientRect.width, parentElemClientRect.height);
 
@@ -365,14 +356,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                     this.renderer.removeChild(this.elementRef.nativeElement, placeholderElement);
 
                                     if (newLayout) {
-                                        observer.next({
-                                            ...this.config,
-                                            // Prune react-grid-layout compact extra properties.
-                                            layout: newLayout.map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}))
-                                        });
+                                        // Prune react-grid-layout compact extra properties.
+                                        observer.next(newLayout.map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h})) as KtdGridLayout);
                                     } else {
                                         // TODO: Need we really to emit if there is no layout change?
-                                        observer.next(this.config);
+                                        observer.next(this.layout);
                                     }
 
                                     observer.complete();
