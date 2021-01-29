@@ -299,7 +299,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     placeholderElement.style.height = `${dragElemClientRect.height}px`;
                     placeholderElement.style.transform = `translateX(${dragElemClientRect.left - parentElemClientRect.left}px) translateY(${dragElemClientRect.top - parentElemClientRect.top}px)`;
 
-                    this.renderer.addClass(placeholderElement, 'ktd-grid-dragging-placeholder');
+                    this.renderer.addClass(placeholderElement, 'ktd-grid-item-placeholder');
                     this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
 
                     let newLayout: KtdGridLayoutItem[];

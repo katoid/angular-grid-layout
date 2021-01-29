@@ -66,4 +66,9 @@
 
     }
 
+    // customize placeholder
+    ::ng-deep .ktd-grid-item-placeholder {
+        background-color: #69f0ae;
+    }
+
 }
