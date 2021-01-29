@@ -21,6 +21,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
 
+    /** CSS transition that would be applied */
     @Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
 
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
@@ -29,6 +30,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     dragStart$: Observable<MouseEvent | TouchEvent>;
     resizeStart$: Observable<MouseEvent | TouchEvent>;
 
+    /** Id of the grid item. This property is strictly compulsory. */
     @Input()
     get id(): string {
         return this._id;
@@ -37,7 +39,9 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     set id(val: string) {
         this._id = val;
     }
+    private _id: string;
 
+    /** Whether the item is draggable or not. Defaults to true. */
     @Input()
     get draggable(): boolean {
         return this._draggable;
@@ -51,6 +55,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     private _draggable: boolean = true;
     private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
 
+    /** Whether the item is resizable or not. Defaults to true. */
     @Input()
     get resizable(): boolean {
         return this._resizable;
@@ -67,7 +72,6 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     private dragStartSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
     private resizeStartSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
-    private _id: string;
     private subscriptions: Subscription[] = [];
 
     constructor(public elementRef: ElementRef, private renderer: Renderer2, @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {

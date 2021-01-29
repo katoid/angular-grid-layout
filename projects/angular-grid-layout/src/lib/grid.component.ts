@@ -98,15 +98,26 @@ export function ktdGridItemGetRenderDataFactoryFunc(gridCmp: KtdGridComponent) {
 export class KtdGridComponent implements OnChanges, AfterContentInit, AfterContentChecked, OnDestroy {
     /** Query list of grid items that are being rendered. */
     @ContentChildren(KtdGridItemComponent, {descendants: true}) _gridItems: QueryList<KtdGridItemComponent>;
+
+    /** Emits when layout change */
     @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
 
+    /** Emits when drag starts */
     @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+
+    /** Emits when resize starts */
     @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+
+    /** Emits when drag ends */
     @Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+
+    /** Emits when resize ends */
     @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
+    /** Whether or not to update the internal layout when some dependent property change. */
     @Input() compactOnPropsChange = true;
 
+    /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
     @Input()
     get compactType(): KtdGridCompactType {
         return this._compactType;
@@ -118,6 +129,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _compactType: KtdGridCompactType = 'vertical';
 
+    /** Row height in css pixels */
     @Input()
     get rowHeight(): number { return this._rowHeight; }
 
@@ -127,6 +139,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _rowHeight: number = 100;
 
+    /** Number of columns  */
     @Input()
     get cols(): number { return this._cols; }
 
@@ -136,6 +149,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _cols: number = 6;
 
+    /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
     @Input()
     get layout(): KtdGridLayout { return this._layout; }
 
