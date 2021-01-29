@@ -13,11 +13,15 @@
                 <mat-option [value]="'none'">-</mat-option>
             </mat-select>
         </mat-form-field>
-        <mat-form-field color="accent">
+        <mat-form-field color="accent" style="width: 64px">
+            <mat-label>Columns</mat-label>
+            <input matInput type="number" [value]="cols + ''" (input)="onColsChange($event)">
+        </mat-form-field>
+        <mat-form-field color="accent" style="width: 64px">
             <mat-label>Row height</mat-label>
             <input matInput type="number" [value]="rowHeight + ''" (input)="onRowHeightChange($event)">
         </mat-form-field>
-        <mat-form-field color="accent">
+        <mat-form-field color="accent" style="width: 128px">
             <mat-label>Drag Threshold</mat-label>
             <input matInput type="number" [value]="dragStartThreshold + ''" (input)="onDragStartThresholdChange($event)">
         </mat-form-field>

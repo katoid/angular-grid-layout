@@ -120,6 +120,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         this.autoResize = checked;
     }
 
+    onColsChange(event: Event) {
+        this.cols = parseInt((event.target as HTMLInputElement).value, 10);
+    }
+
     onRowHeightChange(event: Event) {
         this.rowHeight = parseInt((event.target as HTMLInputElement).value, 10);
     }
@@ -130,10 +134,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     generateLayout() {
         const layout: KtdGridLayout = [];
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < this.cols; i++) {
             const y = Math.ceil(Math.random() * 4) + 1;
             layout.push({
-                x: Math.round(Math.random() * 5) * 2,
+                x: Math.round(Math.random() * (Math.floor((this.cols / 2) - 1))) * 2,
                 y: Math.floor(i / 6) * y,
                 w: 2,
                 h: y,
