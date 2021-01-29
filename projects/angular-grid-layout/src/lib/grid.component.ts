@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { coerceNumberProperty } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
-import { merge, Observable, Observer, of, Subscription } from 'rxjs';
+import { merge, Observable, Observer, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { ktdGridItemDragging, ktdGridItemResizing } from './grid.utils';
 import { compact, CompactType } from './react-grid-layout.utils';
@@ -255,9 +255,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         ...gridItems.map((gridItem) => gridItem.dragStart$.pipe(map((event) => ({event, gridItem, type: 'drag'})))),
                         ...gridItems.map((gridItem) => gridItem.resizeStart$.pipe(map((event) => ({event, gridItem, type: 'resize'})))),
                     ).pipe(exhaustMap(({event, gridItem, type}) => {
+                        // Emit drag or resize start events
                         (type === 'drag' ? this.dragStarted : this.resizeStarted).emit(getDragResizeEventData(gridItem, this.layout));
+                        // Get the correct newStateFunc depending on if we are dragging or resizing
                         const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
-                        return this.performDragAction$(gridItem, of(event), (gridItemId, config, compactionType, draggingData) =>
+                        // Perform drag sequence
+                        return this.performDragSequence$(gridItem, event, (gridItemId, config, compactionType, draggingData) =>
                             calcNewStateFunc(gridItemId, config, compactionType, draggingData)
                         ).pipe(map((layout) => ({layout, gridItem, type})));
 
@@ -265,8 +268,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 })
             ).subscribe(({layout, gridItem, type}) => {
                 this.layout = layout;
+                // Calculate new rendering data given the new layout.
                 this.calculateRenderData();
+                // Emit drag or resize end events.
                 (type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(gridItem, layout));
+                // Notify that the layout has been updated.
                 this.layoutUpdated.emit(layout);
             })
 
@@ -274,102 +280,110 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     /**
-     * Perform a general grid drag action given a source$. A general grid drag action basically includes creating the placeholder element and adding
+     * Perform a general grid drag action, from start to end. A general grid drag action basically includes creating the placeholder element and adding
      * some class animations. calcNewStateFunc needs to be provided in order to calculate the new state of the layout.
      * @param gridItem that is been dragged
-     * @param source$ input observable where when emit will start the drag action
+     * @param pointerDownEvent event (mousedown or touchdown) where the user initiated the drag
      * @param calcNewStateFunc function that return the new layout state and the drag element position
      */
-    private performDragAction$(gridItem: KtdGridItemComponent, source$: Observable<MouseEvent | TouchEvent>,
-                               calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridLayout> {
+    private performDragSequence$(gridItem: KtdGridItemComponent, pointerDownEvent: MouseEvent | TouchEvent,
+                                 calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridLayout> {
 
         return new Observable<KtdGridLayout>((observer: Observer<KtdGridLayout>) => {
-            const subscription = this.ngZone.runOutsideAngular(() => source$.pipe(
-                exhaustMap((pointerDownEvent: MouseEvent | TouchEvent) => {
-                    // Retrieve grid (parent) and gridItem (draggedElem) client rects.
-                    const parentElemClientRect: ClientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
-                    const dragElemClientRect: ClientRect = (gridItem.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
+            // Retrieve grid (parent) and gridItem (draggedElem) client rects.
+            const parentElemClientRect: ClientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
+            const dragElemClientRect: ClientRect = (gridItem.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
 
-                    this.renderer.addClass(gridItem.elementRef.nativeElement, 'no-transitions');
-                    this.renderer.addClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
+            this.renderer.addClass(gridItem.elementRef.nativeElement, 'no-transitions');
+            this.renderer.addClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
-                    // Create placeholder element. This element would represent the position where the dragged/resized element would be if the action ends
-                    const placeholderElement: HTMLDivElement = this.renderer.createElement('div');
-                    placeholderElement.style.width = `${dragElemClientRect.width}px`;
-                    placeholderElement.style.height = `${dragElemClientRect.height}px`;
-                    placeholderElement.style.transform = `translateX(${dragElemClientRect.left - parentElemClientRect.left}px) translateY(${dragElemClientRect.top - parentElemClientRect.top}px)`;
+            // Create placeholder element. This element would represent the position where the dragged/resized element would be if the action ends
+            const placeholderElement: HTMLDivElement = this.renderer.createElement('div');
+            placeholderElement.style.width = `${dragElemClientRect.width}px`;
+            placeholderElement.style.height = `${dragElemClientRect.height}px`;
+            placeholderElement.style.transform = `translateX(${dragElemClientRect.left - parentElemClientRect.left}px) translateY(${dragElemClientRect.top - parentElemClientRect.top}px)`;
 
-                    this.renderer.addClass(placeholderElement, 'ktd-grid-item-placeholder');
-                    this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
+            this.renderer.addClass(placeholderElement, 'ktd-grid-item-placeholder');
+            this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
 
-                    let newLayout: KtdGridLayoutItem[];
+            let newLayout: KtdGridLayoutItem[];
 
-                    return ktdMouseOrTouchMove(window).pipe(
-                        takeUntil(ktdMouseOrTouchEnd(window)),
-                        tap((pointerDragEvent: MouseEvent | TouchEvent) => {
-                                pointerDragEvent.preventDefault();
-                                /**
-                                 * Set the new layout to be the layout in which the calcNewStateFunc would be executed.
-                                 * NOTE: using the mutated layout is the way to go by 'react-grid-layout' utils. If we don't use the previous layout,
-                                 * some utilities from 'react-grid-layout' would not work as expected.
-                                 */
-                                const currentLayout: KtdGridLayout = newLayout || this.layout;
+            const subscription = this.ngZone.runOutsideAngular(() =>
+                ktdMouseOrTouchMove(window).pipe(
+                    takeUntil(ktdMouseOrTouchEnd(window)),
+                    tap((pointerDragEvent: MouseEvent | TouchEvent) => {
+                            pointerDragEvent.preventDefault();
+                            /**
+                             * Set the new layout to be the layout in which the calcNewStateFunc would be executed.
+                             * NOTE: using the mutated layout is the way to go by 'react-grid-layout' utils. If we don't use the previous layout,
+                             * some utilities from 'react-grid-layout' would not work as expected.
+                             */
+                            const currentLayout: KtdGridLayout = newLayout || this.layout;
 
-                                const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {layout: currentLayout, rowHeight: this.rowHeight, cols: this.cols}, this.compactType, {
-                                    pointerDownEvent,
-                                    pointerDragEvent,
-                                    parentElemClientRect,
-                                    dragElemClientRect
-                                });
-                                newLayout = layout;
+                            const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {
+                                layout: currentLayout,
+                                rowHeight: this.rowHeight,
+                                cols: this.cols
+                            }, this.compactType, {
+                                pointerDownEvent,
+                                pointerDragEvent,
+                                parentElemClientRect,
+                                dragElemClientRect
+                            });
+                            newLayout = layout;
 
-                                this._gridItemsRenderData = layoutToRenderItems({
-                                    cols: this.cols,
-                                    rowHeight: this.rowHeight,
-                                    layout: newLayout
-                                }, parentElemClientRect.width, parentElemClientRect.height);
+                            this._gridItemsRenderData = layoutToRenderItems({
+                                cols: this.cols,
+                                rowHeight: this.rowHeight,
+                                layout: newLayout
+                            }, parentElemClientRect.width, parentElemClientRect.height);
 
-                                const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);
+                            const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);
 
-                                // Put the real final position to the placeholder element
-                                placeholderElement.style.width = placeholderStyles.width;
-                                placeholderElement.style.height = placeholderStyles.height;
-                                placeholderElement.style.transform = `translateX(${placeholderStyles.left}) translateY(${placeholderStyles.top})`;
+                            // Put the real final position to the placeholder element
+                            placeholderElement.style.width = placeholderStyles.width;
+                            placeholderElement.style.height = placeholderStyles.height;
+                            placeholderElement.style.transform = `translateX(${placeholderStyles.left}) translateY(${placeholderStyles.top})`;
 
-                                // modify the position of the dragged item to be the once we want (for example the mouse position or whatever)
-                                this._gridItemsRenderData[gridItem.id] = {
-                                    ...draggedItemPos,
-                                    id: this._gridItemsRenderData[gridItem.id].id
-                                };
+                            // modify the position of the dragged item to be the once we want (for example the mouse position or whatever)
+                            this._gridItemsRenderData[gridItem.id] = {
+                                ...draggedItemPos,
+                                id: this._gridItemsRenderData[gridItem.id].id
+                            };
 
-                                this.updateGridItemsStyles();
-                            },
-                            (error) => observer.error(error),
-                            () => {
-                                this.ngZone.run(() => {
-                                    // remove drag classes
-                                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'no-transitions');
-                                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
+                            this.updateGridItemsStyles();
+                        },
+                        (error) => observer.error(error),
+                        () => {
+                            this.ngZone.run(() => {
+                                // Remove drag classes
+                                this.renderer.removeClass(gridItem.elementRef.nativeElement, 'no-transitions');
+                                this.renderer.removeClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
-                                    // remove placeholder element from the dom
-                                    // NOTE: If we don't put the removeChild inside the zone it would not work... This may be a bug from angular or maybe is the intended behaviour, although strange
-                                    this.renderer.removeChild(this.elementRef.nativeElement, placeholderElement);
+                                // Remove placeholder element from the dom
+                                // NOTE: If we don't put the removeChild inside the zone it would not work... This may be a bug from angular or maybe is the intended behaviour, although strange.
+                                // It should work since AFAIK this action should not be done in a CD cycle.
+                                this.renderer.removeChild(this.elementRef.nativeElement, placeholderElement);
 
-                                    if (newLayout) {
-                                        // Prune react-grid-layout compact extra properties.
-                                        observer.next(newLayout.map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h})) as KtdGridLayout);
-                                    } else {
-                                        // TODO: Need we really to emit if there is no layout change?
-                                        observer.next(this.layout);
-                                    }
+                                if (newLayout) {
+                                    // Prune react-grid-layout compact extra properties.
+                                    observer.next(newLayout.map(item => ({
+                                        id: item.id,
+                                        x: item.x,
+                                        y: item.y,
+                                        w: item.w,
+                                        h: item.h
+                                    })) as KtdGridLayout);
+                                } else {
+                                    // TODO: Need we really to emit if there is no layout change but drag started and ended?
+                                    observer.next(this.layout);
+                                }
 
-                                    observer.complete();
-                                });
+                                observer.complete();
+                            });
 
-                            }),
-                    );
-                }),
-            ).subscribe());
+                        }),
+                ).subscribe());
 
             return () => subscription.unsubscribe();
         });

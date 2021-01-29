@@ -33,7 +33,7 @@ import { KtdGridModule } from '@katoid/angular-grid-layout';
 ```
 
 Use it in your template:
-```angular2html
+```html
 <ktd-grid [cols]="cols"
           [rowHeight]="rowHeight"
           [layout]="layout"
@@ -57,35 +57,37 @@ Here is listed some of the basic API of both KtdGridComponent and KtdGridItemCom
     selector: 'ktd-grid'
 })
 export class KtdGridComponent {
-    /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
-    @Input() compactType(): KtdGridCompactType = 'vertical';
+    
+/** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
+@Input() compactType: KtdGridCompactType = 'vertical';
 
-    /** Row height in css pixels */
-    @Input() rowHeight(): number = 100;
+/** Row height in css pixels */
+@Input() rowHeight: number = 100;
 
-    /** Number of columns  */
-    @Input() cols(): number = 6;
+/** Number of columns  */
+@Input() cols: number = 6;
 
-    /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
-    @Input() layout(): KtdGridLayout;
+/** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
+@Input() layout: KtdGridLayout;
 
-    /** Whether or not to update the internal layout when some dependent property change. */
-    @Input() compactOnPropsChange = true;
+/** Whether or not to update the internal layout when some dependent property change. */
+@Input() compactOnPropsChange = true;
 
-    /** Emits when layout change */
-    @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
+/** Emits when layout change */
+@Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
 
-    /** Emits when drag starts */
-    @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+/** Emits when drag starts */
+@Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
 
-    /** Emits when resize starts */
-    @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+/** Emits when resize starts */
+@Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
 
-    /** Emits when drag ends */
-    @Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+/** Emits when drag ends */
+@Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
 
-    /** Emits when resize ends */
-    @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+/** Emits when resize ends */
+@Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+
 }
 ```
 
@@ -95,20 +97,23 @@ export class KtdGridComponent {
     selector: 'ktd-grid-item'
 })
 export class KtdGridItemComponent {
-    /** Id of the grid item. This property is strictly compulsory. */
-    @Input() id: string;
-
-    /** Whether the item is draggable or not. Defaults to true. */
-    @Input() draggable: boolean = true;
-
-    /** Whether the item is resizable or not. Defaults to true. */
-    @Input() resizable: boolean = true;
     
-    /** CSS transition that would be applied */
-    @Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
+/** Id of the grid item. This property is strictly compulsory. */
+@Input() id: string;
 
-    /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
-    @Input() dragStartThreshold: number = 0;
+/** Whether the item is draggable or not. Defaults to true. */
+@Input() draggable: boolean = true;
+
+/** Whether the item is resizable or not. Defaults to true. */
+@Input() resizable: boolean = true;
+
+/** CSS transition that would be applied */
+@Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
+
+/** Minimum amount of pixels that the user should move before it starts the drag sequence. */
+@Input() dragStartThreshold: number = 0;
+    
+}
 ```
 
 
@@ -126,5 +131,6 @@ export class KtdGridItemComponent {
 - [ ] Auto Scroll down if container is scrollable when dragging a grid item.
 
 ## Troubleshooting
-- Mutating the layout would cause an error like: 'ERROR TypeError: Cannot read property 'id' of undefined'.
+- Mutating the layout would cause an error like: 'ERROR TypeError: Cannot read property 'id' of undefined'. Never mutate the layout, always return a new instance when modifying it.
 - Always use trackBy for the ngFor that renders the ktd-grid-items. If not, Angular would always re-render all items when layout changes.
+- My Grid Item 'content' doesn't resize well when size changes. This may be caused for 'transform' property in ktd-grid-item, try to remove transform animations on 'width' and 'height' properties. You can also watch the real-life-example which uses other technique valid also.
