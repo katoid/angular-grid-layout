@@ -11,7 +11,8 @@
         "test": "ng test",
         "lint": "ng lint",
         "lint:build": "tsc -p tsconfig.lint.json",
-        "e2e": "ng e2e"
+        "e2e": "ng e2e",
+        "copy-readme": "ts-node --project scripts/tsconfig.scripts.json scripts/copy-file.ts README.md dist/angular-grid-layout/README.md"
     },
     "private": true,
     "dependencies": {
