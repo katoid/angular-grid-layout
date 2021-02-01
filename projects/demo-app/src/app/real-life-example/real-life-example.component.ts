@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
-import { fromEvent, Subscription } from 'rxjs';
+import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';
 import { AreaChartStackedComponent } from '@swimlane/ngx-charts';
@@ -63,7 +63,10 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
     constructor() { }
 
     ngOnInit() {
-        this.resizeSubscription = fromEvent(window, 'resize').pipe(
+        this.resizeSubscription = merge(
+            fromEvent(window, 'resize'),
+            fromEvent(window, 'orientationchange')
+        ).pipe(
             debounceTime(50)
         ).subscribe(() => {
             this.grid.resize();

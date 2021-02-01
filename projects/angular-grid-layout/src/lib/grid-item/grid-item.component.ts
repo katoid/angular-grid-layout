@@ -22,8 +22,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
 
-    /** CSS transition that would be applied */
-    @Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
+    /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
+    @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
 
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
     @Input() dragStartThreshold: number = 0;

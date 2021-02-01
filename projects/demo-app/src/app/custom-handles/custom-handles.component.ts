@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { fromEvent, Subscription } from 'rxjs';
+import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
 
@@ -26,7 +26,10 @@ export class KtdCustomHandlesComponent implements OnInit, OnDestroy {
     constructor() { }
 
     ngOnInit() {
-        this.resizeSubscription = fromEvent(window, 'resize').pipe(
+        this.resizeSubscription = merge(
+            fromEvent(window, 'resize'),
+            fromEvent(window, 'orientationchange')
+        ).pipe(
             debounceTime(50)
         ).subscribe(() => {
             this.grid.resize();

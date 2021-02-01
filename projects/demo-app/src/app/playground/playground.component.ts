@@ -1,6 +1,6 @@
 import { Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
-import { fromEvent, Subscription } from 'rxjs';
+import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import {
     KtdDragEnd, KtdDragStart, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
@@ -34,16 +34,16 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         {id: '11', x: 0, y: 0, w: 2, h: 4}
     ];
     transitions: { name: string, value: string }[] = [
-        {name: 'custom', value: 'transform 500ms ease, width 500ms linear, height 500ms linear'},
-        {name: 'linear', value: 'transform 500ms linear, width 500ms linear, height 500ms linear'},
         {name: 'ease', value: 'transform 500ms ease, width 500ms ease, height 500ms ease'},
         {name: 'ease-out', value: 'transform 500ms ease-out, width 500ms ease-out, height 500ms ease-out'},
+        {name: 'linear', value: 'transform 500ms linear, width 500ms linear, height 500ms linear'},
         {
             name: 'overflowing',
             value: 'transform 500ms cubic-bezier(.28,.49,.79,1.35), width 500ms cubic-bezier(.28,.49,.79,1.35), height 500ms cubic-bezier(.28,.49,.79,1.35)'
         },
         {name: 'fast', value: 'transform 200ms ease, width 200ms linear, height 200ms linear'},
         {name: 'slow-motion', value: 'transform 1000ms linear, width 1000ms linear, height 1000ms linear'},
+        {name: 'transform-only', value: 'transform 500ms ease'},
     ];
     currentTransition: string = this.transitions[0].value;
 
@@ -61,7 +61,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit() {
-        this.resizeSubscription = fromEvent(window, 'resize').pipe(
+        this.resizeSubscription = merge(
+            fromEvent(window, 'resize'),
+            fromEvent(window, 'orientationchange')
+        ).pipe(
             debounceTime(50),
             filter(() => this.autoResize)
         ).subscribe(() => {

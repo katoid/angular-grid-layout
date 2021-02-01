@@ -142,6 +142,7 @@ export class KtdGridItemComponent {
 - [ ] Add grid gap feature.
 - [ ] Customizable drag placeholder.
 - [ ] Grid support for static grid items.
+- [ ] Grid support for minWidth and minHeight on grid items.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Auto Scroll down if container is scrollable when dragging a grid item.
