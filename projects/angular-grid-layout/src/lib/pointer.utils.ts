@@ -1,5 +1,12 @@
 import { fromEvent, iif, merge, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
+
+/** Options that can be used to bind a passive event listener. */
+const passiveEventListenerOptions = ktdNormalizePassiveListenerOptions({passive: true});
+
+/** Options that can be used to bind an active event listener. */
+const activeEventListenerOptions = ktdNormalizePassiveListenerOptions({passive: false});
 
 let isMobile: boolean | null = null;
 
@@ -47,15 +54,14 @@ export function ktdPointerClient(event: MouseEvent | TouchEvent): {clientX: numb
  * Emits when a mousedown or touchstart emits. Avoids conflicts between both events.
  * @param element, html element where to  listen the events.
  * @param touchNumber number of the touch to track the event, default to the first one.
- * @param passive, sets the touchstart options to be passive or not. See: https://developers.google.com/web/tools/lighthouse/audits/passive-event-listeners?hl=es
  */
-export function ktdMouseOrTouchDown(element, touchNumber = 1, passive = false): Observable<MouseEvent | TouchEvent> {
+export function ktdMouseOrTouchDown(element, touchNumber = 1): Observable<MouseEvent | TouchEvent> {
     return iif(
         () => ktdIsMobileOrTablet(),
-        fromEvent<TouchEvent>(element, 'touchstart', {passive}).pipe(
+        fromEvent<TouchEvent>(element, 'touchstart', passiveEventListenerOptions as AddEventListenerOptions).pipe(
             filter((touchEvent) => touchEvent.touches.length === touchNumber)
         ),
-        fromEvent<MouseEvent>(element, 'mousedown').pipe(
+        fromEvent<MouseEvent>(element, 'mousedown', activeEventListenerOptions as AddEventListenerOptions).pipe(
             filter((mouseEvent: MouseEvent) => {
                 /**
                  * 0 : Left mouse button
@@ -69,22 +75,6 @@ export function ktdMouseOrTouchDown(element, touchNumber = 1, passive = false): 
 }
 
 /**
- * Emits when a mouseenter or touchstart emits. Avoids conflicts between both events.
- * @param element, html element where to  listen the events.
- * @param touchNumber number of the touch to track the event, default to the first one.
- */
-export function ktdMouseOrTouchEnter(element, touchNumber = 1): Observable<MouseEvent | TouchEvent> {
-    return iif(
-        () => ktdIsMobileOrTablet(),
-        // https://developers.google.com/web/tools/lighthouse/audits/passive-event-listeners?hl=es
-        fromEvent<TouchEvent>(element, 'touchstart', {passive: false}).pipe(
-            filter((touchEvent) => touchEvent.touches.length === touchNumber),
-        ),
-        fromEvent<MouseEvent>(element, 'mouseenter')
-    );
-}
-
-/**
  * Emits when a 'mousemove' or a 'touchmove' event gets fired.
  * @param element, html element where to  listen the events.
  * @param touchNumber number of the touch to track the event, default to the first one.
@@ -92,10 +82,10 @@ export function ktdMouseOrTouchEnter(element, touchNumber = 1): Observable<Mouse
 export function ktdMouseOrTouchMove(element, touchNumber = 1): Observable<MouseEvent | TouchEvent> {
     return iif(
         () => ktdIsMobileOrTablet(),
-        fromEvent<TouchEvent>(element, 'touchmove', {passive: false}).pipe(
+        fromEvent<TouchEvent>(element, 'touchmove', activeEventListenerOptions as AddEventListenerOptions).pipe(
             filter((touchEvent) => touchEvent.touches.length === touchNumber),
         ),
-        fromEvent<MouseEvent>(element, 'mousemove')
+        fromEvent<MouseEvent>(element, 'mousemove', activeEventListenerOptions as AddEventListenerOptions)
     );
 }
 

@@ -12,8 +12,9 @@ import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout,
     KtdGridLayoutItem
 } from './grid.definitions';
-import { ktdMouseOrTouchEnd, ktdMouseOrTouchMove } from './pointer.utils';
+import { ktdMouseOrTouchEnd } from './pointer.utils';
 import { KtdDictionary } from '../types';
+import { KtdGridService } from './grid.service';
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -172,7 +173,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
     private subscriptions: Subscription[];
 
-    constructor(private elementRef: ElementRef, private renderer: Renderer2, private ngZone: NgZone) {
+    constructor(private gridService: KtdGridService,
+                private elementRef: ElementRef,
+                private renderer: Renderer2,
+                private ngZone: NgZone) {
 
     }
 
@@ -309,8 +313,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             let newLayout: KtdGridLayoutItem[];
 
             const subscription = this.ngZone.runOutsideAngular(() =>
-                ktdMouseOrTouchMove(window).pipe(
-                    takeUntil(ktdMouseOrTouchEnd(window)),
+                this.gridService.mouseOrTouchMove$(document).pipe(
+                    takeUntil(ktdMouseOrTouchEnd(document)),
                     tap((pointerDragEvent: MouseEvent | TouchEvent) => {
                             pointerDragEvent.preventDefault();
                             /**

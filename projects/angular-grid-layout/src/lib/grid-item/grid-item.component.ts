@@ -4,10 +4,11 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdMouseOrTouchMove, ktdPointerClient } from '../pointer.utils';
+import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdPointerClient } from '../pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
+import { KtdGridService } from '../grid.service';
 
 @Component({
     selector: 'ktd-grid-item',
@@ -39,6 +40,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     set id(val: string) {
         this._id = val;
     }
+
     private _id: string;
 
     /** Whether the item is draggable or not. Defaults to true. */
@@ -74,7 +76,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
     private subscriptions: Subscription[] = [];
 
-    constructor(public elementRef: ElementRef, private renderer: Renderer2, @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
+    constructor(public elementRef: ElementRef,
+                private gridService: KtdGridService,
+                private renderer: Renderer2,
+                @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
         this.dragStart$ = this.dragStartSubject.asObservable();
         this.resizeStart$ = this.resizeStartSubject.asObservable();
     }
@@ -115,8 +120,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                         switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
                             return iif(
                                 () => dragHandles.length > 0,
-                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1, false))),
-                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1, false)
+                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
+                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
                             ).pipe(exhaustMap((startEvent) => {
                                 // If the event started from an element with the native HTML drag&drop, it'll interfere
                                 // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
@@ -129,8 +134,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                                 }
 
                                 const startPointer = ktdPointerClient(startEvent);
-                                return ktdMouseOrTouchMove(window, 1).pipe(
-                                    takeUntil(ktdMouseOrTouchEnd(window, 1)),
+                                return this.gridService.mouseOrTouchMove$(document).pipe(
+                                    takeUntil(ktdMouseOrTouchEnd(document, 1)),
                                     filter((moveEvent) => {
                                         moveEvent.preventDefault();
                                         const movePointer = ktdPointerClient(moveEvent);
@@ -165,10 +170,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                             if (resizeHandles.length > 0) {
                                 // Side effect to hide the resizeElem if there are resize handles.
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'none');
-                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdMouseOrTouchDown(resizeHandle.element.nativeElement, 1, false)));
+                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdMouseOrTouchDown(resizeHandle.element.nativeElement, 1)));
                             } else {
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'block');
-                                return ktdMouseOrTouchDown(this.resizeElem.nativeElement, 1, false);
+                                return ktdMouseOrTouchDown(this.resizeElem.nativeElement, 1);
                             }
                         })
                     );
