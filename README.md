@@ -74,35 +74,35 @@ Here is listed some of the basic API of both KtdGridComponent and KtdGridItemCom
 })
 export class KtdGridComponent {
     
-/** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
-@Input() compactType: KtdGridCompactType = 'vertical';
-
-/** Row height in css pixels */
-@Input() rowHeight: number = 100;
-
-/** Number of columns  */
-@Input() cols: number = 6;
-
-/** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
-@Input() layout: KtdGridLayout;
-
-/** Whether or not to update the internal layout when some dependent property change. */
-@Input() compactOnPropsChange = true;
-
-/** Emits when layout change */
-@Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
-
-/** Emits when drag starts */
-@Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
-
-/** Emits when resize starts */
-@Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
-
-/** Emits when drag ends */
-@Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
-
-/** Emits when resize ends */
-@Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+    /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
+    @Input() compactType: KtdGridCompactType = 'vertical';
+    
+    /** Row height in css pixels */
+    @Input() rowHeight: number = 100;
+    
+    /** Number of columns  */
+    @Input() cols: number = 6;
+    
+    /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
+    @Input() layout: KtdGridLayout;
+    
+    /** Whether or not to update the internal layout when some dependent property change. */
+    @Input() compactOnPropsChange = true;
+    
+    /** Emits when layout change */
+    @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
+    
+    /** Emits when drag starts */
+    @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+    
+    /** Emits when resize starts */
+    @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+    
+    /** Emits when drag ends */
+    @Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+    
+    /** Emits when resize ends */
+    @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
 }
 ```
@@ -114,20 +114,20 @@ export class KtdGridComponent {
 })
 export class KtdGridItemComponent {
     
-/** Id of the grid item. This property is strictly compulsory. */
-@Input() id: string;
+    /** Id of the grid item. This property is strictly compulsory. */
+    @Input() id: string;
+    
+    /** Whether the item is draggable or not. Defaults to true. */
+    @Input() draggable: boolean = true;
+    
+    /** Whether the item is resizable or not. Defaults to true. */
+    @Input() resizable: boolean = true;
 
-/** Whether the item is draggable or not. Defaults to true. */
-@Input() draggable: boolean = true;
-
-/** Whether the item is resizable or not. Defaults to true. */
-@Input() resizable: boolean = true;
-
-/** CSS transition that would be applied */
-@Input() transition: string = 'transform 500ms ease, width 500ms linear, height 500ms linear';
-
-/** Minimum amount of pixels that the user should move before it starts the drag sequence. */
-@Input() dragStartThreshold: number = 0;
+    /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
+    @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
+    
+    /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
+    @Input() dragStartThreshold: number = 0;
     
 }
 ```
@@ -146,6 +146,13 @@ export class KtdGridItemComponent {
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Auto Scroll down if container is scrollable when dragging a grid item.
+
+**IMPORTANT**: These features would be done in the near future. If any lib user needs them earlier, we encourage you to contribute to this project and speed up the process! To do so, please: 
+
+1. Open an issue mentioning one of these features.
+2. Explain your thoughts on how to implement it & we will discuss the possible solutions.
+3. Do a Merge Request when the feature is done and tested.
+
 
 
 
