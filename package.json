@@ -12,7 +12,7 @@
         "build:grid:prod": "ng build --prod angular-grid-layout",
         "serve:demo-app": "http-server -p 1234 --proxy http://localhost:1234? -c-1 dist/demo-app",
         "deploy:demo-app": "ng deploy --base-href=/angular-grid-layout/",
-        "test": "ng test",
+        "test": "ng test angular-grid-layout",
         "lint": "ng lint",
         "lint:build": "tsc -p tsconfig.lint.json",
         "e2e": "ng e2e",

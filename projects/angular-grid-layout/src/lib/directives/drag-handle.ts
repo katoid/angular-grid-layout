@@ -10,10 +10,8 @@ export const KTD_GRID_DRAG_HANDLE = new InjectionToken<KtdGridDragHandle>('KtdGr
 /** Handle that can be used to drag a KtdGridItem instance. */
 @Directive({
     selector: '[ktdGridDragHandle]',
-    // tslint:disable-next-line:no-host-metadata-property
     host: {
-        // tslint:disable-next-line
-        'class': 'ktd-grid-drag-handle'
+        class: 'ktd-grid-drag-handle'
     },
     providers: [{provide: KTD_GRID_DRAG_HANDLE, useExisting: KtdGridDragHandle}],
 })

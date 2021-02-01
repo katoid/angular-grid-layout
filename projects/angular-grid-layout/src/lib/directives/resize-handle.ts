@@ -11,10 +11,8 @@ export const KTD_GRID_RESIZE_HANDLE = new InjectionToken<KtdGridResizeHandle>('K
 /** Handle that can be used to drag a KtdGridItem instance. */
 @Directive({
     selector: '[ktdGridResizeHandle]',
-    // tslint:disable-next-line:no-host-metadata-property
     host: {
-        // tslint:disable-next-line
-        'class': 'ktd-grid-resize-handle'
+        class: 'ktd-grid-resize-handle'
     },
     providers: [{provide: KTD_GRID_RESIZE_HANDLE, useExisting: KtdGridResizeHandle}],
 })

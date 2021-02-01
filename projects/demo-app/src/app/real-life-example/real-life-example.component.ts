@@ -110,7 +110,6 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
     /**
      * Calculates and sets the property 'this.layoutSizes' with the [width, height] of every item.
      * This is needed to set manually the [width, height] for every grid item that is a chart.
-     * @private
      */
     private calculateLayoutSizes() {
         const gridItemsRenderData = this.grid.getItemsRenderData();

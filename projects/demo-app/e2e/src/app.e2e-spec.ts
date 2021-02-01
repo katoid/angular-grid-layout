@@ -1,16 +1,16 @@
-import { AppPage } from './app.po';
+import { KtdAppPage } from './app.po';
 import { browser, logging } from 'protractor';
 
 describe('workspace-project App', () => {
-  let page: AppPage;
+  let page: KtdAppPage;
 
   beforeEach(() => {
-    page = new AppPage();
+    page = new KtdAppPage();
   });
 
   it('should display welcome message', async () => {
     await page.navigateTo();
-    expect(await page.getTitleText()).toEqual('demo-app app is running!');
+    expect(await page.getTitleText()).toEqual('Angular Grid Layout - Playground');
   });
 
   afterEach(async () => {
