@@ -64,9 +64,9 @@ trackById = ktdTrackById
 ## Demos
 [Playground](https://katoid.github.io/angular-grid-layout/playground)
 
-[Custom handles](https://katoid.github.io/angular-grid-layout/playground)
+[Custom handles](https://katoid.github.io/angular-grid-layout/custom-handles)
 
-[Real life example](https://katoid.github.io/angular-grid-layout/playground)
+[Real life example](https://katoid.github.io/angular-grid-layout/real-life-example)
 
 ## API
 
