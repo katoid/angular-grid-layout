@@ -60,8 +60,12 @@ layout: KtdGridLayout = [
 trackById = ktdTrackById
 ```
 
-## Demo
-TODO: link to live demo
+## Demos
+[Playground](https://katoid.github.io/angular-grid-layout/playground)
+
+[Custom handles](https://katoid.github.io/angular-grid-layout/playground)
+
+[Real life example](https://katoid.github.io/angular-grid-layout/playground)
 
 ## API
 
@@ -146,6 +150,7 @@ export class KtdGridItemComponent {
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Auto Scroll down if container is scrollable when dragging a grid item.
+- [ ] Documentation.
 
 **IMPORTANT**: These features would be done in the near future. If any lib user needs them earlier, we encourage you to contribute to this project and speed up the process! To do so, please: 
 
