@@ -1,7 +1,7 @@
 import { compact, CompactType, LayoutItem, moveElement } from './react-grid-layout.utils';
-import { KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from './grid.definitions';
+import { KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
-import { KtdDictionary } from '../types';
+import { KtdDictionary } from '../../types';
 
 /** Tracks items by id. This function is mean to be used in conjunction with the ngFor that renders the 'ktd-grid-items' */
 export function ktdTrackById(index: number, item: {id: string}) {

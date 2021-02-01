@@ -6,13 +6,13 @@ import { coerceNumberProperty } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { merge, Observable, Observer, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { ktdGridItemDragging, ktdGridItemResizing } from './grid.utils';
-import { compact, CompactType } from './react-grid-layout.utils';
+import { ktdGridItemDragging, ktdGridItemResizing } from './utils/grid.utils';
+import { compact, CompactType } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout,
     KtdGridLayoutItem
 } from './grid.definitions';
-import { ktdMouseOrTouchEnd } from './pointer.utils';
+import { ktdMouseOrTouchEnd } from './utils/pointer.utils';
 import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 

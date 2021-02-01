@@ -2,7 +2,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
 import { fromEvent, iif, Observable, Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { ktdIsMobileOrTablet } from './pointer.utils';
+import { ktdIsMobileOrTablet } from './utils/pointer.utils';
 
 /** Event options that can be used to bind an active, capturing event. */
 const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({

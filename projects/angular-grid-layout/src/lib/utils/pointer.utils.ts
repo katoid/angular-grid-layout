@@ -1,6 +1,6 @@
 import { fromEvent, iif, merge, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
+import { ktdNormalizePassiveListenerOptions } from './passive-listeners';
 
 /** Options that can be used to bind a passive event listener. */
 const passiveEventListenerOptions = ktdNormalizePassiveListenerOptions({passive: true});

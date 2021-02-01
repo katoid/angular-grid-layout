@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdPointerClient } from '../pointer.utils';
+import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdPointerClient } from '../utils/pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
