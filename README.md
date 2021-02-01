@@ -13,6 +13,7 @@ Both cover the same necessities.
 - 3 modes of grid compaction: vertical, horizontal and free (exact same algorithm as [React-Grid-Layout](https://github.com/STRML/react-grid-layout))
 - Add/Remove items
 - High performance
+- Supports touch devices
 
 ## Installation
 
@@ -69,7 +70,7 @@ trackById = ktdTrackById
 
 ## API
 
-Here is listed some of the basic API of both KtdGridComponent and KtdGridItemComponent. See source code for full knowledge of the API.
+Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. See source code for full knowledge of the API.
 
 #### KtdGridComponent
 ```ts
