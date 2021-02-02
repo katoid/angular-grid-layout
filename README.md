@@ -62,7 +62,7 @@ trackById = ktdTrackById
 ```
 
 ## Demos
-[Playground](https://katoid.github.io/angular-grid-layout/playground)
+[Playground](https://katoid.github.io/angular-grid-layout/playground) - [Stackblitz](https://stackblitz.com/edit/angular-grid-layout-playground?file=src%2Fapp%2Fplayground%2Fplayground.component.ts)
 
 [Custom handles](https://katoid.github.io/angular-grid-layout/custom-handles)
 

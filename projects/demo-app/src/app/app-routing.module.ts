@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { KtdPlaygroundModule } from './playground/playground.module';
 import { KtdCustomHandlesModule } from './custom-handles/custom-handles.module';
-import { KtdRealLifeExampleComponent } from './real-life-example/real-life-example.component';
 import { KtdRealLifeExampleModule } from './real-life-example/real-life-example.module';
 
 const routes: Routes = [
@@ -33,8 +32,8 @@ const routes: Routes = [
         KtdCustomHandlesModule,
         KtdRealLifeExampleModule,
         RouterModule.forRoot(routes, {
-        enableTracing: false
-    })],
+            enableTracing: false
+        })],
     exports: [RouterModule]
 })
 export class KtdAppRoutingModule {}
