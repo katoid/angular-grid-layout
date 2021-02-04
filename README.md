@@ -1,7 +1,7 @@
 # Angular Grid Layout
 Grid with draggable and resizable items for Angular. Perfect fit with highly customizable dashboards.
 
-It's core functionalities are based in the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library. It can be considered a 'port' (with some changes) to the Angular ecosystem.
+Its core functionalities are based in the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library. It can be considered a 'port' (with some changes) to the Angular ecosystem.
 Both cover the same necessities.
 
 ## Features
