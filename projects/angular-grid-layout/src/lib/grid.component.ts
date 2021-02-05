@@ -267,8 +267,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         ...gridItems.map((gridItem) => gridItem.dragStart$.pipe(map((event) => ({event, gridItem, type: 'drag'})))),
                         ...gridItems.map((gridItem) => gridItem.resizeStart$.pipe(map((event) => ({event, gridItem, type: 'resize'})))),
                     ).pipe(exhaustMap(({event, gridItem, type}) => {
-                        // Emit drag or resize start events
-                        (type === 'drag' ? this.dragStarted : this.resizeStarted).emit(getDragResizeEventData(gridItem, this.layout));
+                        // Emit drag or resize start events. Ensure that is start event is inside the zone.
+                        this.ngZone.run(() => (type === 'drag' ? this.dragStarted : this.resizeStarted).emit(getDragResizeEventData(gridItem, this.layout)));
                         // Get the correct newStateFunc depending on if we are dragging or resizing
                         const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
 
