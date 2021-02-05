@@ -45,6 +45,7 @@ export const GRID_ITEM_GET_RENDER_DATA_TOKEN: InjectionToken<KtdGridItemRenderDa
 export interface KtdDraggingData {
     pointerDownEvent: MouseEvent | TouchEvent;
     pointerDragEvent: MouseEvent | TouchEvent;
-    parentElemClientRect: ClientRect;
+    gridElemClientRect: ClientRect;
     dragElemClientRect: ClientRect;
+    scrollDifference: { top: number, left: number };
 }

@@ -16,7 +16,7 @@ import { ktdMouseOrTouchEnd, ktdPointerClientX, ktdPointerClientY } from './util
 import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 import { getMutableClientRect } from './utils/client-rect';
-import { ktdOnScrollWithRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
+import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -304,7 +304,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
         return new Observable<KtdGridLayout>((observer: Observer<KtdGridLayout>) => {
             // Retrieve grid (parent) and gridItem (draggedElem) client rects.
-            const parentElemClientRect: ClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
+            const gridElemClientRect: ClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
             const dragElemClientRect: ClientRect = getMutableClientRect(gridItem.elementRef.nativeElement as HTMLElement);
 
             const scrollableParent = typeof this.scrollableParent === 'string' ? document.getElementById(this.scrollableParent) : this.scrollableParent;
@@ -316,7 +316,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             const placeholderElement: HTMLDivElement = this.renderer.createElement('div');
             placeholderElement.style.width = `${dragElemClientRect.width}px`;
             placeholderElement.style.height = `${dragElemClientRect.height}px`;
-            placeholderElement.style.transform = `translateX(${dragElemClientRect.left - parentElemClientRect.left}px) translateY(${dragElemClientRect.top - parentElemClientRect.top}px)`;
+            placeholderElement.style.transform = `translateX(${dragElemClientRect.left - gridElemClientRect.left}px) translateY(${dragElemClientRect.top - gridElemClientRect.top}px)`;
 
             this.renderer.addClass(placeholderElement, 'ktd-grid-item-placeholder');
             this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
@@ -347,19 +347,15 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 merge(
                     combineLatest([
                         this.gridService.mouseOrTouchMove$(document),
-                        ...(!scrollableParent ? [of({})] : [
-                            ktdOnScrollWithRelativeDifference$(scrollableParent).pipe(
-                                tap(({difference}) => {
-                                    parentElemClientRect.top += difference.top;
-                                    parentElemClientRect.left += difference.left;
-                                }),
-                                startWith({}) // Force first emission to allow CombineLatest to emit even no scroll event has occurred
+                        ...(!scrollableParent ? [of({top: 0, left: 0})] : [
+                            ktdGetScrollTotalRelativeDifference$(scrollableParent).pipe(
+                                startWith({top: 0, left: 0}) // Force first emission to allow CombineLatest to emit even no scroll event has occurred
                             )
                         ])
                     ])
                 ).pipe(
                     takeUntil(ktdMouseOrTouchEnd(document)),
-                ).subscribe(([pointerDragEvent, _]: [MouseEvent | TouchEvent, Event]) => {
+                ).subscribe(([pointerDragEvent, scrollDifference]: [MouseEvent | TouchEvent, {top: number, left: number}]) => {
                         pointerDragEvent.preventDefault();
 
                         /**
@@ -376,8 +372,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         }, this.compactType, {
                             pointerDownEvent,
                             pointerDragEvent,
-                            parentElemClientRect,
-                            dragElemClientRect
+                            gridElemClientRect,
+                            dragElemClientRect,
+                            scrollDifference
                         });
                         newLayout = layout;
 
@@ -385,7 +382,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             cols: this.cols,
                             rowHeight: this.rowHeight,
                             layout: newLayout
-                        }, parentElemClientRect.width, parentElemClientRect.height);
+                        }, gridElemClientRect.width, gridElemClientRect.height);
 
                         const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);
 
