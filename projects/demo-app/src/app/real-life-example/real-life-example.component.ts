@@ -1,9 +1,10 @@
-import { Component, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';
 import { AreaChartStackedComponent } from '@swimlane/ngx-charts';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
     selector: 'ktd-real-life-example',
@@ -60,7 +61,7 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
 
     private resizeSubscription: Subscription;
 
-    constructor() { }
+    constructor(@Inject(DOCUMENT) public document: Document) { }
 
     ngOnInit() {
         this.resizeSubscription = merge(

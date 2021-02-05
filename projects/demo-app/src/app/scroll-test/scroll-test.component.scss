@@ -1,0 +1,58 @@
+:host {
+    display: block;
+    width: 100%;
+    padding: 24px;
+    box-sizing: border-box;
+
+    .grids-container {
+        display: flex;
+        align-items: center;
+        height: 600px;
+
+        & > * {
+            flex: 1;
+            height: 100%;
+
+            display: flex;
+            flex-direction: column;
+        }
+    }
+
+    .grid-container-1, .grid-container-2 {
+        padding: 4px;
+        box-sizing: border-box;
+        border: 1px solid gray;
+        border-radius: 2px;
+        background: #313131;
+        height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .grid-container-2 {
+        overflow-x: auto; // let available scroll horizontal with overflowing x
+
+        ktd-grid {
+            width: 200%; // make ktd grid overflow horizontally
+        }
+    }
+
+    ktd-grid-item {
+        color: #121212;
+    }
+
+    .grid-item-content {
+        box-sizing: border-box;
+        background: #ccc;
+        border: 1px solid black;
+        color: black;
+        width: 100%;
+        height: 100%;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+}

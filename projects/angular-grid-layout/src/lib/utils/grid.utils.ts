@@ -1,5 +1,5 @@
 import { compact, CompactType, LayoutItem, moveElement } from './react-grid-layout.utils';
-import { KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
+import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
 
@@ -53,7 +53,7 @@ export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayou
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
     const {pointerDownEvent, pointerDragEvent, parentElemClientRect, dragElemClientRect} = draggingData;
 
     const draggingElemPrevItem = config.layout.find(item => item.id === gridItemId)!;
@@ -120,7 +120,7 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: { pointerDownEvent: MouseEvent | TouchEvent, pointerDragEvent: MouseEvent | TouchEvent, parentElemClientRect: ClientRect, dragElemClientRect: ClientRect }): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
     const {pointerDownEvent, pointerDragEvent, parentElemClientRect, dragElemClientRect} = draggingData;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);

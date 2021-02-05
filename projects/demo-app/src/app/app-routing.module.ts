@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { KtdPlaygroundModule } from './playground/playground.module';
 import { KtdCustomHandlesModule } from './custom-handles/custom-handles.module';
 import { KtdRealLifeExampleModule } from './real-life-example/real-life-example.module';
+import { KtdScrollTestModule } from './scroll-test/scroll-test.module';
 
 const routes: Routes = [
     {
@@ -21,6 +22,11 @@ const routes: Routes = [
         pathMatch: 'full'
     },
     {
+        path: 'scroll-test',
+        redirectTo: 'scroll-test',
+        pathMatch: 'full'
+    },
+    {
         path: '**',
         redirectTo: 'playground'
     },
@@ -31,6 +37,7 @@ const routes: Routes = [
         KtdPlaygroundModule,
         KtdCustomHandlesModule,
         KtdRealLifeExampleModule,
+        KtdScrollTestModule,
         RouterModule.forRoot(routes, {
             enableTracing: false
         })],

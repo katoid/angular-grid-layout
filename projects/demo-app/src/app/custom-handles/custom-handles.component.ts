@@ -1,7 +1,8 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
     selector: 'ktd-custom-handles',
@@ -23,7 +24,7 @@ export class KtdCustomHandlesComponent implements OnInit, OnDestroy {
 
     private resizeSubscription: Subscription;
 
-    constructor() { }
+    constructor(@Inject(DOCUMENT) public document: Document) { }
 
     ngOnInit() {
         this.resizeSubscription = merge(

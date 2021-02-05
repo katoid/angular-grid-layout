@@ -32,6 +32,11 @@
             </mat-select>
         </mat-form-field>
         <mat-checkbox color="accent"
+                      [checked]="autoScroll"
+                      (change)="onAutoScrollChange($event.checked)">
+            Auto scroll
+        </mat-checkbox>
+        <mat-checkbox color="accent"
                       [checked]="disableDrag"
                       (change)="onDisableDragChange($event.checked)">
             Disable drag
@@ -62,6 +67,7 @@
                   [rowHeight]="rowHeight"
                   [layout]="layout"
                   [compactType]="compactType"
+                  [scrollableParent]="autoScroll ? document : null"
                   (dragStarted)="onDragStarted($event)"
                   (resizeStarted)="onResizeStarted($event)"
                   (dragEnded)="onDragEnded($event)"
@@ -87,4 +93,5 @@
 <div style="display: flex; flex-direction: column">
     <a [routerLink]="['/custom-handles']">Custom handles</a>
     <a [routerLink]="['/real-life-example']">Real life example</a>
+    <a [routerLink]="['/scroll-test']">Scroll test</a>
 </div>

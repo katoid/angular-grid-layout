@@ -1,0 +1,44 @@
+<h1>Angular Grid Layout - Scroll test</h1>
+<div class="grids-container">
+    <div>
+        <h2>Scroll Vertical</h2>
+        <div class="grid-container-1" #gridContainer1>
+            <ktd-grid #grid1
+                      [cols]="cols"
+                      [rowHeight]="50"
+                      [layout]="layout1"
+                      [scrollableParent]="gridContainer1"
+                      [compactType]="compactType">
+                <ktd-grid-item *ngFor="let item of layout1; trackBy:trackById"
+                               [id]="item.id">
+                    <div class="grid-item-content">{{item.id}}</div>
+                </ktd-grid-item>
+            </ktd-grid>
+        </div>
+    </div>
+    <div style="margin-left: 32px;">
+        <h2>Scroll Vertical and horizontal</h2>
+        <div class="grid-container-2" #gridContainer2>
+            <ktd-grid #grid2
+                      [cols]="cols2"
+                      [rowHeight]="50"
+                      [layout]="layout2"
+                      [scrollableParent]="gridContainer2"
+                      [compactType]="compactType">
+                <ktd-grid-item *ngFor="let item of layout2; trackBy:trackById"
+                               [id]="item.id">
+                    <div class="grid-item-content">{{item.id}}</div>
+                </ktd-grid-item>
+            </ktd-grid>
+        </div>
+    </div>
+
+</div>
+
+<h2 style="margin-top: 16px">Other examples: </h2>
+<div style="display: flex; flex-direction: column">
+    <a [routerLink]="['/playground']">Playground</a>
+    <a [routerLink]="['/custom-handles']">Custom handles</a>
+    <a [routerLink]="['/real-life-example']">Real life example</a>
+</div>
+

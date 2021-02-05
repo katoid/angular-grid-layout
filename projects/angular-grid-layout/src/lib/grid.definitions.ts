@@ -42,3 +42,9 @@ export interface KtdGridItemRenderData<T = number | string> {
 export type KtdGridItemRenderDataTokenType = (id: string) => KtdGridItemRenderData<string>;
 export const GRID_ITEM_GET_RENDER_DATA_TOKEN: InjectionToken<KtdGridItemRenderDataTokenType> = new InjectionToken('GRID_ITEM_GET_RENDER_DATA_TOKEN');
 
+export interface KtdDraggingData {
+    pointerDownEvent: MouseEvent | TouchEvent;
+    pointerDragEvent: MouseEvent | TouchEvent;
+    parentElemClientRect: ClientRect;
+    dragElemClientRect: ClientRect;
+}

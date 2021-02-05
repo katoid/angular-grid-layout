@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
@@ -6,6 +6,7 @@ import {
     KtdDragEnd, KtdDragStart, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
     selector: 'ktd-playground',
@@ -48,6 +49,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     currentTransition: string = this.transitions[0].value;
 
     dragStartThreshold = 0;
+    autoScroll = true;
     disableDrag = false;
     disableResize = false;
     disableRemove = false;
@@ -56,7 +58,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     isResizing = false;
     resizeSubscription: Subscription;
 
-    constructor(private ngZone: NgZone) {
+    constructor(private ngZone: NgZone, public elementRef: ElementRef, @Inject(DOCUMENT) public document: Document) {
         // this.ngZone.onUnstable.subscribe(() => console.log('UnStable'));
     }
 
@@ -105,6 +107,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onTransitionChange(change: MatSelectChange) {
         console.log('onTransitionChange', change);
         this.currentTransition = change.value;
+    }
+
+    onAutoScrollChange(checked: boolean) {
+        this.autoScroll = checked;
     }
 
     onDisableDragChange(checked: boolean) {
