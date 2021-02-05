@@ -1,7 +1,8 @@
 import { animationFrameScheduler, fromEvent, interval, NEVER, Observable } from 'rxjs';
-import { distinctUntilChanged, filter, map, switchMap, tap } from 'rxjs/operators';
+import { distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { ktdNormalizePassiveListenerOptions } from './passive-listeners';
 import { getMutableClientRect } from './client-rect';
+import { ktdNoEmit } from './operators';
 
 /**
  * Proximity, as a ratio to width/height at which to start auto-scrolling.
@@ -86,12 +87,6 @@ function getHorizontalScrollDirection(clientRect: ClientRect, pointerX: number) 
     return AutoScrollHorizontalDirection.NONE;
 }
 
-/** Rxjs operator that makes source observable to no emit any data */
-const noEmit = () =>
-    (source$: Observable<any>): Observable<any> => {
-        return source$.pipe(filter(() => false));
-    };
-
 /**
  * Returns an observable that schedules a loop and apply scroll on the scrollNode into the specified direction/s.
  * This observable doesn't emit, it just performs the 'scroll' side effect.
@@ -116,7 +111,7 @@ function scrollToDirectionInterval$(scrollNode: HTMLElement | Window, verticalSc
                     incrementHorizontalScroll(scrollNode, scrollStep);
                 }
             }),
-            noEmit()
+            ktdNoEmit()
         );
 }
 

@@ -1,6 +1,6 @@
 import {
-    AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Inject, Input, OnDestroy, OnInit, QueryList,
-    Renderer2, ViewChild
+    AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit, QueryList, Renderer2,
+    ViewChild
 } from '@angular/core';
 import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -9,6 +9,7 @@ import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from 
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
 import { KtdGridService } from '../grid.service';
+import { ktdOutsideZone } from '../utils/operators';
 
 @Component({
     selector: 'ktd-grid-item',
@@ -79,6 +80,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     constructor(public elementRef: ElementRef,
                 private gridService: KtdGridService,
                 private renderer: Renderer2,
+                private ngZone: NgZone,
                 @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
         this.dragStart$ = this.dragStartSubject.asObservable();
         this.resizeStart$ = this.resizeStartSubject.asObservable();
@@ -122,33 +124,36 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                                 () => dragHandles.length > 0,
                                 merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
                                 ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
-                            ).pipe(exhaustMap((startEvent) => {
-                                // If the event started from an element with the native HTML drag&drop, it'll interfere
-                                // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
-                                // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
-                                // it's flaky and it fails if the user drags it away quickly. Also note that we only want
-                                // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
-                                // events from firing on touch devices.
-                                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
-                                    startEvent.preventDefault();
-                                }
+                            ).pipe(
+                                exhaustMap((startEvent) => {
+                                    // If the event started from an element with the native HTML drag&drop, it'll interfere
+                                    // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
+                                    // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
+                                    // it's flaky and it fails if the user drags it away quickly. Also note that we only want
+                                    // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
+                                    // events from firing on touch devices.
+                                    if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
+                                        startEvent.preventDefault();
+                                    }
 
-                                const startPointer = ktdPointerClient(startEvent);
-                                return this.gridService.mouseOrTouchMove$(document).pipe(
-                                    takeUntil(ktdMouseOrTouchEnd(document, 1)),
-                                    filter((moveEvent) => {
-                                        moveEvent.preventDefault();
-                                        const movePointer = ktdPointerClient(moveEvent);
-                                        const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
-                                        const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);
-                                        // When this conditions returns true mean that we are over threshold.
-                                        return distanceX + distanceY >= this.dragStartThreshold;
-                                    }),
-                                    take(1),
-                                    // Return the original start event
-                                    map(() => startEvent)
-                                );
-                            }));
+                                    const startPointer = ktdPointerClient(startEvent);
+                                    return this.gridService.mouseOrTouchMove$(document).pipe(
+                                        takeUntil(ktdMouseOrTouchEnd(document, 1)),
+                                        ktdOutsideZone(this.ngZone),
+                                        filter((moveEvent) => {
+                                            moveEvent.preventDefault();
+                                            const movePointer = ktdPointerClient(moveEvent);
+                                            const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
+                                            const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);
+                                            // When this conditions returns true mean that we are over threshold.
+                                            return distanceX + distanceY >= this.dragStartThreshold;
+                                        }),
+                                        take(1),
+                                        // Return the original start event
+                                        map(() => startEvent)
+                                    );
+                                })
+                            );
                         })
                     );
                 }
