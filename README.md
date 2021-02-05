@@ -90,6 +90,12 @@ export class KtdGridComponent {
     
     /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
     @Input() layout: KtdGridLayout;
+
+    /**
+     * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
+     * If no data provided or null autoscroll is not performed.
+     */
+    @Input() scrollableParent: HTMLElement | Document | string | null = null;
     
     /** Whether or not to update the internal layout when some dependent property change. */
     @Input() compactOnPropsChange = true;
@@ -144,13 +150,14 @@ export class KtdGridItemComponent {
 - [x] Add example with custom drag handles.
 - [x] Add Real life example with charts and grid items with some kind of controls.
 - [x] Add dragStartThreshold option to grid items.
+- [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
 - [ ] Add grid gap feature.
-- [ ] Customizable drag placeholder.
+- [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
 - [ ] Grid support for minWidth and minHeight on grid items.
+- [ ] Customizable drag placeholder.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
-- [ ] Auto Scroll down if container is scrollable when dragging a grid item.
 - [ ] Documentation.
 
 **IMPORTANT**: These features would be done in the near future. If any lib user needs them earlier, we encourage you to contribute to this project and speed up the process! To do so, please: 
