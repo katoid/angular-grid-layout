@@ -184,24 +184,24 @@ export function ktdScrollIfNearElementClientRect$(scrollableParent: HTMLElement 
 }
 
 /**
- * Emits on EVERY scroll event and returns also it's scroll movement relative to it's previous position.
+ * Emits on EVERY scroll event and returns the accumulated scroll offset relative to the initial scroll position.
  * @param scrollableParent, node in which scroll events would be listened.
  */
-export function ktdOnScrollWithRelativeDifference$(scrollableParent: HTMLElement | Document): Observable<{ scrollEvent: Event, difference: { top: number, left: number } }> {
-    let scrollPosition;
+export function ktdGetScrollTotalRelativeDifference$(scrollableParent: HTMLElement | Document): Observable<{ top: number, left: number }> {
+    let scrollInitialPosition;
 
     // Calculate initial scroll position
     if (scrollableParent === document) {
-        scrollPosition = getViewportScrollPosition();
+        scrollInitialPosition = getViewportScrollPosition();
     } else {
-        scrollPosition = {
+        scrollInitialPosition = {
             top: (scrollableParent as HTMLElement).scrollTop,
             left: (scrollableParent as HTMLElement).scrollLeft
         };
     }
 
     return fromEvent(scrollableParent, 'scroll', ktdNormalizePassiveListenerOptions({capture: true}) as AddEventListenerOptions).pipe(
-        map((scrollEvent: Event) => {
+        map(() => {
             let newTop: number;
             let newLeft: number;
 
@@ -214,13 +214,10 @@ export function ktdOnScrollWithRelativeDifference$(scrollableParent: HTMLElement
                 newLeft = (scrollableParent as HTMLElement).scrollLeft;
             }
 
-            const topDifference = scrollPosition.top - newTop;
-            const leftDifference = scrollPosition.left - newLeft;
+            const topDifference = scrollInitialPosition.top - newTop;
+            const leftDifference = scrollInitialPosition.left - newLeft;
 
-            scrollPosition.top = newTop;
-            scrollPosition.left = newLeft;
-
-            return {scrollEvent, difference: {top: topDifference, left: leftDifference}};
+            return {top: topDifference, left: leftDifference};
         })
     );
 

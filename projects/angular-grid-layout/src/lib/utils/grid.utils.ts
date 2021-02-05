@@ -54,7 +54,7 @@ export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayou
  * @param draggingData contains all the information about the drag
  */
 export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
-    const {pointerDownEvent, pointerDragEvent, parentElemClientRect, dragElemClientRect} = draggingData;
+    const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
 
     const draggingElemPrevItem = config.layout.find(item => item.id === gridItemId)!;
 
@@ -66,17 +66,20 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
     const offsetX = clientStartX - dragElemClientRect.left;
     const offsetY = clientStartY - dragElemClientRect.top;
 
-    const gridRelXPos = clientX - parentElemClientRect.left - offsetX;
-    const gridRelYPos = clientY - parentElemClientRect.top - offsetY;
+    // Grid element positions taking into account the possible scroll total difference from the beginning.
+    const gridElementLeftPosition = gridElemClientRect.left + scrollDifference.left;
+    const gridElementTopPosition = gridElemClientRect.top + scrollDifference.top;
+
+    // Calculate position relative to the grid element.
+    const gridRelXPos = clientX - gridElementLeftPosition - offsetX;
+    const gridRelYPos = clientY - gridElementTopPosition - offsetY;
 
     // Get layout item position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
-        x: screenXPosToGridValue(gridRelXPos, config.cols, parentElemClientRect.width),
-        y: screenYPosToGridValue(gridRelYPos, config.rowHeight, parentElemClientRect.height)
+        x: screenXPosToGridValue(gridRelXPos, config.cols, gridElemClientRect.width),
+        y: screenYPosToGridValue(gridRelYPos, config.rowHeight, gridElemClientRect.height)
     };
-    // console.log({clientX: (pointerDragEvent as MouseEvent).clientX, clientY: (pointerDragEvent as MouseEvent).clientY, pageX: (pointerDragEvent as MouseEvent).pageX, pageY: (pointerDragEvent as MouseEvent).pageY});
-    // console.log({clientX, clientY, offsetX, offsetY, gridRelXPos, gridRelYPos, parentElemClientRect, layoutItem});
 
     // Correct the values if they overflow, since 'moveElement' function doesn't do it
     layoutItem.x = Math.max(0, layoutItem.x);
@@ -121,7 +124,7 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
  * @param draggingData contains all the information about the drag
  */
 export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
-    const {pointerDownEvent, pointerDragEvent, parentElemClientRect, dragElemClientRect} = draggingData;
+    const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
     const clientStartY = ktdPointerClientY(pointerDownEvent);
@@ -133,14 +136,15 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     const resizeElemOffsetY = dragElemClientRect.height - (clientStartY - dragElemClientRect.top);
 
     const draggingElemPrevItem = config.layout.find(item => item.id === gridItemId)!;
-    const width = clientX - dragElemClientRect.left + resizeElemOffsetX;
-    const height = clientY - dragElemClientRect.top + resizeElemOffsetY;
+    const width = clientX + resizeElemOffsetX - (dragElemClientRect.left + scrollDifference.left);
+    const height = clientY + resizeElemOffsetY - (dragElemClientRect.top + scrollDifference.top);
+
 
     // Get layout item grid position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
-        w: screenXPosToGridValue(width, config.cols, parentElemClientRect.width),
-        h: screenYPosToGridValue(height, config.rowHeight, parentElemClientRect.height)
+        w: screenXPosToGridValue(width, config.cols, gridElemClientRect.width),
+        h: screenYPosToGridValue(height, config.rowHeight, gridElemClientRect.height)
     };
 
     layoutItem.w = Math.max(1, layoutItem.w);
@@ -156,8 +160,8 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     return {
         layout: compact(newLayoutItems, compactionType, config.cols),
         draggedItemPos: {
-            top: dragElemClientRect.top - parentElemClientRect.top,
-            left: dragElemClientRect.left - parentElemClientRect.left,
+            top: dragElemClientRect.top - gridElemClientRect.top,
+            left: dragElemClientRect.left - gridElemClientRect.left,
             width,
             height,
         }
