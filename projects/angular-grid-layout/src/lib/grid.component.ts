@@ -1,11 +1,11 @@
 import {
-    AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, NgZone,
-    OnChanges, OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewEncapsulation
+    AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, NgZone, OnChanges,
+    OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewEncapsulation
 } from '@angular/core';
 import { coerceNumberProperty } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
-import { combineLatest, iif, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
-import { exhaustMap, map, startWith, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
+import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { ktdGridItemDragging, ktdGridItemResizing } from './utils/grid.utils';
 import { compact, CompactType } from './utils/react-grid-layout.utils';
 import {
@@ -327,16 +327,13 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             //  - Pros are that we would not repeat subscriptions and takeUntil would shut down observables at the same time.
             //  - Cons are that moving this functionality as a side effect inside the main drag loop would be confusing.
             const scrollSubscription = this.ngZone.runOutsideAngular(() =>
-                iif(() => !!scrollableParent,
-                    this.gridService.mouseOrTouchMove$(document).pipe(
-                        map((event) => ({
-                            pointerX: ktdPointerClientX(event),
-                            pointerY: ktdPointerClientY(event)
-                        })),
-                        ktdScrollIfNearElementClientRect$(scrollableParent!)
-                    ),
-                    NEVER
-                ).pipe(
+                (!scrollableParent ? NEVER : this.gridService.mouseOrTouchMove$(document).pipe(
+                    map((event) => ({
+                        pointerX: ktdPointerClientX(event),
+                        pointerY: ktdPointerClientY(event)
+                    })),
+                    ktdScrollIfNearElementClientRect$(scrollableParent)
+                )).pipe(
                     takeUntil(ktdMouseOrTouchEnd(document))
                 ).subscribe());
 
@@ -355,7 +352,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     ])
                 ).pipe(
                     takeUntil(ktdMouseOrTouchEnd(document)),
-                ).subscribe(([pointerDragEvent, scrollDifference]: [MouseEvent | TouchEvent, {top: number, left: number}]) => {
+                ).subscribe(([pointerDragEvent, scrollDifference]: [MouseEvent | TouchEvent, { top: number, left: number }]) => {
                         pointerDragEvent.preventDefault();
 
                         /**
