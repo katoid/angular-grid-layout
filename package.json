@@ -16,7 +16,8 @@
         "lint": "ng lint",
         "lint:build": "tsc -p tsconfig.lint.json",
         "e2e": "ng e2e",
-        "copy-readme": "ts-node --project scripts/tsconfig.scripts.json scripts/copy-file.ts README.md dist/angular-grid-layout/README.md"
+        "copy-readme": "ts-node --project scripts/tsconfig.scripts.json scripts/copy-file.ts README.md dist/angular-grid-layout/README.md",
+        "commit": "git-cz"
     },
     "private": true,
     "dependencies": {
@@ -43,7 +44,12 @@
         "@types/node": "^12.11.1",
         "angular-cli-ghpages": "~1.0.0-rc.1",
         "codelyzer": "^6.0.0",
+        "@commitlint/cli": "~11.0.0",
+        "@commitlint/config-angular": "~11.0.0",
+        "@commitlint/config-conventional": "~11.0.0",
+        "cz-conventional-changelog": "~3.3.0",
         "http-server": "~0.12.3",
+        "husky": "~4.3.8",
         "jasmine-core": "~3.6.0",
         "jasmine-spec-reporter": "~5.0.0",
         "karma": "~5.1.0",
@@ -56,5 +62,15 @@
         "ts-node": "~8.3.0",
         "tslint": "~6.1.0",
         "typescript": "~4.0.2"
+    },
+    "config": {
+        "commitizen": {
+            "path": "./node_modules/cz-conventional-changelog"
+        }
+    },
+    "husky": {
+        "hooks": {
+            "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+        }
     }
 }
