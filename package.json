@@ -17,7 +17,8 @@
         "lint:build": "tsc -p tsconfig.lint.json",
         "e2e": "ng e2e",
         "copy-readme": "ts-node --project scripts/tsconfig.scripts.json scripts/copy-file.ts README.md dist/angular-grid-layout/README.md",
-        "commit": "git-cz"
+        "commit": "git-cz",
+        "release": "standard-version"
     },
     "private": true,
     "dependencies": {
@@ -40,13 +41,13 @@
         "@angular-devkit/build-angular": "~0.1100.6",
         "@angular/cli": "~11.0.4",
         "@angular/compiler-cli": "~11.0.4",
+        "@commitlint/cli": "~11.0.0",
+        "@commitlint/config-angular": "~11.0.0",
+        "@commitlint/config-conventional": "~11.0.0",
         "@types/jasmine": "~3.6.0",
         "@types/node": "^12.11.1",
         "angular-cli-ghpages": "~1.0.0-rc.1",
         "codelyzer": "^6.0.0",
-        "@commitlint/cli": "~11.0.0",
-        "@commitlint/config-angular": "~11.0.0",
-        "@commitlint/config-conventional": "~11.0.0",
         "cz-conventional-changelog": "~3.3.0",
         "http-server": "~0.12.3",
         "husky": "~4.3.8",
@@ -59,6 +60,7 @@
         "karma-jasmine-html-reporter": "^1.5.0",
         "ng-packagr": "^11.0.0",
         "protractor": "~7.0.0",
+        "standard-version": "~9.1.0",
         "ts-node": "~8.3.0",
         "tslint": "~6.1.0",
         "typescript": "~4.0.2"
