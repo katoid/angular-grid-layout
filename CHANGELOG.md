@@ -1,3 +1,14 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.1.2](https://github.com/katoid/angular-grid-layout/compare/v0.1.1...v0.1.2) (2021-02-08)
+
+
+### Bug Fixes
+
+* **grid:** set grid height while performing a drag operation ([d9427a5](https://github.com/katoid/angular-grid-layout/commit/d9427a50ee081e12cde10769d5ef555874807d7a))
+
 ## [0.1.0](https://github.com/katoid/angular-grid-layout/releases/tag/v0.1.0) (2021-02-05)
 
 
