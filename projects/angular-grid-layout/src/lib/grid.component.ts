@@ -375,6 +375,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         });
                         newLayout = layout;
 
+                        this._height = getGridHeight(newLayout, this.rowHeight);
+
                         this._gridItemsRenderData = layoutToRenderItems({
                             cols: this.cols,
                             rowHeight: this.rowHeight,
@@ -394,7 +396,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             id: this._gridItemsRenderData[gridItem.id].id
                         };
 
-                        this.updateGridItemsStyles();
+                        this.render();
                     },
                     (error) => observer.error(error),
                     () => {

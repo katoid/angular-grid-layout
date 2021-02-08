@@ -37,6 +37,10 @@
         }
     }
 
+    ktd-grid {
+        transition: height 500ms ease;
+    }
+
     ktd-grid-item {
         color: #121212;
     }

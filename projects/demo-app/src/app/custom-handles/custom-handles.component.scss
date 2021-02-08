@@ -25,6 +25,10 @@
         justify-content: center;
     }
 
+    ktd-grid {
+        transition: height 500ms ease;
+    }
+
     ktd-grid-item {
         .handle-1 {
             position: absolute;
