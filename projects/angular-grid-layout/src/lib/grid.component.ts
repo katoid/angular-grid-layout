@@ -163,6 +163,15 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     get layout(): KtdGridLayout { return this._layout; }
 
     set layout(layout: KtdGridLayout) {
+        /**
+         * Enhancement:
+         * Only set layout if it's reference has changed and use a boolean to track whenever recalculate the layout on ngOnChanges.
+         *
+         * Why:
+         * The normal use of this lib is having the variable layout in the outer component or in a store, assigning it whenever it changes and
+         * binded in the component with it's input [layout]. In this scenario, we would always calculate one unnecessary change on the layout when
+         * it is re-binded on the input.
+         */
         this._layout = layout;
     }
 
@@ -189,22 +198,30 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        let pendingCompactLayout = false;
-        // TODO: refactor/re-think logic of when/how to compact layout. also does fist change need to be compacted?
-        if (changes.compactType && !changes.compactType.firstChange) {
-            pendingCompactLayout = true;
-        }
-        if (changes.rowHeight && !changes.rowHeight.firstChange) {
-            pendingCompactLayout = true;
-        }
-        if (changes.layout && !changes.layout.firstChange) {
-            pendingCompactLayout = true;
+        let needsCompactLayout = false;
+        let needsRecalculateRenderData = false;
+
+        // TODO: Does fist change need to be compacted by default?
+        // Compact layout whenever some dependent prop changes.
+        if (changes.compactType || changes.cols || changes.layout) {
+            needsCompactLayout = true;
         }
 
-        if (this.compactOnPropsChange && pendingCompactLayout) {
+        // Check if wee need to recalculate rendering data.
+        if (needsCompactLayout || changes.rowHeight) {
+            needsRecalculateRenderData = true;
+        }
+
+        // Only compact layout if lib user has provided it. Lib users that want to save/store always the same layout  as it is represented (compacted)
+        // can use KtdCompactGrid utility and pre-compact the layout. This is the recommended behaviour for always having a the same layout on this component
+        // and the ones that uses it.
+        if (needsCompactLayout && this.compactOnPropsChange) {
             this.compactLayout();
         }
-        this.calculateRenderData();
+
+        if (needsRecalculateRenderData) {
+            this.calculateRenderData();
+        }
     }
 
     ngAfterContentInit() {
