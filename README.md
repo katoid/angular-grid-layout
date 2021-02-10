@@ -1,8 +1,15 @@
 # Angular Grid Layout
-Grid with draggable and resizable items for Angular. Perfect fit with highly customizable dashboards.
+[![npm](https://img.shields.io/npm/v/@katoid/angular-grid-layout?style=flat-square)](https://www.npmjs.com/package/@katoid/angular-grid-layout)
+[![MIT](https://img.shields.io/packagist/l/doctrine/orm.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/blob/main/LICENSE.md)
+[![commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/commits/main)
+[![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/compare)
+
+Grid with draggable and resizable items for Angular Applications. Perfect fit with highly customizable dashboards.
 
 Its core functionalities are based in the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library. It can be considered a 'port' (with some changes) to the Angular ecosystem.
 Both cover the same necessities.
+
+![demo example](./assets/demo.gif)
 
 ## Features
 - No dependencies
@@ -14,6 +21,14 @@ Both cover the same necessities.
 - Add/Remove items
 - High performance
 - Supports touch devices
+- Auto-scrolling while dragging
+
+## Demos
+[Playground](https://katoid.github.io/angular-grid-layout/playground) - [Stackblitz](https://stackblitz.com/edit/angular-grid-layout-playground?file=src%2Fapp%2Fplayground%2Fplayground.component.ts)
+
+[Custom handles](https://katoid.github.io/angular-grid-layout/custom-handles)
+
+[Real life example](https://katoid.github.io/angular-grid-layout/real-life-example)
 
 ## Installation
 
@@ -60,13 +75,6 @@ layout: KtdGridLayout = [
 ];
 trackById = ktdTrackById
 ```
-
-## Demos
-[Playground](https://katoid.github.io/angular-grid-layout/playground) - [Stackblitz](https://stackblitz.com/edit/angular-grid-layout-playground?file=src%2Fapp%2Fplayground%2Fplayground.component.ts)
-
-[Custom handles](https://katoid.github.io/angular-grid-layout/custom-handles)
-
-[Real life example](https://katoid.github.io/angular-grid-layout/real-life-example)
 
 ## API
 
@@ -165,8 +173,6 @@ export class KtdGridItemComponent {
 1. Open an issue mentioning one of these features.
 2. Explain your thoughts on how to implement it & we will discuss the possible solutions.
 3. Do a Merge Request when the feature is done and tested.
-
-
 
 
 ## Troubleshooting
