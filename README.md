@@ -82,73 +82,60 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 
 #### KtdGridComponent
 ```ts
-@Component({
-    selector: 'ktd-grid'
-})
-export class KtdGridComponent {
-    
-    /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
-    @Input() compactType: KtdGridCompactType = 'vertical';
-    
-    /** Row height in css pixels */
-    @Input() rowHeight: number = 100;
-    
-    /** Number of columns  */
-    @Input() cols: number = 6;
-    
-    /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
-    @Input() layout: KtdGridLayout;
+/** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
+@Input() compactType: KtdGridCompactType = 'vertical';
 
-    /**
-     * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
-     * If no data provided or null autoscroll is not performed.
-     */
-    @Input() scrollableParent: HTMLElement | Document | string | null = null;
-    
-    /** Whether or not to update the internal layout when some dependent property change. */
-    @Input() compactOnPropsChange = true;
-    
-    /** Emits when layout change */
-    @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
-    
-    /** Emits when drag starts */
-    @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
-    
-    /** Emits when resize starts */
-    @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
-    
-    /** Emits when drag ends */
-    @Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
-    
-    /** Emits when resize ends */
-    @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+/** Row height in css pixels */
+@Input() rowHeight: number = 100;
 
-}
+/** Number of columns  */
+@Input() cols: number = 6;
+
+/** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
+@Input() layout: KtdGridLayout;
+
+/**
+ * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
+ * If no data provided or null autoscroll is not performed.
+ */
+@Input() scrollableParent: HTMLElement | Document | string | null = null;
+
+/** Whether or not to update the internal layout when some dependent property change. */
+@Input() compactOnPropsChange = true;
+
+/** Emits when layout change */
+@Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
+
+/** Emits when drag starts */
+@Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+
+/** Emits when resize starts */
+@Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+
+/** Emits when drag ends */
+@Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+
+/** Emits when resize ends */
+@Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+
 ```
 
 #### KtdGridItem
 ```ts
-@Component({
-    selector: 'ktd-grid-item'
-})
-export class KtdGridItemComponent {
-    
-    /** Id of the grid item. This property is strictly compulsory. */
-    @Input() id: string;
-    
-    /** Whether the item is draggable or not. Defaults to true. */
-    @Input() draggable: boolean = true;
-    
-    /** Whether the item is resizable or not. Defaults to true. */
-    @Input() resizable: boolean = true;
+/** Id of the grid item. This property is strictly compulsory. */
+@Input() id: string;
 
-    /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
-    @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
-    
-    /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
-    @Input() dragStartThreshold: number = 0;
-    
-}
+/** Whether the item is draggable or not. Defaults to true. */
+@Input() draggable: boolean = true;
+
+/** Whether the item is resizable or not. Defaults to true. */
+@Input() resizable: boolean = true;
+
+/** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
+@Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
+
+/** Minimum amount of pixels that the user should move before it starts the drag sequence. */
+@Input() dragStartThreshold: number = 0;
 ```
 
 
