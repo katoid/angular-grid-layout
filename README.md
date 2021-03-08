@@ -100,6 +100,9 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
  */
 @Input() scrollableParent: HTMLElement | Document | string | null = null;
 
+/** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
+@Input() scrollSpeed: number = 2;
+
 /** Whether or not to update the internal layout when some dependent property change. */
 @Input() compactOnPropsChange = true;
 
