@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/katoid/angular-grid-layout/compare/v0.1.2...v0.1.3) (2021-03-08)
+
+
+### Features
+
+* **grid:** added Input property 'scrollSpeed' to customize the speed of the autoscrolling ([9908940](https://github.com/katoid/angular-grid-layout/commit/99089405fc1f9527f151ca4bd2d0b0910a09fe61))
+
+
+### Bug Fixes
+
+* **grid:** fixed incorrect logic when re-calculating the layout render data when props change ([c0c943f](https://github.com/katoid/angular-grid-layout/commit/c0c943f26607149185d79f099b02fe0b2a06d041))
+
 ### [0.1.2](https://github.com/katoid/angular-grid-layout/compare/v0.1.1...v0.1.2) (2021-02-08)
 
 
