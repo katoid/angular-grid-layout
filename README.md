@@ -4,7 +4,7 @@
 [![commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/commits/main)
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/compare)
 
-Grid with draggable and resizable items for Angular Applications. Perfect fit with highly customizable dashboards.
+Angular Grid Layout is a grid layout system with draggable and resizable items for Angular Applications. It is mainly designed to create highly customizable dashboards.
 
 Its core functionalities are based in the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library. It can be considered a 'port' (with some changes) to the Angular ecosystem.
 Both cover the same necessities.
