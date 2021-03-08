@@ -124,6 +124,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      */
     @Input() scrollableParent: HTMLElement | Document | string | null = null;
 
+    /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
+    @Input() scrollSpeed: number = 2;
+
     /** Whether or not to update the internal layout when some dependent property change. */
     @Input()
     get compactOnPropsChange(): boolean { return this._compactOnPropsChange; }
