@@ -1,4 +1,4 @@
-import { compact, CompactType, LayoutItem, moveElement } from './react-grid-layout.utils';
+import { compact, CompactType, getAllCollisions, LayoutItem, moveElement } from './react-grid-layout.utils';
 import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
@@ -98,7 +98,7 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
         layoutItem.x,
         layoutItem.y,
         true,
-        false,
+        config.preventCollision,
         compactionType,
         config.cols
     );
@@ -151,6 +151,25 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     layoutItem.h = Math.max(1, layoutItem.h);
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.w = Math.max(1, config.cols - layoutItem.x);
+    }
+
+    if (config.preventCollision) {
+        const collisions = getAllCollisions(config.layout, layoutItem);
+
+        // If we're colliding, we need adjust the placeholder.
+        if (collisions.length > 0) {
+            // adjust w && h to maximum allowed space
+            let leastX = Infinity;
+            let leastY = Infinity;
+            collisions.forEach((collision) => {
+                if (collision.id === layoutItem.id) { return; }
+                if (collision.x > layoutItem.x) { leastX = Math.min(leastX, collision.x); }
+                if (collision.y > layoutItem.y) { leastY = Math.min(leastY, collision.y); }
+            });
+
+            if (Number.isFinite(leastX)) { layoutItem.w = leastX - layoutItem.x; }
+            if (Number.isFinite(leastY)) { layoutItem.h = leastY - layoutItem.y; }
+        }
     }
 
     const newLayoutItems: LayoutItem[] = config.layout.map((item) => {

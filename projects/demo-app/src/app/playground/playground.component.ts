@@ -55,6 +55,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     disableResize = false;
     disableRemove = false;
     autoResize = true;
+    preventCollision = false;
     isDragging = false;
     isResizing = false;
     resizeSubscription: Subscription;
@@ -128,6 +129,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onAutoResizeChange(checked: boolean) {
         this.autoResize = checked;
+    }
+
+    onPreventCollisionChange(checked: boolean) {
+        this.preventCollision = checked;
     }
 
     onColsChange(event: Event) {
