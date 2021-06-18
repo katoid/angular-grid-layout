@@ -154,6 +154,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _scrollSpeed: number = 2;
 
+    /** Prevent collision, consider setting it to true if in no compaction */
+    @Input() preventCollision: boolean = false;
+
     /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
     @Input()
     get compactType(): KtdGridCompactType {
