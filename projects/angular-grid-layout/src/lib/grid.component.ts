@@ -129,6 +129,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /** Whether or not to update the internal layout when some dependent property change. */
     @Input() compactOnPropsChange = true;
 
+    /** Prevent collision, consider setting it to true if in no compaction */
+    @Input() preventCollision: boolean = false;
+
     /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
     @Input()
     get compactType(): KtdGridCompactType {
@@ -184,7 +187,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         return {
             cols: this.cols,
             rowHeight: this.rowHeight,
-            layout: this.layout
+            layout: this.layout,
+            preventCollision: this.preventCollision,
         };
     }
 
@@ -385,7 +389,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {
                             layout: currentLayout,
                             rowHeight: this.rowHeight,
-                            cols: this.cols
+                            cols: this.cols,
+                            preventCollision: this.preventCollision
                         }, this.compactType, {
                             pointerDownEvent,
                             pointerDragEvent,
@@ -400,7 +405,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         this._gridItemsRenderData = layoutToRenderItems({
                             cols: this.cols,
                             rowHeight: this.rowHeight,
-                            layout: newLayout
+                            layout: newLayout,
+                            preventCollision: this.preventCollision,
                         }, gridElemClientRect.width, gridElemClientRect.height);
 
                         const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);
