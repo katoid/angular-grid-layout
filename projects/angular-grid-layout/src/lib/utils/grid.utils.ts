@@ -1,4 +1,4 @@
-import { compact, CompactType, getAllCollisions, LayoutItem, moveElement } from './react-grid-layout.utils';
+import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElement } from './react-grid-layout.utils';
 import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
@@ -154,22 +154,37 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     }
 
     if (config.preventCollision) {
-        const collisions = getAllCollisions(config.layout, layoutItem);
+        const maxW = layoutItem.w;
+        const maxH = layoutItem.h;
 
-        // If we're colliding, we need adjust the placeholder.
-        if (collisions.length > 0) {
-            // adjust w && h to maximum allowed space
-            let leastX = Infinity;
-            let leastY = Infinity;
-            collisions.forEach((collision) => {
-                if (collision.id === layoutItem.id) { return; }
-                if (collision.x > layoutItem.x) { leastX = Math.min(leastX, collision.x); }
-                if (collision.y > layoutItem.y) { leastY = Math.min(leastY, collision.y); }
-            });
+        let colliding = hasCollision(config.layout, layoutItem);
+        let shrunkDimension: 'w' | 'h' | undefined;
 
-            if (Number.isFinite(leastX)) { layoutItem.w = leastX - layoutItem.x; }
-            if (Number.isFinite(leastY)) { layoutItem.h = leastY - layoutItem.y; }
+        while (colliding) {
+            shrunkDimension = getDimensionToShrink(layoutItem, shrunkDimension);
+            layoutItem[shrunkDimension]--;
+            colliding = hasCollision(config.layout, layoutItem);
         }
+
+        if (shrunkDimension === 'w') {
+            layoutItem.h = maxH;
+
+            colliding = hasCollision(config.layout, layoutItem);
+            while (colliding) {
+                layoutItem.h--;
+                colliding = hasCollision(config.layout, layoutItem);
+            }
+        }
+        if (shrunkDimension === 'h') {
+            layoutItem.w = maxW;
+
+            colliding = hasCollision(config.layout, layoutItem);
+            while (colliding) {
+                layoutItem.w--;
+                colliding = hasCollision(config.layout, layoutItem);
+            }
+        }
+
     }
 
     const newLayoutItems: LayoutItem[] = config.layout.map((item) => {
@@ -185,4 +200,19 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
             height,
         }
     };
+}
+
+function hasCollision(layout: Layout, layoutItem: LayoutItem): boolean {
+    return !!getFirstCollision(layout, layoutItem);
+}
+
+function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
+    if (layoutItem.h <= 1) {
+        return 'w';
+    }
+    if (layoutItem.w <= 1) {
+        return 'h';
+    }
+
+    return lastShrunk === 'w' ? 'h' : 'w';
 }
