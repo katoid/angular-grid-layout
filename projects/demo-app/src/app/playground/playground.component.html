@@ -56,11 +56,6 @@
                       (change)="onAutoResizeChange($event.checked)">
             Auto resize
         </mat-checkbox>
-        <mat-checkbox color="accent"
-                      [checked]="preventCollision"
-                      (change)="onPreventCollisionChange($event.checked)">
-            Prevent Collision
-        </mat-checkbox>
         <mat-chip-list>
             <mat-chip color="accent" [selected]="isDragging">isDragging</mat-chip>
             <mat-chip color="accent" [selected]="isResizing">isResizing</mat-chip>
@@ -72,7 +67,6 @@
                   [rowHeight]="rowHeight"
                   [layout]="layout"
                   [compactType]="compactType"
-                  [preventCollision]="preventCollision"
                   [scrollableParent]="autoScroll ? document : null"
                   (dragStarted)="onDragStarted($event)"
                   (resizeStarted)="onResizeStarted($event)"
