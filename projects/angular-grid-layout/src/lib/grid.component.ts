@@ -118,6 +118,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /** Emits when resize ends */
     @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
+    /** Whether or not to update the internal layout when some dependent property change. */
+    @Input() compactOnPropsChange = true;
+
     /**
      * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
      * If no data provided or null autoscroll is not performed.
