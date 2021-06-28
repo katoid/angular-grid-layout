@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.4](https://github.com/katoid/angular-grid-layout/compare/v0.1.3...v0.1.4) (2021-06-28)
+
+
+### Features
+
+* **grid:** grid scrollSpeed Input can be binded without the need of a variable ([8d74468](https://github.com/katoid/angular-grid-layout/commit/8d74468306d8047fde1ea04ea5e32515e066ae42))
+* **grid:** number and Boolean input properties can be binded as string value in template ([1f436f6](https://github.com/katoid/angular-grid-layout/commit/1f436f691bea4412518c504f9cd0e89a979c1323))
+
 ### [0.1.3](https://github.com/katoid/angular-grid-layout/compare/v0.1.2...v0.1.3) (2021-03-08)
 
 
