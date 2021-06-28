@@ -17,6 +17,7 @@ import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 import { getMutableClientRect } from './utils/client-rect';
 import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
+import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -117,14 +118,31 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /** Emits when resize ends */
     @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
-    /** Whether or not to update the internal layout when some dependent property change. */
-    @Input() compactOnPropsChange = true;
-
     /**
      * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
      * If no data provided or null autoscroll is not performed.
      */
     @Input() scrollableParent: HTMLElement | Document | string | null = null;
+
+    /** Whether or not to update the internal layout when some dependent property change. */
+    @Input()
+    get compactOnPropsChange(): boolean { return this._compactOnPropsChange; }
+
+    set compactOnPropsChange(value: boolean) {
+        this._compactOnPropsChange = coerceBooleanProperty(value);
+    }
+
+    private _compactOnPropsChange: boolean = true;
+
+    /** Prevent collision, consider setting it to true if in no compaction */
+    @Input()
+    get preventCollision(): boolean { return this._preventCollision; }
+
+    set preventCollision(value: boolean) {
+        this._preventCollision = coerceBooleanProperty(value);
+    }
+
+    private _preventCollision: boolean = false;
 
     /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
     @Input()
@@ -135,9 +153,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     private _scrollSpeed: number = 2;
-
-    /** Prevent collision, consider setting it to true if in no compaction */
-    @Input() preventCollision: boolean = false;
 
     /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
     @Input()
@@ -472,6 +487,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
 
     // tslint:disable-next-line
+    static ngAcceptInputType_cols: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_rowHeight: NumberInput;
+    // tslint:disable-next-line
     static ngAcceptInputType_scrollSpeed: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_compactOnPropsChange: BooleanInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_preventCollision: BooleanInput;
 }
 
