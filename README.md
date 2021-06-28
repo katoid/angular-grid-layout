@@ -106,6 +106,9 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 /** Whether or not to update the internal layout when some dependent property change. */
 @Input() compactOnPropsChange = true;
 
+/** If true, grid items won't change position when being dragged over. Handy when using no compaction */
+@Input() preventCollision = false;
+
 /** Emits when layout change */
 @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
 

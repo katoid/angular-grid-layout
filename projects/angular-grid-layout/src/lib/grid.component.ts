@@ -134,7 +134,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _compactOnPropsChange: boolean = true;
 
-    /** Prevent collision, consider setting it to true if in no compaction */
+    /** If true, grid items won't change position when being dragged over. Handy when using no compaction */
     @Input()
     get preventCollision(): boolean { return this._preventCollision; }
 
