@@ -2,7 +2,7 @@ import {
     AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, NgZone, OnChanges,
     OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewEncapsulation
 } from '@angular/core';
-import { coerceNumberProperty } from './coercion/number-property';
+import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
@@ -117,6 +117,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /** Emits when resize ends */
     @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
+    /** Whether or not to update the internal layout when some dependent property change. */
+    @Input() compactOnPropsChange = true;
+
     /**
      * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
      * If no data provided or null autoscroll is not performed.
@@ -124,10 +127,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     @Input() scrollableParent: HTMLElement | Document | string | null = null;
 
     /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
-    @Input() scrollSpeed: number = 2;
+    @Input()
+    get scrollSpeed(): number { return this._scrollSpeed; }
 
-    /** Whether or not to update the internal layout when some dependent property change. */
-    @Input() compactOnPropsChange = true;
+    set scrollSpeed(value: number) {
+        this._scrollSpeed = coerceNumberProperty(value, 2);
+    }
+
+    private _scrollSpeed: number = 2;
 
     /** Prevent collision, consider setting it to true if in no compaction */
     @Input() preventCollision: boolean = false;
@@ -462,5 +469,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             };
         });
     }
+
+
+    // tslint:disable-next-line
+    static ngAcceptInputType_scrollSpeed: NumberInput;
 }
 

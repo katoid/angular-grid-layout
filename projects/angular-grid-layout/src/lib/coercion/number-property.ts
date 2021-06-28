@@ -1,4 +1,6 @@
 // tslint:disable
+export type NumberInput = string | number | null | undefined;
+
 /** Coerces a data-bound value (typically a string) to a number. */
 export function coerceNumberProperty(value: any): number;
 export function coerceNumberProperty<D>(value: any, fallback: D): number | D;
