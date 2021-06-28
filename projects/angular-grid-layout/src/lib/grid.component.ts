@@ -154,6 +154,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _scrollSpeed: number = 2;
 
+    /** Customizable placeholder background color */
+    @Input() placeholderColor: string = 'darkred';
+
     /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
     @Input()
     get compactType(): KtdGridCompactType {
@@ -365,6 +368,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             placeholderElement.style.transform = `translateX(${dragElemClientRect.left - gridElemClientRect.left}px) translateY(${dragElemClientRect.top - gridElemClientRect.top}px)`;
 
             this.renderer.addClass(placeholderElement, 'ktd-grid-item-placeholder');
+            this.renderer.setStyle(placeholderElement, 'background-color', this.placeholderColor);
             this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
 
             let newLayout: KtdGridLayoutItem[];
