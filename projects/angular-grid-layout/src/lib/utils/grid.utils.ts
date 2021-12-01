@@ -15,7 +15,9 @@ export function ktdTrackById(index: number, item: {id: string}) {
  * @param cols, number of columns of the grid.
  */
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
-    return compact(layout, compactType, cols);
+    return compact(layout, compactType, cols)
+        // Prune react-grid-layout compact extra properties.
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
 }
 
 function screenXPosToGridValue(screenXPos: number, cols: number, width: number): number {
@@ -216,6 +218,6 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
     return lastShrunk === 'w' ? 'h' : 'w';
 }
 
-function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity){
-    return Math.min(Math.max(num, min), max)
+function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
+    return Math.min(Math.max(num, min < 1 ? 1 : min), max);
 }
