@@ -1,5 +1,5 @@
 {
-    "name": "@rishabhmhjn/angular-grid-layout",
+    "name": "angular-grid-layout-src",
     "scripts": {
         "ng": "ng",
         "start": "ng serve --port 1234",
