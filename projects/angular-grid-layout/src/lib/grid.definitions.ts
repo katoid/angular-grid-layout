@@ -1,7 +1,17 @@
 import { InjectionToken } from '@angular/core';
-import { CompactType, LayoutItem } from './utils/react-grid-layout.utils';
+import { CompactType } from './utils/react-grid-layout.utils';
 
-export type KtdGridLayoutItem = LayoutItem;
+export interface KtdGridLayoutItem {
+    id: string;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    minW?: number;
+    minH?: number;
+    maxW?: number;
+    maxH?: number;
+}
 
 export type KtdGridCompactType = CompactType;
 
