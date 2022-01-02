@@ -218,6 +218,12 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
     return lastShrunk === 'w' ? 'h' : 'w';
 }
 
-function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
+/**
+ * Given the current number and min/max values, returns the number within the range
+ * @param number can be any numeric value
+ * @param min minimum value of range
+ * @param max maximum value of range
+ */
+export function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
     return Math.min(Math.max(num, min < 1 ? 1 : min), max);
 }

@@ -6,7 +6,7 @@ import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { ktdGridItemDragging, ktdGridItemResizing } from './utils/grid.utils';
+import { ktdGridItemDragging, ktdGridItemResizing, limitNumberWithinRange } from './utils/grid.utils';
 import { compact, CompactType } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout,
@@ -47,8 +47,8 @@ function layoutToRenderItems(config: KtdGridCfg, width: number, height: number):
         renderItems[item.id] = {
             id: item.id,
             top: item.y === 0 ? 0 : item.y * rowHeight,
-            left: item.x * (width / cols),
-            width: item.w * (width / cols),
+            left: item.x * Math.floor(width / cols),
+            width: item.w * Math.floor(width / cols),
             height: item.h * rowHeight
         };
     }
@@ -68,6 +68,24 @@ export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number
         width: `${renderItem.width}px`,
         height: `${renderItem.height}px`
     };
+}
+
+export function getUpdatedDimentions(layout: KtdGridLayout, cols: number) {
+    const updatedLayout: KtdGridLayout = layout.map((item: KtdGridLayoutItem) => {
+
+        const newW = limitNumberWithinRange(item.w, item.minW, item.maxW);
+        const newH = limitNumberWithinRange(item.h, item.minH, item.maxH);
+        const newX = item.x > cols - newW ? (cols - newW) : (item.x < 0 ? 0 : item.x);
+
+        return {
+            ...item,
+            w: newW > cols - newX ? cols - newX : newW,
+            h: newH,
+            x: newX,
+        };
+    });
+
+    return updatedLayout;
 }
 
 // tslint:disable-next-line:ktd-prefix-code
@@ -200,7 +218,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
          * binded in the component with it's input [layout]. In this scenario, we would always calculate one unnecessary change on the layout when
          * it is re-binded on the input.
          */
-        this._layout = layout;
+        this._layout = getUpdatedDimentions(layout, this.cols);
     }
 
     private _layout: KtdGridLayout;
