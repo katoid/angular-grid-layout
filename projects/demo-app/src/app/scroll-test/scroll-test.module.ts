@@ -7,7 +7,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 
 const routes: Routes = [
-    {path: 'scroll-test', component: KtdScrollTestComponent},
+    {
+        path: 'scroll-test',
+        component: KtdScrollTestComponent,
+        data: {title: 'Angular Grid Layout - Scroll test'}
+    },
 ];
 
 @NgModule({
