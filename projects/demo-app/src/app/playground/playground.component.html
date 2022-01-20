@@ -66,9 +66,10 @@
         </mat-chip-list>
     </div>
 
-    <div class="grid-container">
-        <ktd-grid [cols]="cols"
-                  [rowHeight]="rowHeight"
+    <div class="grid-container" [style.height]="'400px'">
+        <ktd-grid [style.height]="'400px'"
+                  [cols]="cols"
+                  [rowHeight]="'fit'"
                   [layout]="layout"
                   [compactType]="compactType"
                   [preventCollision]="preventCollision"

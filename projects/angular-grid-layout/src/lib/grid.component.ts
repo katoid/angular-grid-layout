@@ -39,9 +39,7 @@ function getDragResizeEventData(gridItem: KtdGridItemComponent, layout: KtdGridL
 }
 
 
-function layoutToRenderItems(config: KtdGridCfg, width: number, height: number): KtdDictionary<KtdGridItemRenderData<number>> {
-    const {cols, rowHeight, layout} = config;
-
+function layoutToRenderItems(layout: KtdGridLayout, cols: number, rowHeight: number, width: number): KtdDictionary<KtdGridItemRenderData<number>> {
     const renderItems: KtdDictionary<KtdGridItemRenderData<number>> = {};
     for (const item of layout) {
         renderItems[item.id] = {
@@ -168,13 +166,13 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     /** Row height in css pixels */
     @Input()
-    get rowHeight(): number { return this._rowHeight; }
+    get rowHeight(): number | 'fit' { return this._rowHeight; }
 
-    set rowHeight(val: number) {
-        this._rowHeight = Math.max(1, Math.round(coerceNumberProperty(val)));
+    set rowHeight(val: number | 'fit') {
+        this._rowHeight = val === 'fit' ? val : Math.max(1, Math.round(coerceNumberProperty(val)));
     }
 
-    private _rowHeight: number = 100;
+    private _rowHeight: number | 'fit' = 100;
 
     /** Number of columns  */
     @Input()
@@ -208,7 +206,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     get config(): KtdGridCfg {
         return {
             cols: this.cols,
-            rowHeight: this.rowHeight,
+            rowHeight: this.rowHeight as any,
             layout: this.layout,
             preventCollision: this.preventCollision,
         };
@@ -284,12 +282,24 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     calculateRenderData() {
         const clientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
-        this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, clientRect.height);
-        this._height = getGridHeight(this.layout, this.rowHeight);
+        if (this.rowHeight === 'fit') {
+            const totalRows = getGridHeight(this.layout, 1);
+            this._height = clientRect.height;
+            this._gridItemsRenderData = layoutToRenderItems(this.layout, this.cols, clientRect.height / totalRows, clientRect.width);
+        } else {
+            this._gridItemsRenderData = layoutToRenderItems(this.layout, this.cols, this.rowHeight, clientRect.width);
+            this._height = getGridHeight(this.layout, this.rowHeight);
+        }
     }
 
     render() {
-        this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${this._height}px`);
+        if (this.rowHeight === 'fit') {
+            this.renderer.setStyle(this.elementRef.nativeElement, 'height', `100%`);
+
+        } else {
+            this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${this._height}px`);
+
+        }
         this.updateGridItemsStyles();
     }
 
@@ -367,6 +377,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             this.renderer.addClass(placeholderElement, 'ktd-grid-item-placeholder');
             this.renderer.appendChild(this.elementRef.nativeElement, placeholderElement);
 
+            const rowHeight = this.rowHeight === 'fit' ? (gridElemClientRect.height / getGridHeight(this.layout, 1)) : this.rowHeight;
+
+
             let newLayout: KtdGridLayoutItem[];
 
             // TODO (enhancement): consider move this 'side effect' observable inside the main drag loop.
@@ -410,7 +423,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
                         const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {
                             layout: currentLayout,
-                            rowHeight: this.rowHeight,
+                            rowHeight,
                             cols: this.cols,
                             preventCollision: this.preventCollision
                         }, this.compactType, {
@@ -422,14 +435,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         });
                         newLayout = layout;
 
-                        this._height = getGridHeight(newLayout, this.rowHeight);
 
-                        this._gridItemsRenderData = layoutToRenderItems({
-                            cols: this.cols,
-                            rowHeight: this.rowHeight,
-                            layout: newLayout,
-                            preventCollision: this.preventCollision,
-                        }, gridElemClientRect.width, gridElemClientRect.height);
+                        // if (this.rowHeight === 'fit') {
+                        //     const totalRows = getGridHeight(newLayout, 1);
+                        //     this._gridItemsRenderData = layoutToRenderItems(newLayout, this.cols, gridElemClientRect.height / totalRows, gridElemClientRect.width);
+                        // } else {
+                        this._height = getGridHeight(newLayout, rowHeight);
+                        this._gridItemsRenderData = layoutToRenderItems(newLayout, this.cols, rowHeight, gridElemClientRect.width);
+                        // }
 
                         const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);
 
