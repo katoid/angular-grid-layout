@@ -8,6 +8,7 @@ import {
 import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
 import { coerceNumberProperty } from '@angular/cdk/coercion';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 
 @Component({
     selector: 'ktd-playground',
@@ -20,6 +21,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     cols = 12;
     rowHeight = 50;
+    rowHeightFit = false;
+    gridHeight: null | number = null;
     compactType: 'vertical' | 'horizontal' | null = 'vertical';
     layout: KtdGridLayout = [
         {id: '0', x: 5, y: 0, w: 2, h: 3},
@@ -152,6 +155,14 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onRowHeightChange(event: Event) {
         this.rowHeight = coerceNumberProperty((event.target as HTMLInputElement).value);
+    }
+
+    onRowHeightFitChange(change: MatCheckboxChange) {
+        this.rowHeightFit = change.checked;
+    }
+
+    onGridHeightChange(event: Event) {
+        this.gridHeight = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 
     onDragStartThresholdChange(event: Event) {

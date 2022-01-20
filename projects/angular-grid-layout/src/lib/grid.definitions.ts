@@ -18,7 +18,8 @@ export type KtdGridCompactType = CompactType;
 
 export interface KtdGridCfg {
     cols: number;
-    rowHeight: number; // row height in pixels
+    rowHeight: number | 'fit'; // row height in pixels
+    height: number | null;
     layout: KtdGridLayoutItem[];
     preventCollision: boolean;
     gap: number;

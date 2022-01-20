@@ -16,9 +16,14 @@
             <mat-label>Columns</mat-label>
             <input matInput type="number" [value]="cols + ''" (input)="onColsChange($event)">
         </mat-form-field>
-        <mat-form-field color="accent" style="width: 64px">
+        <mat-form-field color="accent" style="width: 120px">
             <mat-label>Row height</mat-label>
-            <input matInput type="number" [value]="rowHeight + ''" (input)="onRowHeightChange($event)">
+            <input matInput type="number" [value]="rowHeight + ''" style="width: 60%;" [disabled]="rowHeightFit" (input)="onRowHeightChange($event)">
+            <mat-checkbox style="position: absolute; right: 4px; bottom: 4px;" (change)="onRowHeightFitChange($event)">Fit</mat-checkbox>
+        </mat-form-field>
+        <mat-form-field color="accent" style="width: 94px">
+            <mat-label>Grid height</mat-label>
+            <input matInput type="number" [value]="gridHeight === null ? null : gridHeight + ''" [disabled]="!rowHeightFit" (input)="onGridHeightChange($event)">
         </mat-form-field>
         <mat-form-field color="accent" style="width: 128px">
             <mat-label>Drag Threshold</mat-label>
@@ -80,7 +85,8 @@
 
     <div class="grid-container">
         <ktd-grid [cols]="cols"
-                  [rowHeight]="rowHeight"
+                  [height]="rowHeightFit && gridHeight ? gridHeight : null"
+                  [rowHeight]="rowHeightFit ? 'fit' : rowHeight"
                   [layout]="layout"
                   [compactType]="compactType"
                   [preventCollision]="preventCollision"
@@ -118,4 +124,5 @@
     <a [routerLink]="['/custom-handles']">Custom handles</a>
     <a [routerLink]="['/real-life-example']">Real life example</a>
     <a [routerLink]="['/scroll-test']">Scroll test</a>
+    <a [routerLink]="['/row-height-fit']">Row Height Fit</a>
 </div>
