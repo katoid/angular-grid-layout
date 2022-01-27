@@ -1,0 +1,21 @@
+{
+    "path": ".",
+    "tag-prefix": "v",
+    "releaseCommitMessageFormat": "chore(release): angular-grid-layout@{{currentTag}}",
+    "packageFiles": [
+      {
+        "filename": "projects/angular-grid-layout/package.json",
+        "type": "json"
+      }
+    ],
+    "bumpFiles": [
+      {
+        "filename": "package.json",
+        "type": "json"
+      },
+      {
+        "filename": "projects/angular-grid-layout/package.json",
+        "type": "json"
+      }
+    ]
+}

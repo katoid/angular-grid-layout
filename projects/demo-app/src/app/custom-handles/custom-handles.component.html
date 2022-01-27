@@ -1,12 +1,17 @@
 <h1>Angular Grid Layout - Custom handles</h1>
 <div class="grid-container">
-    <ktd-grid [cols]="cols"
-              [rowHeight]="rowHeight"
+    <ktd-grid cols="12"
+              rowHeight="50"
+              compactType="vertical"
+              compactOnPropsChange="true"
+              preventCollision="false"
               [layout]="layout"
               [scrollableParent]="document"
-              [compactType]="compactType"
               (layoutUpdated)="onLayoutUpdated($event)">
         <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
+                       draggable="true"
+                       resizable="true"
+                       dragStartThreshold="0"
                        [id]="item.id">
             <div ktdGridDragHandle class="handle-1">Handle 1</div>
             <div class="grid-item-content">

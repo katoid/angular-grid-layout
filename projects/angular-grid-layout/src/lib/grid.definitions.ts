@@ -7,6 +7,10 @@ export interface KtdGridLayoutItem {
     y: number;
     w: number;
     h: number;
+    minW?: number;
+    minH?: number;
+    maxW?: number;
+    maxH?: number;
 }
 
 export type KtdGridCompactType = CompactType;
@@ -15,6 +19,7 @@ export interface KtdGridCfg {
     cols: number;
     rowHeight: number; // row height in pixels
     layout: KtdGridLayoutItem[];
+    preventCollision: boolean;
 }
 
 export type KtdGridLayout = KtdGridLayoutItem[];
