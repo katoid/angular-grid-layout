@@ -2,11 +2,11 @@ import {
     AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EventEmitter, Input, NgZone, OnChanges,
     OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewEncapsulation
 } from '@angular/core';
-import { coerceNumberProperty } from './coercion/number-property';
+import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { ktdGridItemDragging, ktdGridItemResizing } from './utils/grid.utils';
+import { ktdGridItemDragging, ktdGridItemResizing, limitNumberWithinRange } from './utils/grid.utils';
 import { compact, CompactType } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout,
@@ -17,6 +17,7 @@ import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 import { getMutableClientRect } from './utils/client-rect';
 import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
+import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -46,8 +47,8 @@ function layoutToRenderItems(config: KtdGridCfg, width: number, height: number):
         renderItems[item.id] = {
             id: item.id,
             top: item.y === 0 ? 0 : item.y * rowHeight,
-            left: item.x * (width / cols),
-            width: item.w * (width / cols),
+            left: item.x * Math.floor(width / cols),
+            width: item.w * Math.floor(width / cols),
             height: item.h * rowHeight
         };
     }
@@ -123,11 +124,35 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      */
     @Input() scrollableParent: HTMLElement | Document | string | null = null;
 
-    /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
-    @Input() scrollSpeed: number = 2;
-
     /** Whether or not to update the internal layout when some dependent property change. */
-    @Input() compactOnPropsChange = true;
+    @Input()
+    get compactOnPropsChange(): boolean { return this._compactOnPropsChange; }
+
+    set compactOnPropsChange(value: boolean) {
+        this._compactOnPropsChange = coerceBooleanProperty(value);
+    }
+
+    private _compactOnPropsChange: boolean = true;
+
+    /** If true, grid items won't change position when being dragged over. Handy when using no compaction */
+    @Input()
+    get preventCollision(): boolean { return this._preventCollision; }
+
+    set preventCollision(value: boolean) {
+        this._preventCollision = coerceBooleanProperty(value);
+    }
+
+    private _preventCollision: boolean = false;
+
+    /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
+    @Input()
+    get scrollSpeed(): number { return this._scrollSpeed; }
+
+    set scrollSpeed(value: number) {
+        this._scrollSpeed = coerceNumberProperty(value, 2);
+    }
+
+    private _scrollSpeed: number = 2;
 
     /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
     @Input()
@@ -184,7 +209,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         return {
             cols: this.cols,
             rowHeight: this.rowHeight,
-            layout: this.layout
+            layout: this.layout,
+            preventCollision: this.preventCollision,
         };
     }
 
@@ -385,7 +411,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {
                             layout: currentLayout,
                             rowHeight: this.rowHeight,
-                            cols: this.cols
+                            cols: this.cols,
+                            preventCollision: this.preventCollision
                         }, this.compactType, {
                             pointerDownEvent,
                             pointerDragEvent,
@@ -400,7 +427,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         this._gridItemsRenderData = layoutToRenderItems({
                             cols: this.cols,
                             rowHeight: this.rowHeight,
-                            layout: newLayout
+                            layout: newLayout,
+                            preventCollision: this.preventCollision,
                         }, gridElemClientRect.width, gridElemClientRect.height);
 
                         const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);
@@ -431,13 +459,18 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             this.renderer.removeChild(this.elementRef.nativeElement, placeholderElement);
 
                             if (newLayout) {
+                                // TODO: newLayout should already be pruned. If not, it should have type Layout, not KtdGridLayout as it is now.
                                 // Prune react-grid-layout compact extra properties.
                                 observer.next(newLayout.map(item => ({
                                     id: item.id,
                                     x: item.x,
                                     y: item.y,
                                     w: item.w,
-                                    h: item.h
+                                    h: item.h,
+                                    minW: item.minW,
+                                    minH: item.minH,
+                                    maxW: item.maxW,
+                                    maxH: item.maxH,
                                 })) as KtdGridLayout);
                             } else {
                                 // TODO: Need we really to emit if there is no layout change but drag started and ended?
@@ -456,5 +489,17 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             };
         });
     }
+
+
+    // tslint:disable-next-line
+    static ngAcceptInputType_cols: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_rowHeight: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_scrollSpeed: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_compactOnPropsChange: BooleanInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_preventCollision: BooleanInput;
 }
 

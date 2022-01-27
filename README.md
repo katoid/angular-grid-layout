@@ -4,7 +4,7 @@
 [![commitizen](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/commits/main)
 [![PRs](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/katoid/angular-grid-layout/compare)
 
-Grid with draggable and resizable items for Angular Applications. Perfect fit with highly customizable dashboards.
+Angular Grid Layout is a grid layout system with draggable and resizable items for Angular Applications. It is mainly designed to create highly customizable dashboards.
 
 Its core functionalities are based in the well known [React-Grid-Layout](https://github.com/STRML/react-grid-layout) library. It can be considered a 'port' (with some changes) to the Angular ecosystem.
 Both cover the same necessities.
@@ -70,8 +70,8 @@ rowHeight: number = 100;
 layout: KtdGridLayout = [
     {id: '0', x: 0, y: 0, w: 3, h: 3},
     {id: '1', x: 3, y: 0, w: 3, h: 3},
-    {id: '2', x: 0, y: 3, w: 3, h: 3},
-    {id: '3', x: 3, y: 3, w: 3, h: 3},
+    {id: '2', x: 0, y: 3, w: 3, h: 3, minW: 2, minH: 3},
+    {id: '3', x: 3, y: 3, w: 3, h: 3, minW: 2, maxW: 3, minH: 2, maxH: 5},
 ];
 trackById = ktdTrackById
 ```
@@ -105,6 +105,9 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 
 /** Whether or not to update the internal layout when some dependent property change. */
 @Input() compactOnPropsChange = true;
+
+/** If true, grid items won't change position when being dragged over. Handy when using no compaction */
+@Input() preventCollision = false;
 
 /** Emits when layout change */
 @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
@@ -149,10 +152,10 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Add Real life example with charts and grid items with some kind of controls.
 - [x] Add dragStartThreshold option to grid items.
 - [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
+- [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
 - [ ] Add grid gap feature.
 - [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
-- [ ] Grid support for minWidth and minHeight on grid items.
 - [ ] Customizable drag placeholder.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').

@@ -10,6 +10,8 @@ import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-hand
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
 import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
+import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
+import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
 
 @Component({
     selector: 'ktd-grid-item',
@@ -26,9 +28,6 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
     @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
 
-    /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
-    @Input() dragStartThreshold: number = 0;
-
     dragStart$: Observable<MouseEvent | TouchEvent>;
     resizeStart$: Observable<MouseEvent | TouchEvent>;
 
@@ -44,6 +43,17 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
     private _id: string;
 
+    /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
+    @Input()
+    get dragStartThreshold(): number { return this._dragStartThreshold; }
+
+    set dragStartThreshold(val: number) {
+        this._dragStartThreshold = coerceNumberProperty(val);
+    }
+
+    private _dragStartThreshold: number = 0;
+
+
     /** Whether the item is draggable or not. Defaults to true. */
     @Input()
     get draggable(): boolean {
@@ -51,8 +61,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
     set draggable(val: boolean) {
-        this._draggable = val;
-        this._draggable$.next(val);
+        this._draggable = coerceBooleanProperty(val);
+        this._draggable$.next(this._draggable);
     }
 
     private _draggable: boolean = true;
@@ -65,8 +75,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
     set resizable(val: boolean) {
-        this._resizable = val;
-        this._resizable$.next(val);
+        this._resizable = coerceBooleanProperty(val);
+        this._resizable$.next(this._resizable);
     }
 
     private _resizable: boolean = true;
@@ -186,5 +196,13 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
             })
         );
     }
+
+
+    // tslint:disable-next-line
+    static ngAcceptInputType_draggable: BooleanInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_resizable: BooleanInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_dragStartThreshold: NumberInput;
 
 }

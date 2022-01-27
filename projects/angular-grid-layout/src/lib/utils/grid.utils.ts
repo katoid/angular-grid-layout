@@ -1,4 +1,4 @@
-import { compact, CompactType, LayoutItem, moveElement } from './react-grid-layout.utils';
+import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElement } from './react-grid-layout.utils';
 import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
@@ -17,7 +17,7 @@ export function ktdTrackById(index: number, item: {id: string}) {
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
     return compact(layout, compactType, cols)
         // Prune react-grid-layout compact extra properties.
-        .map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}));
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
 }
 
 function screenXPosToGridValue(screenXPos: number, cols: number, width: number): number {
@@ -98,7 +98,7 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
         layoutItem.x,
         layoutItem.y,
         true,
-        false,
+        config.preventCollision,
         compactionType,
         config.cols
     );
@@ -147,10 +147,45 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
         h: screenYPosToGridValue(height, config.rowHeight, gridElemClientRect.height)
     };
 
-    layoutItem.w = Math.max(1, layoutItem.w);
-    layoutItem.h = Math.max(1, layoutItem.h);
+    layoutItem.w = limitNumberWithinRange(layoutItem.w, layoutItem.minW, layoutItem.maxW);
+    layoutItem.h = limitNumberWithinRange(layoutItem.h, layoutItem.minH, layoutItem.maxH);
+
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.w = Math.max(1, config.cols - layoutItem.x);
+    }
+
+    if (config.preventCollision) {
+        const maxW = layoutItem.w;
+        const maxH = layoutItem.h;
+
+        let colliding = hasCollision(config.layout, layoutItem);
+        let shrunkDimension: 'w' | 'h' | undefined;
+
+        while (colliding) {
+            shrunkDimension = getDimensionToShrink(layoutItem, shrunkDimension);
+            layoutItem[shrunkDimension]--;
+            colliding = hasCollision(config.layout, layoutItem);
+        }
+
+        if (shrunkDimension === 'w') {
+            layoutItem.h = maxH;
+
+            colliding = hasCollision(config.layout, layoutItem);
+            while (colliding) {
+                layoutItem.h--;
+                colliding = hasCollision(config.layout, layoutItem);
+            }
+        }
+        if (shrunkDimension === 'h') {
+            layoutItem.w = maxW;
+
+            colliding = hasCollision(config.layout, layoutItem);
+            while (colliding) {
+                layoutItem.w--;
+                colliding = hasCollision(config.layout, layoutItem);
+            }
+        }
+
     }
 
     const newLayoutItems: LayoutItem[] = config.layout.map((item) => {
@@ -166,4 +201,29 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
             height,
         }
     };
+}
+
+function hasCollision(layout: Layout, layoutItem: LayoutItem): boolean {
+    return !!getFirstCollision(layout, layoutItem);
+}
+
+function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
+    if (layoutItem.h <= 1) {
+        return 'w';
+    }
+    if (layoutItem.w <= 1) {
+        return 'h';
+    }
+
+    return lastShrunk === 'w' ? 'h' : 'w';
+}
+
+/**
+ * Given the current number and min/max values, returns the number within the range
+ * @param number can be any numeric value
+ * @param min minimum value of range
+ * @param max maximum value of range
+ */
+export function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
+    return Math.min(Math.max(num, min < 1 ? 1 : min), max);
 }
