@@ -1,4 +1,8 @@
 <h1>Angular Grid Layout - Scroll test</h1>
+<mat-form-field color="accent">
+    <mat-label>Scroll Speed</mat-label>
+    <input matInput type="number" [value]="scrollSpeed + ''" (input)="onScrollSpeedChange($event)">
+</mat-form-field>
 <div class="grids-container">
     <div>
         <h2>Scroll Vertical</h2>
@@ -8,6 +12,7 @@
                       [rowHeight]="50"
                       [layout]="layout1"
                       [scrollableParent]="gridContainer1"
+                      [scrollSpeed]="scrollSpeed"
                       [compactType]="compactType">
                 <ktd-grid-item *ngFor="let item of layout1; trackBy:trackById"
                                [id]="item.id">
@@ -24,6 +29,7 @@
                       [rowHeight]="50"
                       [layout]="layout2"
                       [scrollableParent]="gridContainer2"
+                      [scrollSpeed]="scrollSpeed"
                       [compactType]="compactType">
                 <ktd-grid-item *ngFor="let item of layout2; trackBy:trackById"
                                [id]="item.id">
@@ -32,7 +38,6 @@
             </ktd-grid>
         </div>
     </div>
-
 </div>
 
 <h2 style="margin-top: 16px">Other examples: </h2>

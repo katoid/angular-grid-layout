@@ -7,6 +7,7 @@ import {
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
+import { coerceNumberProperty } from '@angular/cdk/coercion';
 
 @Component({
     selector: 'ktd-playground',
@@ -54,6 +55,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     disableResize = false;
     disableRemove = false;
     autoResize = true;
+    preventCollision = false;
     isDragging = false;
     isResizing = false;
     resizeSubscription: Subscription;
@@ -129,16 +131,20 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         this.autoResize = checked;
     }
 
+    onPreventCollisionChange(checked: boolean) {
+        this.preventCollision = checked;
+    }
+
     onColsChange(event: Event) {
-        this.cols = parseInt((event.target as HTMLInputElement).value, 10);
+        this.cols = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 
     onRowHeightChange(event: Event) {
-        this.rowHeight = parseInt((event.target as HTMLInputElement).value, 10);
+        this.rowHeight = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 
     onDragStartThresholdChange(event: Event) {
-        this.dragStartThreshold = parseInt((event.target as HTMLInputElement).value, 10);
+        this.dragStartThreshold = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 
     generateLayout() {

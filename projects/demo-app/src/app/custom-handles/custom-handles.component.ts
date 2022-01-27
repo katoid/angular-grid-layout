@@ -12,9 +12,6 @@ import { DOCUMENT } from '@angular/common';
 export class KtdCustomHandlesComponent implements OnInit, OnDestroy {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;
     trackById = ktdTrackById;
-    cols = 12;
-    rowHeight = 50;
-    compactType: 'vertical' | 'horizontal' | null = 'vertical';
     layout: KtdGridLayout = [
         {id: '0', x: 0, y: 0, w: 3, h: 3},
         {id: '1', x: 3, y: 0, w: 3, h: 4},

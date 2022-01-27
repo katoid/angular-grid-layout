@@ -12,6 +12,10 @@
         background: #313131;
     }
 
+    ktd-grid {
+        transition: height 500ms ease;
+    }
+
     ktd-grid-item {
         box-sizing: border-box;
         background: #ccc;

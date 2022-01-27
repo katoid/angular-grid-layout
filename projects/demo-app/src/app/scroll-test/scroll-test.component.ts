@@ -3,6 +3,7 @@ import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-g
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { DOCUMENT } from '@angular/common';
+import { coerceNumberProperty } from '@angular/cdk/coercion';
 
 function generateLayout2(cols: number, size: number) {
     const rows = cols;
@@ -37,6 +38,7 @@ export class KtdScrollTestComponent implements OnInit, OnDestroy {
     cols = 12;
     rowHeight = 50;
     compactType: 'vertical' | 'horizontal' | null = 'vertical';
+    scrollSpeed = 2;
     layout1: KtdGridLayout = [
         {id: '0', x: 0, y: 0, w: 3, h: 3},
         {id: '1', x: 3, y: 0, w: 3, h: 3},
@@ -75,5 +77,9 @@ export class KtdScrollTestComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.resizeSubscription.unsubscribe();
+    }
+
+    onScrollSpeedChange(event: Event) {
+        this.scrollSpeed = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 }
