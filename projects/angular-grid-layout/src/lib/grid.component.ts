@@ -6,7 +6,7 @@ import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { ktdGridItemDragging, ktdGridItemResizing } from './utils/grid.utils';
+import { ktdGridItemDragging, ktdGridItemResizing, limitNumberWithinRange } from './utils/grid.utils';
 import { compact, CompactType } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout,
@@ -123,9 +123,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * If no data provided or null autoscroll is not performed.
      */
     @Input() scrollableParent: HTMLElement | Document | string | null = null;
-
-    /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
-    @Input() scrollSpeed: number = 2;
 
     /** Whether or not to update the internal layout when some dependent property change. */
     @Input()
