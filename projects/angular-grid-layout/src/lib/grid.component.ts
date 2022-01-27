@@ -70,24 +70,6 @@ export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number
     };
 }
 
-export function getUpdatedDimentions(layout: KtdGridLayout, cols: number) {
-    const updatedLayout: KtdGridLayout = layout.map((item: KtdGridLayoutItem) => {
-
-        const newW = limitNumberWithinRange(item.w, item.minW, item.maxW);
-        const newH = limitNumberWithinRange(item.h, item.minH, item.maxH);
-        const newX = item.x > cols - newW ? (cols - newW) : (item.x < 0 ? 0 : item.x);
-
-        return {
-            ...item,
-            w: newW > cols - newX ? cols - newX : newW,
-            h: newH,
-            x: newX,
-        };
-    });
-
-    return updatedLayout;
-}
-
 // tslint:disable-next-line:ktd-prefix-code
 export function __gridItemGetRenderDataFactoryFunc(gridCmp: KtdGridComponent) {
     // tslint:disable-next-line:only-arrow-functions
@@ -218,7 +200,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
          * binded in the component with it's input [layout]. In this scenario, we would always calculate one unnecessary change on the layout when
          * it is re-binded on the input.
          */
-        this._layout = getUpdatedDimentions(layout, this.cols);
+        this._layout = layout;
     }
 
     private _layout: KtdGridLayout;
