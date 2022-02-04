@@ -25,6 +25,12 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
 
+    /** Min and max size input properties. Any of these would 'override' the min/max values specified in the layout. */
+    @Input() minW?: number;
+    @Input() minH?: number;
+    @Input() maxW?: number;
+    @Input() maxH?: number;
+
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
     @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
 
@@ -198,6 +204,14 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
 
+    // tslint:disable-next-line
+    static ngAcceptInputType_minW: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_minH: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_maxW: NumberInput;
+    // tslint:disable-next-line
+    static ngAcceptInputType_maxH: NumberInput;
     // tslint:disable-next-line
     static ngAcceptInputType_draggable: BooleanInput;
     // tslint:disable-next-line

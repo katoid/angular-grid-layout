@@ -131,6 +131,12 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 /** Id of the grid item. This property is strictly compulsory. */
 @Input() id: string;
 
+/** Min and max sizes of the grid item. Any of these would 'override' the min/max values specified in the layout. **/
+@Input() minW?: number;
+@Input() minH?: number;
+@Input() maxW?: number;
+@Input() maxH?: number;
+
 /** Whether the item is draggable or not. Defaults to true. */
 @Input() draggable: boolean = true;
 

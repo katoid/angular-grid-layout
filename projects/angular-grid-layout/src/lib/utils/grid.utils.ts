@@ -2,6 +2,7 @@ import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElemen
 import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
+import { KtdGridItemComponent } from '../grid-item/grid-item.component';
 
 /** Tracks items by id. This function is mean to be used in conjunction with the ngFor that renders the 'ktd-grid-items' */
 export function ktdTrackById(index: number, item: {id: string}) {
@@ -48,13 +49,15 @@ export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayou
 
 /**
  * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
- * @param gridItemId id of the grid item that is been dragged
+ * @param gridItem grid item that is been dragged
  * @param config current grid configuration
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
     const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
+
+    const gridItemId = gridItem.id;
 
     const draggingElemPrevItem = config.layout.find(item => item.id === gridItemId)!;
 
@@ -118,13 +121,14 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
 
 /**
  * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
- * @param gridItemId id of the grid item that is been dragged
+ * @param gridItem grid item that is been dragged
  * @param config current grid configuration
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
     const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
+    const gridItemId = gridItem.id;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
     const clientStartY = ktdPointerClientY(pointerDownEvent);
@@ -147,8 +151,8 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
         h: screenYPosToGridValue(height, config.rowHeight, gridElemClientRect.height)
     };
 
-    layoutItem.w = limitNumberWithinRange(layoutItem.w, layoutItem.minW, layoutItem.maxW);
-    layoutItem.h = limitNumberWithinRange(layoutItem.h, layoutItem.minH, layoutItem.maxH);
+    layoutItem.w = limitNumberWithinRange(layoutItem.w, gridItem.minW ?? layoutItem.minW, gridItem.maxW ?? layoutItem.maxW);
+    layoutItem.h = limitNumberWithinRange(layoutItem.h, gridItem.minH ?? layoutItem.minH, gridItem.maxH ?? layoutItem.maxH);
 
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.w = Math.max(1, config.cols - layoutItem.x);
