@@ -320,7 +320,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
                         // Perform drag sequence
                         return this.performDragSequence$(gridItem, event, (gridItemId, config, compactionType, draggingData) =>
-                            calcNewStateFunc(gridItemId, config, compactionType, draggingData)
+                            calcNewStateFunc(gridItem, config, compactionType, draggingData)
                         ).pipe(map((layout) => ({layout, gridItem, type})));
 
                     }));
@@ -346,7 +346,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * @param calcNewStateFunc function that return the new layout state and the drag element position
      */
     private performDragSequence$(gridItem: KtdGridItemComponent, pointerDownEvent: MouseEvent | TouchEvent,
-                                 calcNewStateFunc: (gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridLayout> {
+                                 calcNewStateFunc: (gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData) => { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect }): Observable<KtdGridLayout> {
 
         return new Observable<KtdGridLayout>((observer: Observer<KtdGridLayout>) => {
             // Retrieve grid (parent) and gridItem (draggedElem) client rects.
@@ -408,7 +408,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                          */
                         const currentLayout: KtdGridLayout = newLayout || this.layout;
 
-                        const {layout, draggedItemPos} = calcNewStateFunc(gridItem.id, {
+                        const {layout, draggedItemPos} = calcNewStateFunc(gridItem, {
                             layout: currentLayout,
                             rowHeight: this.rowHeight,
                             cols: this.cols,
