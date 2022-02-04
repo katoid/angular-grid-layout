@@ -11,7 +11,11 @@ import { KtdTableSortingComponent } from './table-sorting/table-sorting.componen
 import { MatSortModule } from '@angular/material/sort';
 
 const routes: Routes = [
-    {path: 'real-life-example', component: KtdRealLifeExampleComponent},
+    {
+        path: 'real-life-example',
+        component: KtdRealLifeExampleComponent,
+        data: {title: 'Angular Grid Layout - Real life example'}
+    },
 ];
 
 @NgModule({

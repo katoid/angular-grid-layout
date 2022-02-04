@@ -10,7 +10,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 
 const routes: Routes = [
-    {path: 'playground', component: KtdPlaygroundComponent},
+    {
+        path: 'playground',
+        component: KtdPlaygroundComponent,
+        data: {title: 'Angular Grid Layout - Playground'}
+    },
 ];
 
 

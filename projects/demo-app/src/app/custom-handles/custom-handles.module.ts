@@ -6,7 +6,11 @@ import { RouterModule, Routes } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 
 const routes: Routes = [
-    {path: 'custom-handles', component: KtdCustomHandlesComponent},
+    {
+        path: 'custom-handles',
+        component: KtdCustomHandlesComponent,
+        data: {title: 'Angular Grid Layout - Custom handles'}
+    },
 ];
 
 @NgModule({
