@@ -1,7 +1,7 @@
 :host {
     width: 100%;
     display: block;
-    background: #121212;
+    background-color: var(--ktd-background-color-step-50);
     box-sizing: border-box;
 
     .app-header {
@@ -9,8 +9,8 @@
         align-items: center;
         justify-content: space-between;
         padding: 12px 24px;
-        background-color: #222222;
-        border-bottom: 1px solid #424242;
+        background-color: var(--ktd-background-color-step-100);
+        border-bottom: 1px solid var(--ktd-border-color);
 
         h1 {
             margin-bottom: 0;

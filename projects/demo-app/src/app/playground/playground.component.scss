@@ -1,7 +1,7 @@
 :host {
     display: block;
     width: 100%;
-    padding: 24px;
+    padding: 48px 32px;
     box-sizing: border-box;
 
     .playground-container {
@@ -22,9 +22,9 @@
     .grid-container {
         padding: 4px;
         box-sizing: border-box;
-        border: 1px solid gray;
+        border: 1px solid var(--ktd-border-color);
+        background-color: var(--ktd-background-color);
         border-radius: 2px;
-        background: #313131;
     }
 
     ktd-grid-item {

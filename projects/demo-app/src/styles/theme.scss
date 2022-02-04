@@ -1,23 +1,79 @@
 @use '~@angular/material' as mat;
+@use 'variables' as variables;
+@use 'sass:map';
 
 $app-primary: mat.define-palette(mat.$orange-palette, 500);
 $app-accent:  mat.define-palette(mat.$orange-palette, 300);
 $app-warn:    mat.define-palette(mat.$red-palette, 400);
-$app-theme:   mat.define-dark-theme((
-    color: (
-        primary: $app-primary,
-        accent: $app-accent,
-        warn: $app-warn,
-    )
-));
+
+$dark-primary-text: rgba(black, 0.87);
+$dark-secondary-text: rgba(black, 0.54);
+$dark-disabled-text: rgba(black, 0.38);
+$dark-dividers: rgba(black, 0.12);
+$dark-focused: rgba(black, 0.12);
+$light-primary-text: white;
+$light-secondary-text: rgba(white, 0.7);
+$light-disabled-text: rgba(white, 0.5);
+$light-dividers: rgba(white, 0.12);
+$light-focused: rgba(white, 0.12);
+
+
+// Foreground palette for dark themes.
+$dark-theme-foreground-palette: (
+    base:              white,
+    divider:           $light-dividers,
+    dividers:          $light-dividers,
+    disabled:          $light-disabled-text,
+    disabled-button:   rgba(white, 0.3),
+    disabled-text:     $light-disabled-text,
+    elevation:         black,
+    hint-text:         $light-disabled-text,
+    secondary-text:    $light-secondary-text,
+    icon:              white,
+    icons:             white,
+    text:              rgba(white, 0.87),
+    slider-min:        white,
+    slider-off:        rgba(white, 0.3),
+    slider-off-active: rgba(white, 0.3),
+);
+
+// Background palette for dark themes.
+$dark-theme-background-palette: (
+    status-bar: black,
+    app-bar:    map.get(mat.$grey-palette, 900),
+    background: #2a2a2a,
+    hover:      rgba(white, 0.04),
+    card:       map.get(mat.$grey-palette, 800),
+    dialog:     map.get(mat.$grey-palette, 800),
+    disabled-button: rgba(white, 0.12),
+    raised-button: map.get(mat.$grey-palette, 800),
+    focused-button: $light-focused,
+    selected-button: map.get(mat.$grey-palette, 900),
+    selected-disabled-button: map.get(mat.$grey-palette, 800),
+    disabled-button-toggle: black,
+    unselected-chip: map.get(mat.$grey-palette, 700),
+    disabled-list-option: black,
+    tooltip: map.get(mat.$grey-palette, 700),
+);
+
+$app-theme: (
+    primary: $app-primary,
+    accent: $app-accent,
+    warn: $app-warn,
+    is-dark: true,
+    foreground: $dark-theme-foreground-palette,
+    background: $dark-theme-background-palette,
+);
+
 
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Important: include this mixin only once.
 @include mat.core();
 
-// App theme
-$app-theme: mat.define-dark-theme($app-primary, $app-accent, $app-warn);
-
 // Specifies the theming for angular material components
 @include mat.all-component-themes($app-theme);
+
+body {
+    @include variables.cssVariables($app-theme)
+}
