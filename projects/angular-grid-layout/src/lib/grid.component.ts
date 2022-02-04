@@ -459,13 +459,18 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             this.renderer.removeChild(this.elementRef.nativeElement, placeholderElement);
 
                             if (newLayout) {
+                                // TODO: newLayout should already be pruned. If not, it should have type Layout, not KtdGridLayout as it is now.
                                 // Prune react-grid-layout compact extra properties.
                                 observer.next(newLayout.map(item => ({
                                     id: item.id,
                                     x: item.x,
                                     y: item.y,
                                     w: item.w,
-                                    h: item.h
+                                    h: item.h,
+                                    minW: item.minW,
+                                    minH: item.minH,
+                                    maxW: item.maxW,
+                                    maxH: item.maxH,
                                 })) as KtdGridLayout);
                             } else {
                                 // TODO: Need we really to emit if there is no layout change but drag started and ended?

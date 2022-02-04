@@ -17,7 +17,7 @@ export function ktdTrackById(index: number, item: {id: string}) {
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
     return compact(layout, compactType, cols)
         // Prune react-grid-layout compact extra properties.
-        .map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}));
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
 }
 
 function screenXPosToGridValue(screenXPos: number, cols: number, width: number): number {
@@ -147,8 +147,9 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
         h: screenYPosToGridValue(height, config.rowHeight, gridElemClientRect.height)
     };
 
-    layoutItem.w = Math.max(1, layoutItem.w);
-    layoutItem.h = Math.max(1, layoutItem.h);
+    layoutItem.w = limitNumberWithinRange(layoutItem.w, layoutItem.minW, layoutItem.maxW);
+    layoutItem.h = limitNumberWithinRange(layoutItem.h, layoutItem.minH, layoutItem.maxH);
+
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.w = Math.max(1, config.cols - layoutItem.x);
     }
@@ -215,4 +216,14 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
     }
 
     return lastShrunk === 'w' ? 'h' : 'w';
+}
+
+/**
+ * Given the current number and min/max values, returns the number within the range
+ * @param number can be any numeric value
+ * @param min minimum value of range
+ * @param max maximum value of range
+ */
+function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
+    return Math.min(Math.max(num, min < 1 ? 1 : min), max);
 }
