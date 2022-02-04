@@ -70,8 +70,8 @@ rowHeight: number = 100;
 layout: KtdGridLayout = [
     {id: '0', x: 0, y: 0, w: 3, h: 3},
     {id: '1', x: 3, y: 0, w: 3, h: 3},
-    {id: '2', x: 0, y: 3, w: 3, h: 3},
-    {id: '3', x: 3, y: 3, w: 3, h: 3},
+    {id: '2', x: 0, y: 3, w: 3, h: 3, minW: 2, minH: 3},
+    {id: '3', x: 3, y: 3, w: 3, h: 3, minW: 2, maxW: 3, minH: 2, maxH: 5},
 ];
 trackById = ktdTrackById
 ```
@@ -152,10 +152,10 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Add Real life example with charts and grid items with some kind of controls.
 - [x] Add dragStartThreshold option to grid items.
 - [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
+- [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
 - [ ] Add grid gap feature.
 - [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
-- [ ] Grid support for minWidth and minHeight on grid items.
 - [ ] Customizable drag placeholder.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
