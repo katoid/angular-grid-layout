@@ -1,4 +1,4 @@
-// tslint:disable
+/* eslint-disable */
 export type NumberInput = string | number | null | undefined;
 
 /** Coerces a data-bound value (typically a string) to a number. */

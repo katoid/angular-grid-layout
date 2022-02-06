@@ -6,7 +6,7 @@
  */
 
 // Disable lint since we don't want to modify this code
-// tslint:disable
+/* eslint-disable */
 export type LayoutItem = {
     w: number;
     h: number;

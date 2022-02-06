@@ -15,7 +15,7 @@ import {
 import { ktdMouseOrTouchEnd, ktdPointerClientX, ktdPointerClientY } from './utils/pointer.utils';
 import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
-import { getMutableClientRect } from './utils/client-rect';
+import { getMutableClientRect, KtdClientRect } from './utils/client-rect';
 import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
 import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 
@@ -59,7 +59,7 @@ function getGridHeight(layout: KtdGridLayout, rowHeight: number): number {
     return layout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight), 0);
 }
 
-// tslint:disable-next-line
+// eslint-disable-next-line @katoid/prefix-exported-code
 export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number>): KtdGridItemRenderData<string> {
     return {
         id: renderItem.id,
@@ -70,9 +70,8 @@ export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number
     };
 }
 
-// tslint:disable-next-line:ktd-prefix-code
+// eslint-disable-next-line @katoid/prefix-exported-code
 export function __gridItemGetRenderDataFactoryFunc(gridCmp: KtdGridComponent) {
-    // tslint:disable-next-line:only-arrow-functions
     return function(id: string) {
         return parseRenderItemToPixels(gridCmp.getItemRenderData(id));
     };
@@ -350,8 +349,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
         return new Observable<KtdGridLayout>((observer: Observer<KtdGridLayout>) => {
             // Retrieve grid (parent) and gridItem (draggedElem) client rects.
-            const gridElemClientRect: ClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
-            const dragElemClientRect: ClientRect = getMutableClientRect(gridItem.elementRef.nativeElement as HTMLElement);
+            const gridElemClientRect: KtdClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
+            const dragElemClientRect: KtdClientRect = getMutableClientRect(gridItem.elementRef.nativeElement as HTMLElement);
 
             const scrollableParent = typeof this.scrollableParent === 'string' ? document.getElementById(this.scrollableParent) : this.scrollableParent;
 
@@ -491,15 +490,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
 
-    // tslint:disable-next-line
     static ngAcceptInputType_cols: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_rowHeight: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_scrollSpeed: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_compactOnPropsChange: BooleanInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_preventCollision: BooleanInput;
 }
 

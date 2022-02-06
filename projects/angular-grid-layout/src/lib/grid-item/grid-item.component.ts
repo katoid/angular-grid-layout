@@ -204,19 +204,12 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
 
-    // tslint:disable-next-line
     static ngAcceptInputType_minW: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_minH: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_maxW: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_maxH: NumberInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_draggable: BooleanInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_resizable: BooleanInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_dragStartThreshold: NumberInput;
 
 }
