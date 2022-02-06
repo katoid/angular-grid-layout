@@ -1,7 +1,7 @@
 import { animationFrameScheduler, fromEvent, interval, NEVER, Observable } from 'rxjs';
 import { distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import { ktdNormalizePassiveListenerOptions } from './passive-listeners';
-import { getMutableClientRect } from './client-rect';
+import { getMutableClientRect, KtdClientRect } from './client-rect';
 import { ktdNoEmit } from './operators';
 
 /**
@@ -56,7 +56,7 @@ function incrementHorizontalScroll(node: HTMLElement | Window, amount: number) {
  * @param clientRect Dimensions of the node.
  * @param pointerY Position of the user's pointer along the y axis.
  */
-function getVerticalScrollDirection(clientRect: ClientRect, pointerY: number) {
+function getVerticalScrollDirection(clientRect: KtdClientRect, pointerY: number) {
     const {top, bottom, height} = clientRect;
     const yThreshold = height * SCROLL_PROXIMITY_THRESHOLD;
 
@@ -74,7 +74,7 @@ function getVerticalScrollDirection(clientRect: ClientRect, pointerY: number) {
  * @param clientRect Dimensions of the node.
  * @param pointerX Position of the user's pointer along the x axis.
  */
-function getHorizontalScrollDirection(clientRect: ClientRect, pointerX: number) {
+function getHorizontalScrollDirection(clientRect: KtdClientRect, pointerX: number) {
     const {left, right, width} = clientRect;
     const xThreshold = width * SCROLL_PROXIMITY_THRESHOLD;
 
@@ -130,7 +130,7 @@ export interface KtdScrollIfNearElementOptions {
 export function ktdScrollIfNearElementClientRect$(scrollableParent: HTMLElement | Document, options?: KtdScrollIfNearElementOptions): (source$: Observable<{ pointerX: number, pointerY: number }>) => Observable<any> {
 
     let scrollNode: Window | HTMLElement;
-    let scrollableParentClientRect: ClientRect;
+    let scrollableParentClientRect: KtdClientRect;
     let scrollableParentScrollWidth: number;
 
     if (scrollableParent === document) {
@@ -234,7 +234,7 @@ function getViewportSize(): { width: number, height: number } {
 }
 
 /** Gets a ClientRect for the viewport's bounds. */
-function getViewportRect(): ClientRect {
+function getViewportRect(): KtdClientRect {
     // Use the document element's bounding rect rather than the window scroll properties
     // (e.g. pageYOffset, scrollY) due to in issue in Chrome and IE where window scroll
     // properties and client coordinates (boundingClientRect, clientX/Y, etc.) are in different

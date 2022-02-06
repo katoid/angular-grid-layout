@@ -1,4 +1,4 @@
-// tslint:disable
+/* eslint-disable */
 /**
  * Type describing the allowed values for a boolean input.
  * @docs-private
