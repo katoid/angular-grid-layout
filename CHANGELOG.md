@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/katoid/angular-grid-layout/compare/v1.1.0...v1.2.0) (2022-02-07)
+
+
+### Features
+
+* **grid-item:** grid item accepts minW, minH maxW and maxH as @Input properties ([273d62c](https://github.com/katoid/angular-grid-layout/commit/273d62c4a08579908791bcd41160433662bf99ce))
+
 ## [1.1.0](https://github.com/katoid/angular-grid-layout/compare/v0.2.0...v1.1.0) (2022-02-04)
 
 ### Chore
