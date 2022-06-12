@@ -3,7 +3,7 @@ import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-g
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';
-import { AreaChartStackedComponent } from '@swimlane/ngx-charts';
+import { AreaChartStackedComponent, Color, ScaleType, LegendPosition } from '@swimlane/ngx-charts';
 import { DOCUMENT } from '@angular/common';
 
 @Component({
@@ -46,17 +46,29 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
     yAxisLabel: string = 'Population';
     timeline: boolean = true;
 
-    colorScheme = {
-        domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5']
+    colorScheme: Color = {
+        domain: ['#5AA454', '#E44D25', '#CFC0BB', '#7aa3e5', '#a8385d', '#aae3f5'],
+        group: ScaleType.Ordinal,
+        selectable: true,
+        name: 'Customer Usage'
     };
 
-    colorScheme2 = {
-        domain: ['#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#af7aa1']
+    colorScheme2: Color = {
+        domain: ['#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#af7aa1'],
+        group: ScaleType.Ordinal,
+        selectable: true,
+        name: 'vertical stacked'
     };
 
-    colorSchemeGradientLinear = {
-        domain: ['#4e79a7', '#f28e2c', '#e15759']
+    colorSchemeGradientLinear: Color = {
+        domain: ['#4e79a7', '#f28e2c', '#e15759'],
+        group: ScaleType.Ordinal,
+        selectable: true,
+        name: 'color gradient'
     };
+
+    legendBelow = LegendPosition.Below;
+    schemeType = ScaleType.Linear;
 
 
     private resizeSubscription: Subscription;
