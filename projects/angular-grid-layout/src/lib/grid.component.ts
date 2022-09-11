@@ -254,6 +254,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     ngAfterContentInit() {
         this.initSubscriptions();
+        this.calculateRenderData();
     }
 
     ngAfterContentChecked() {
