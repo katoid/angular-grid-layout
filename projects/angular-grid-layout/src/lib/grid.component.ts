@@ -48,15 +48,15 @@ function layoutToRenderItems(config: KtdGridCfg, width: number, height: number):
             id: item.id,
             top: item.y === 0 ? 0 : item.y * rowHeight,
             left: item.x * (width / cols),
-            width: item.w * (width / cols),
-            height: item.h * rowHeight
+            width: Math.max(item.w, item.minW ?? 0) * (width / cols),
+            height: Math.max(item.h, item.minH ?? 0) * rowHeight
         };
     }
     return renderItems;
 }
 
 function getGridHeight(layout: KtdGridLayout, rowHeight: number): number {
-    return layout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight), 0);
+    return layout.reduce((acc, cur) => Math.max(acc, (cur.y + Math.max(cur.h, cur.minH ?? 0)) * rowHeight), 0);
 }
 
 // eslint-disable-next-line @katoid/prefix-exported-code
@@ -254,6 +254,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     ngAfterContentInit() {
         this.initSubscriptions();
+        this.calculateRenderData();
     }
 
     ngAfterContentChecked() {
