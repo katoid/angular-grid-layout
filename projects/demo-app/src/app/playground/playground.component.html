@@ -24,6 +24,10 @@
             <mat-label>Drag Threshold</mat-label>
             <input matInput type="number" [value]="dragStartThreshold + ''" (input)="onDragStartThresholdChange($event)">
         </mat-form-field>
+        <mat-form-field>
+            <mat-label>Gap</mat-label>
+            <input matInput type="number" [value]="gap" (input)="onGapChange($event)">
+        </mat-form-field>
         <mat-form-field color="accent">
             <mat-label>Transition type</mat-label>
             <mat-select [value]="currentTransition" (selectionChange)="onTransitionChange($event)">
@@ -73,6 +77,7 @@
                   [compactType]="compactType"
                   [preventCollision]="preventCollision"
                   [scrollableParent]="autoScroll ? document : null"
+                  [gap]="gap"
                   scrollSpeed="4"
                   (dragStarted)="onDragStarted($event)"
                   (resizeStarted)="onResizeStarted($event)"
