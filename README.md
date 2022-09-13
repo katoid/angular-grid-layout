@@ -94,6 +94,9 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
 @Input() layout: KtdGridLayout;
 
+/** Grid gap in css pixels */
+@Input() gap: number = 0;
+
 /**
  * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
  * If no data provided or null autoscroll is not performed.
@@ -159,7 +162,7 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Add dragStartThreshold option to grid items.
 - [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
 - [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
-- [ ] Add grid gap feature.
+- [x] Add grid gap feature.
 - [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
 - [ ] Customizable drag placeholder.

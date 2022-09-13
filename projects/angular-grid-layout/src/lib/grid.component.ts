@@ -40,23 +40,24 @@ function getDragResizeEventData(gridItem: KtdGridItemComponent, layout: KtdGridL
 
 
 function layoutToRenderItems(config: KtdGridCfg, width: number, height: number): KtdDictionary<KtdGridItemRenderData<number>> {
-    const {cols, rowHeight, layout} = config;
-
+    const {cols, rowHeight, layout, gap} = config;
+    const widthExcludinggap = width - Math.max((gap * (cols - 1)), 0);
+    const itemWidthPerColumn = (widthExcludinggap / cols);
     const renderItems: KtdDictionary<KtdGridItemRenderData<number>> = {};
     for (const item of layout) {
         renderItems[item.id] = {
             id: item.id,
-            top: item.y === 0 ? 0 : item.y * rowHeight,
-            left: item.x * (width / cols),
-            width: item.w * (width / cols),
-            height: item.h * rowHeight
+            top: item.y * rowHeight + gap * item.y,
+            left: item.x * itemWidthPerColumn + gap * item.x,
+            width: item.w * itemWidthPerColumn + gap * Math.max(item.w - 1, 0),
+            height: item.h * rowHeight + gap * Math.max(item.h - 1, 0),
         };
     }
     return renderItems;
 }
 
-function getGridHeight(layout: KtdGridLayout, rowHeight: number): number {
-    return layout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight), 0);
+function getGridHeight(layout: KtdGridLayout, rowHeight: number, gap: number): number {
+    return layout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight + Math.max(cur.y + cur.h - 1, 0) * gap), 0);
 }
 
 // eslint-disable-next-line @katoid/prefix-exported-code
@@ -204,12 +205,25 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _layout: KtdGridLayout;
 
+    /** Grid gap in css pixels */
+    @Input()
+    get gap(): number {
+        return this._gap;
+    }
+
+    set gap(val: number) {
+        this._gap = Math.max(coerceNumberProperty(val), 0);
+    }
+
+    private _gap: number = 0;
+
     get config(): KtdGridCfg {
         return {
             cols: this.cols,
             rowHeight: this.rowHeight,
             layout: this.layout,
             preventCollision: this.preventCollision,
+            gap: this.gap,
         };
     }
 
@@ -236,7 +250,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         }
 
         // Check if wee need to recalculate rendering data.
-        if (needsCompactLayout || changes.rowHeight) {
+        if (needsCompactLayout || changes.rowHeight || changes.gap) {
             needsRecalculateRenderData = true;
         }
 
@@ -284,7 +298,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     calculateRenderData() {
         const clientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
         this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, clientRect.height);
-        this._height = getGridHeight(this.layout, this.rowHeight);
+        this._height = getGridHeight(this.layout, this.rowHeight, this.gap);
     }
 
     render() {
@@ -411,7 +425,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             layout: currentLayout,
                             rowHeight: this.rowHeight,
                             cols: this.cols,
-                            preventCollision: this.preventCollision
+                            preventCollision: this.preventCollision,
+                            gap: this.gap,
                         }, this.compactType, {
                             pointerDownEvent,
                             pointerDragEvent,
@@ -421,13 +436,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         });
                         newLayout = layout;
 
-                        this._height = getGridHeight(newLayout, this.rowHeight);
+                        this._height = getGridHeight(newLayout, this.rowHeight, this.gap);
 
                         this._gridItemsRenderData = layoutToRenderItems({
                             cols: this.cols,
                             rowHeight: this.rowHeight,
                             layout: newLayout,
                             preventCollision: this.preventCollision,
+                            gap: this.gap,
                         }, gridElemClientRect.width, gridElemClientRect.height);
 
                         const placeholderStyles = parseRenderItemToPixels(this._gridItemsRenderData[gridItem.id]);

@@ -21,6 +21,7 @@ export interface KtdGridCfg {
     rowHeight: number; // row height in pixels
     layout: KtdGridLayoutItem[];
     preventCollision: boolean;
+    gap: number;
 }
 
 export type KtdGridLayout = KtdGridLayoutItem[];

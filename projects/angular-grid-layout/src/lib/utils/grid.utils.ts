@@ -21,12 +21,28 @@ export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompac
         .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
 }
 
-function screenXPosToGridValue(screenXPos: number, cols: number, width: number): number {
-    return Math.round((screenXPos * cols) / width);
+function screenXToGridX(screenXPos: number, cols: number, width: number, gap: number): number {
+    const widthMinusGaps = width - (gap * (cols - 1));
+    const itemWidth = widthMinusGaps / cols;
+    const widthMinusOneItem = width - itemWidth;
+    const colWidthWithGap = widthMinusOneItem / (cols - 1);
+    return Math.round(screenXPos / colWidthWithGap);
 }
 
-function screenYPosToGridValue(screenYPos: number, rowHeight: number, height: number): number {
-    return Math.round(screenYPos / rowHeight);
+function screenYToGridY(screenYPos: number, rowHeight: number, height: number, gap: number): number {
+    return Math.round(screenYPos / (rowHeight + gap));
+}
+
+function screenWidthToGridWidth(gridScreenWidth: number, cols: number, width: number, gap: number): number {
+    const widthMinusGaps = width - (gap * (cols - 1));
+    const itemWidth = widthMinusGaps / cols;
+    const gridScreenWidthMinusFirst = gridScreenWidth - itemWidth;
+    return Math.round(gridScreenWidthMinusFirst / (itemWidth + gap)) + 1;
+}
+
+function screenHeightToGridHeight(gridScreenHeight: number, rowHeight: number, height: number, gap: number): number {
+    const gridScreenHeightMinusFirst = gridScreenHeight - rowHeight;
+    return Math.round(gridScreenHeightMinusFirst / (rowHeight + gap)) + 1;
 }
 
 /** Returns a Dictionary where the key is the id and the value is the change applied to that item. If no changes Dictionary is empty. */
@@ -80,8 +96,8 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
     // Get layout item position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
-        x: screenXPosToGridValue(gridRelXPos, config.cols, gridElemClientRect.width),
-        y: screenYPosToGridValue(gridRelYPos, config.rowHeight, gridElemClientRect.height)
+        x: screenXToGridX(gridRelXPos , config.cols, gridElemClientRect.width, config.gap),
+        y: screenYToGridY(gridRelYPos, config.rowHeight, gridElemClientRect.height, config.gap)
     };
 
     // Correct the values if they overflow, since 'moveElement' function doesn't do it
@@ -143,12 +159,11 @@ export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdG
     const width = clientX + resizeElemOffsetX - (dragElemClientRect.left + scrollDifference.left);
     const height = clientY + resizeElemOffsetY - (dragElemClientRect.top + scrollDifference.top);
 
-
     // Get layout item grid position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
-        w: screenXPosToGridValue(width, config.cols, gridElemClientRect.width),
-        h: screenYPosToGridValue(height, config.rowHeight, gridElemClientRect.height)
+        w: screenWidthToGridWidth(width, config.cols, gridElemClientRect.width, config.gap),
+        h: screenHeightToGridHeight(height, config.rowHeight, gridElemClientRect.height, config.gap)
     };
 
     layoutItem.w = limitNumberWithinRange(layoutItem.w, gridItem.minW ?? layoutItem.minW, gridItem.maxW ?? layoutItem.maxW);
