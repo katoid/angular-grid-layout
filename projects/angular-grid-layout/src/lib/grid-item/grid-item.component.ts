@@ -1,6 +1,6 @@
 import {
-    AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit, QueryList, Renderer2,
-    ViewChild
+    AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
+    QueryList, Renderer2, ViewChild
 } from '@angular/core';
 import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -12,6 +12,7 @@ import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
 import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
 import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
+import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
 
 @Component({
     selector: 'ktd-grid-item',
@@ -24,6 +25,9 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ContentChildren(KTD_GRID_DRAG_HANDLE, {descendants: true}) _dragHandles: QueryList<KtdGridDragHandle>;
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
+
+    /** Template ref for placeholder */
+    @ContentChild(KTD_GRID_ITEM_PLACEHOLDER) placeholder: KtdGridItemPlaceholder;
 
     /** Min and max size input properties. Any of these would 'override' the min/max values specified in the layout. */
     @Input() minW?: number;

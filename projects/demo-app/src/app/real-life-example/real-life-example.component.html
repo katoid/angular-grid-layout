@@ -4,7 +4,8 @@
               [layout]="layout"
               [scrollableParent]="document"
               [compactType]="compactType"
-              (layoutUpdated)="onLayoutUpdated($event)">
+              (layoutUpdated)="onLayoutUpdated($event)"
+              (gridItemResize)="onGridItemResize($event)">
         <ktd-grid-item id="0" minW="4">
             <ngx-charts-bar-vertical-stacked
                 [view]="layoutSizes['0']"
@@ -21,6 +22,25 @@
                 [animations]="animations"
                 (select)="onSelect('0', $event)">
             </ngx-charts-bar-vertical-stacked>
+            <ng-template ktdGridItemPlaceholder>
+                <div class="custom-placeholder-container">
+                    <ngx-charts-bar-vertical-stacked
+                        [view]="layoutSizes['0']"
+                        [scheme]="colorScheme2"
+                        [results]="countriesPopulationByYear"
+                        [gradient]="false"
+                        [xAxis]="xAxis"
+                        [yAxis]="yAxis"
+                        [legend]="true"
+                        [showXAxisLabel]="showXAxisLabel"
+                        [showYAxisLabel]="showYAxisLabel"
+                        [xAxisLabel]="xAxisLabel"
+                        [yAxisLabel]="yAxisLabel"
+                        [animations]="false"
+                        (select)="onSelect('0', $event)">
+                    </ngx-charts-bar-vertical-stacked>
+                </div>
+            </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="1">
             <ngx-charts-bar-horizontal-2d
@@ -41,6 +61,26 @@
                 (activate)="onActivate('1', $event)"
                 (deactivate)="onDeactivate('1', $event)">
             </ngx-charts-bar-horizontal-2d>
+            <ng-template ktdGridItemPlaceholder>
+                <div class="custom-placeholder-container">
+                    <ngx-charts-bar-horizontal-2d
+                        [view]="layoutSizes['1']"
+                        [scheme]="colorSchemeGradientLinear"
+                        [schemeType]="schemeType"
+                        [results]="countriesPopulationByYear"
+                        [gradient]="false"
+                        [xAxis]="xAxis"
+                        [yAxis]="yAxis"
+                        [legend]="false"
+                        [animations]="false"
+                        [legendPosition]="legendBelow"
+                        [showXAxisLabel]="showXAxisLabel"
+                        [showYAxisLabel]="showYAxisLabel"
+                        [xAxisLabel]="yAxisLabel"
+                        [yAxisLabel]="xAxisLabel">
+                    </ngx-charts-bar-horizontal-2d>
+                </div>
+            </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="2">
             <ngx-charts-tree-map
@@ -52,6 +92,19 @@
                 [labelFormatting]="labelFormatting"
                 (select)="onSelect('2', $event)">
             </ngx-charts-tree-map>
+            <ng-template ktdGridItemPlaceholder>
+                <div class="custom-placeholder-container">
+                    <ngx-charts-tree-map
+                        #chart
+                        [view]="layoutSizes['2']"
+                        [scheme]="colorScheme"
+                        [results]="countriesPopulation"
+                        [gradient]="false"
+                        [animations]="false"
+                        [labelFormatting]="labelFormatting">
+                    </ngx-charts-tree-map>
+                </div>
+            </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="3">
             <div class="ktd-grid-img-container">
@@ -60,6 +113,11 @@
         </ktd-grid-item>
         <ktd-grid-item class="ktd-grid-item-table" id="4">
             <ktd-table-sorting></ktd-table-sorting>
+            <ng-template ktdGridItemPlaceholder>
+                <div class="custom-placeholder-container ktd-grid-item-table">
+                    <ktd-table-sorting></ktd-table-sorting>
+                </div>
+            </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="5">
             <ngx-charts-pie-chart
@@ -74,6 +132,20 @@
                 (activate)="onActivate('5', $event)"
                 (deactivate)="onDeactivate('5', $event)">
             </ngx-charts-pie-chart>
+            <ng-template ktdGridItemPlaceholder>
+                <div class="custom-placeholder-container">
+                    <ngx-charts-pie-chart
+                        [view]="layoutSizes['5']"
+                        [scheme]="colorScheme"
+                        [results]="countriesPopulation"
+                        [gradient]="false"
+                        [legend]="false"
+                        [labels]="showLabels"
+                        [animations]="false"
+                        [doughnut]="false">
+                    </ngx-charts-pie-chart>
+                </div>
+            </ng-template>
         </ktd-grid-item>
     </ktd-grid>
 </div>

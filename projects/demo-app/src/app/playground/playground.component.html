@@ -34,6 +34,14 @@
                 <mat-option *ngFor="let transition of transitions" [value]="transition.value">{{transition.name}}</mat-option>
             </mat-select>
         </mat-form-field>
+
+        <mat-form-field *ngIf="placeholders && placeholders.length > 0" color="accent">
+            <mat-label>Custom Placeholder</mat-label>
+            <mat-select [value]="currentPlaceholder" (selectionChange)="onPlaceholderChange($event)">
+                <mat-option *ngFor="let placeholder of placeholders" [value]="placeholder">{{placeholder}}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
         <mat-checkbox color="accent"
                       [checked]="autoScroll"
                       (change)="onAutoScrollChange($event.checked)">
@@ -96,6 +104,11 @@
                      (mousedown)="stopEventPropagation($event)"
                      (click)="removeItem(item.id)">
                 </div>
+                <ng-template *ngIf="currentPlaceholder !== 'Default'" ktdGridItemPlaceholder>
+                    <div *ngIf="currentPlaceholder === 'Custom 1'" class="grid-item-content custom-placeholder custom-placeholder-1">{{item.id}}</div>
+                    <div *ngIf="currentPlaceholder === 'Custom 2'" class="grid-item-content custom-placeholder custom-placeholder-2">{{item.id}}</div>
+                    <div *ngIf="currentPlaceholder === 'Custom 3'" class="grid-item-content custom-placeholder custom-placeholder-3">{{item.id}}</div>
+                </ng-template>
             </ktd-grid-item>
         </ktd-grid>
     </div>

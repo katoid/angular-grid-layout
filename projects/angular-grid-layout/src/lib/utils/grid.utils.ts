@@ -1,5 +1,7 @@
 import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElement } from './react-grid-layout.utils';
-import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
+import {
+    KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
+} from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
 import { KtdGridItemComponent } from '../grid-item/grid-item.component';
@@ -245,4 +247,13 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
  */
 function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
     return Math.min(Math.max(num, min < 1 ? 1 : min), max);
+}
+
+/** Returns true if both item1 and item2 KtdGridLayoutItems are equivalent. */
+export function ktdGridItemLayoutItemAreEqual(item1: KtdGridLayoutItem, item2: KtdGridLayoutItem): boolean {
+    return item1.id === item2.id
+        && item1.x === item2.x
+        && item1.y === item2.y
+        && item1.w === item2.w
+        && item1.h === item2.h
 }

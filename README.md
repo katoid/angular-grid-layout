@@ -57,6 +57,11 @@ Use it in your template:
           (layoutUpdated)="onLayoutUpdated($event)">
     <ktd-grid-item *ngFor="let item of layout; trackBy:trackById" [id]="item.id">
         <!-- Your grid item content goes here -->
+
+        <!-- Optional Custom placeholder template -->
+        <ng-template ktdGridItemPlaceholder>
+            <!-- Custom placeholder content goes here -->
+        </ng-template>
     </ktd-grid-item>
 </ktd-grid>
 ```
@@ -127,10 +132,14 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 /** Emits when resize ends */
 @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
+/** Emits when a grid item is being resized and its bounds have changed */
+@Output() gridItemResize: EventEmitter<KtdGridItemResizeEvent> = new EventEmitter<KtdGridItemResizeEvent>();
+
 ```
 
 #### KtdGridItem
 ```ts
+
 /** Id of the grid item. This property is strictly compulsory. */
 @Input() id: string;
 
@@ -163,9 +172,9 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
 - [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
 - [x] Add grid gap feature.
+- [x] Customizable drag placeholder.
 - [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
-- [ ] Customizable drag placeholder.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Documentation.
