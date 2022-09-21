@@ -1,9 +1,9 @@
-import { Component, Inject, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
+import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { KtdGridComponent, KtdGridItemResizeEvent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';
-import { AreaChartStackedComponent, Color, ScaleType, LegendPosition } from '@swimlane/ngx-charts';
+import { Color, LegendPosition, ScaleType } from '@swimlane/ngx-charts';
 import { DOCUMENT } from '@angular/common';
 
 @Component({
@@ -13,7 +13,6 @@ import { DOCUMENT } from '@angular/common';
 })
 export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;
-    @ViewChildren(AreaChartStackedComponent) areaCharts: QueryList<AreaChartStackedComponent>;
 
     trackById = ktdTrackById;
     cols = 12;
@@ -28,7 +27,7 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
         {id: '4', x: 8, y: 5, w: 4, h: 10, minW: 3, minH: 5, maxH: 12}
     ];
 
-    layoutSizes: {[id: string]: [number, number]} = {};
+    layoutSizes: { [id: string]: [number, number] } = {};
 
 
     countriesPopulation: any[] = countriesPopulation;
@@ -73,7 +72,7 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
 
     private resizeSubscription: Subscription;
 
-    constructor(@Inject(DOCUMENT) public document: Document) { }
+    constructor(@Inject(DOCUMENT) public document: Document, private cd: ChangeDetectorRef) { }
 
     ngOnInit() {
         this.resizeSubscription = merge(
@@ -118,6 +117,12 @@ export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
 
     onDeactivate(id: string, data): void {
         console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+    }
+
+    onGridItemResize(gridItemResizeEvent: KtdGridItemResizeEvent) {
+        console.log('onGridItemResize', gridItemResizeEvent);
+        this.layoutSizes[gridItemResizeEvent.gridItemRef.id] = [gridItemResizeEvent.width, gridItemResizeEvent.height];
+        this.cd.detectChanges();
     }
 
     /**
