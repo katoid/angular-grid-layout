@@ -171,8 +171,8 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Add dragStartThreshold option to grid items.
 - [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
 - [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
-- [x] Add grid gap feature.
-- [x] Customizable drag placeholder.
+- [x] Add grid gap feature. ([commit](https://github.com/katoid/angular-grid-layout/commit/a8b129d76cb7bf12a63ff92beee5d5bbb28046b3))
+- [x] Customizable drag placeholder. ([commit](https://github.com/katoid/angular-grid-layout/commit/ce7826522f67333359afcac4f10cb3cd4b76f7b0)).
 - [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
