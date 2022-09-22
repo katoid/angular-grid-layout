@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/katoid/angular-grid-layout/compare/v1.2.0...v2.0.0) (2022-09-22)
+
+
+### Features
+
+* **custom-placeholder:** added custom placeholder ([ce78265](https://github.com/katoid/angular-grid-layout/commit/ce7826522f67333359afcac4f10cb3cd4b76f7b0))
+* **gap:** added gap functionality to grid component ([a8b129d](https://github.com/katoid/angular-grid-layout/commit/a8b129d76cb7bf12a63ff92beee5d5bbb28046b3))
+* **Angular v14:** Update Angular to version 14 ([065889e](https://github.com/katoid/angular-grid-layout/commit/065889e0d1d27494be9555095d023f860450e690))
+
 ## [1.2.0](https://github.com/katoid/angular-grid-layout/compare/v1.1.0...v1.2.0) (2022-02-07)
 
 
