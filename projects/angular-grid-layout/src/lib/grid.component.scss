@@ -15,10 +15,13 @@ ktd-grid {
 
     .ktd-grid-item-placeholder {
         position: absolute;
-        background-color: darkred;
-        opacity: 0.6;
         z-index: 0;
         transition-property: transform;
         transition: all 150ms ease;
+        
+        &-default {
+            background-color: darkred;
+            opacity: 0.6;
+        }
     }
 }

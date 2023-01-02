@@ -1,0 +1,63 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+@mixin cssVariables($theme) {
+    $is-dark-theme: map.get($theme, is-dark);
+    $primary: map.get($theme, primary);
+    $accent: map.get($theme, accent);
+    $warn: map.get($theme, warn);
+    $background: map.get($theme, background);
+    $foreground: map.get($theme, foreground);
+
+
+    --ktd-color-primary: #{mat.get-color-from-palette($primary, default)};
+    --ktd-color-primary-rgb: #{red(mat.get-color-from-palette($primary, default)), green(mat.get-color-from-palette($primary, default)), blue(mat.get-color-from-palette($primary, default))};
+    --ktd-color-primary-contrast:  #{mat.get-color-from-palette($primary, default-contrast)};
+
+    --ktd-color-accent: #{mat.get-color-from-palette($accent, default)};
+    --ktd-color-accent-rgb: #{red(mat.get-color-from-palette($accent, default)), green(mat.get-color-from-palette($accent, default)), blue(mat.get-color-from-palette($accent, default))};
+    --ktd-color-accent-contrast: #{mat.get-color-from-palette($accent, default-contrast)};
+
+    // Background & foreground (as background contrast)
+    --ktd-background-color: #121212;
+    --ktd-background-color-rgb: 18,18,18;
+    --ktd-background-color-contrast: #ffffff;
+    --ktd-background-color-contrast-rgb: 255,255,255;
+
+    --ktd-background-color-step-25: #1a1a1a;
+    --ktd-background-color-step-50: #1e1e1e;
+    --ktd-background-color-step-100: #2a2a2a;
+    --ktd-background-color-step-150: #363636;
+    --ktd-background-color-step-200: #414141;
+    --ktd-background-color-step-250: #4d4d4d;
+    --ktd-background-color-step-300: #595959;
+    --ktd-background-color-step-350: #656565;
+    --ktd-background-color-step-400: #717171;
+    --ktd-background-color-step-450: #7d7d7d;
+    --ktd-background-color-step-500: #898989;
+
+    // steps in rgb
+    --ktd-background-color-step-150-rgb: 54,54,54;
+
+    --ktd-item-background: #1A1B1E;
+    --ktd-border-color: #4a4a4a;
+    --ktd-border-color-light: #4a4e51;
+
+    // Background light
+    --ktd-background-color-light: #222428;
+    --ktd-background-color-light-rgb: 34,36,40;
+    --ktd-background-color-light-contrast: #ffffff;
+    --ktd-background-color-light-contrast-rgb: 255,255,255;
+    --ktd-background-color-light-darker: #1e2023;
+    --ktd-background-color-light-lighter: #383a3e;
+
+    // Custom SVG variable colors
+    --ktd-svg-color: #ffffff;
+    --ktd-svg-color-complementary: #9b9b9b;
+    --ktd-svg-color-rgb: 255,255,255;
+    --ktd-svg-color-complementary-rgb: 155,155,155;
+
+    // text colors
+    --ktd-text-color: map.get($foreground, text);
+    --ktd-text-accent-color: rgba(var(--ktd-color-accent-rgb), 0.94);
+}

@@ -1,7 +1,10 @@
 import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElement } from './react-grid-layout.utils';
-import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
+import {
+    KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
+} from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
+import { KtdGridItemComponent } from '../grid-item/grid-item.component';
 
 /** Tracks items by id. This function is mean to be used in conjunction with the ngFor that renders the 'ktd-grid-items' */
 export function ktdTrackById(index: number, item: {id: string}) {
@@ -17,15 +20,31 @@ export function ktdTrackById(index: number, item: {id: string}) {
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
     return compact(layout, compactType, cols)
         // Prune react-grid-layout compact extra properties.
-        .map(item => ({id: item.id, x: item.x, y: item.y, w: item.w, h: item.h}));
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
 }
 
-function screenXPosToGridValue(screenXPos: number, cols: number, width: number): number {
-    return Math.round((screenXPos * cols) / width);
+function screenXToGridX(screenXPos: number, cols: number, width: number, gap: number): number {
+    const widthMinusGaps = width - (gap * (cols - 1));
+    const itemWidth = widthMinusGaps / cols;
+    const widthMinusOneItem = width - itemWidth;
+    const colWidthWithGap = widthMinusOneItem / (cols - 1);
+    return Math.round(screenXPos / colWidthWithGap);
 }
 
-function screenYPosToGridValue(screenYPos: number, rowHeight: number, height: number): number {
-    return Math.round(screenYPos / rowHeight);
+function screenYToGridY(screenYPos: number, rowHeight: number, height: number, gap: number): number {
+    return Math.round(screenYPos / (rowHeight + gap));
+}
+
+function screenWidthToGridWidth(gridScreenWidth: number, cols: number, width: number, gap: number): number {
+    const widthMinusGaps = width - (gap * (cols - 1));
+    const itemWidth = widthMinusGaps / cols;
+    const gridScreenWidthMinusFirst = gridScreenWidth - itemWidth;
+    return Math.round(gridScreenWidthMinusFirst / (itemWidth + gap)) + 1;
+}
+
+function screenHeightToGridHeight(gridScreenHeight: number, rowHeight: number, height: number, gap: number): number {
+    const gridScreenHeightMinusFirst = gridScreenHeight - rowHeight;
+    return Math.round(gridScreenHeightMinusFirst / (rowHeight + gap)) + 1;
 }
 
 /** Returns a Dictionary where the key is the id and the value is the change applied to that item. If no changes Dictionary is empty. */
@@ -48,13 +67,15 @@ export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayou
 
 /**
  * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
- * @param gridItemId id of the grid item that is been dragged
+ * @param gridItem grid item that is been dragged
  * @param config current grid configuration
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
     const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
+
+    const gridItemId = gridItem.id;
 
     const draggingElemPrevItem = config.layout.find(item => item.id === gridItemId)!;
 
@@ -77,8 +98,8 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
     // Get layout item position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
-        x: screenXPosToGridValue(gridRelXPos, config.cols, gridElemClientRect.width),
-        y: screenYPosToGridValue(gridRelYPos, config.rowHeight, gridElemClientRect.height)
+        x: screenXToGridX(gridRelXPos , config.cols, gridElemClientRect.width, config.gap),
+        y: screenYToGridY(gridRelYPos, config.rowHeight, gridElemClientRect.height, config.gap)
     };
 
     // Correct the values if they overflow, since 'moveElement' function doesn't do it
@@ -118,13 +139,14 @@ export function ktdGridItemDragging(gridItemId: string, config: KtdGridCfg, comp
 
 /**
  * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
- * @param gridItemId id of the grid item that is been dragged
+ * @param gridItem grid item that is been dragged
  * @param config current grid configuration
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
     const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
+    const gridItemId = gridItem.id;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
     const clientStartY = ktdPointerClientY(pointerDownEvent);
@@ -139,16 +161,16 @@ export function ktdGridItemResizing(gridItemId: string, config: KtdGridCfg, comp
     const width = clientX + resizeElemOffsetX - (dragElemClientRect.left + scrollDifference.left);
     const height = clientY + resizeElemOffsetY - (dragElemClientRect.top + scrollDifference.top);
 
-
     // Get layout item grid position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
-        w: screenXPosToGridValue(width, config.cols, gridElemClientRect.width),
-        h: screenYPosToGridValue(height, config.rowHeight, gridElemClientRect.height)
+        w: screenWidthToGridWidth(width, config.cols, gridElemClientRect.width, config.gap),
+        h: screenHeightToGridHeight(height, config.rowHeight, gridElemClientRect.height, config.gap)
     };
 
-    layoutItem.w = Math.max(1, layoutItem.w);
-    layoutItem.h = Math.max(1, layoutItem.h);
+    layoutItem.w = limitNumberWithinRange(layoutItem.w, gridItem.minW ?? layoutItem.minW, gridItem.maxW ?? layoutItem.maxW);
+    layoutItem.h = limitNumberWithinRange(layoutItem.h, gridItem.minH ?? layoutItem.minH, gridItem.maxH ?? layoutItem.maxH);
+
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.w = Math.max(1, config.cols - layoutItem.x);
     }
@@ -215,4 +237,23 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
     }
 
     return lastShrunk === 'w' ? 'h' : 'w';
+}
+
+/**
+ * Given the current number and min/max values, returns the number within the range
+ * @param number can be any numeric value
+ * @param min minimum value of range
+ * @param max maximum value of range
+ */
+function limitNumberWithinRange(num: number, min: number = 1, max: number = Infinity) {
+    return Math.min(Math.max(num, min < 1 ? 1 : min), max);
+}
+
+/** Returns true if both item1 and item2 KtdGridLayoutItems are equivalent. */
+export function ktdGridItemLayoutItemAreEqual(item1: KtdGridLayoutItem, item2: KtdGridLayoutItem): boolean {
+    return item1.id === item2.id
+        && item1.x === item2.x
+        && item1.y === item2.y
+        && item1.w === item2.w
+        && item1.h === item2.h
 }

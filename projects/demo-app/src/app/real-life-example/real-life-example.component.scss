@@ -1,22 +1,28 @@
 :host {
     display: block;
     width: 100%;
-    padding: 24px;
+    padding: 48px 32px;
     box-sizing: border-box;
 
     .grid-container {
         padding: 4px;
         box-sizing: border-box;
-        border: 1px solid gray;
         border-radius: 2px;
-        background: #313131;
+        border: 1px solid var(--ktd-border-color);
+        background-color: var(--ktd-background-color);
     }
 
     ktd-grid {
         transition: height 500ms ease;
     }
 
-    ktd-grid-item {
+    .custom-placeholder-container {
+        width: 100%;
+        height: 100%;
+        opacity: 0.6;
+    }
+
+    ktd-grid-item, .custom-placeholder-container {
         box-sizing: border-box;
         background: #ccc;
         border: 1px solid black;

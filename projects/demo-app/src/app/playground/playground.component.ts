@@ -49,7 +49,18 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     ];
     currentTransition: string = this.transitions[0].value;
 
+    placeholders: string[] = [
+        'None',
+        'Default',
+        'Custom 1',
+        'Custom 2',
+        'Custom 3',
+    ];
+
+    currentPlaceholder: string = 'Default';
+
     dragStartThreshold = 0;
+    gap = 0;
     autoScroll = true;
     disableDrag = false;
     disableResize = false;
@@ -145,6 +156,14 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onDragStartThresholdChange(event: Event) {
         this.dragStartThreshold = coerceNumberProperty((event.target as HTMLInputElement).value);
+    }
+
+    onPlaceholderChange(change: MatSelectChange) {
+        this.currentPlaceholder = change.value;
+    }
+
+    onGapChange(event: Event) {
+      this.gap = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 
     generateLayout() {

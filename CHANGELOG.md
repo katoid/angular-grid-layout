@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/katoid/angular-grid-layout/compare/v1.2.0...v2.0.0) (2022-09-22)
+
+
+### Features
+
+* **custom-placeholder:** added custom placeholder ([ce78265](https://github.com/katoid/angular-grid-layout/commit/ce7826522f67333359afcac4f10cb3cd4b76f7b0))
+* **gap:** added gap functionality to grid component ([a8b129d](https://github.com/katoid/angular-grid-layout/commit/a8b129d76cb7bf12a63ff92beee5d5bbb28046b3))
+* **Angular v14:** Update Angular to version 14 ([065889e](https://github.com/katoid/angular-grid-layout/commit/065889e0d1d27494be9555095d023f860450e690))
+
+## [1.2.0](https://github.com/katoid/angular-grid-layout/compare/v1.1.0...v1.2.0) (2022-02-07)
+
+
+### Features
+
+* **grid-item:** grid item accepts minW, minH maxW and maxH as @Input properties ([273d62c](https://github.com/katoid/angular-grid-layout/commit/273d62c4a08579908791bcd41160433662bf99ce))
+
+## [1.1.0](https://github.com/katoid/angular-grid-layout/compare/v0.2.0...v1.1.0) (2022-02-04)
+
+### Chore
+
+* Upgraded from Angular v11 to Angular v12 ([57b7591](https://github.com/katoid/angular-grid-layout/commit/57b7591f52e0aeb0b2283230a3ab76ff30c91a54))
+
+
+### Features
+
+* added Grid support for min and max sizes on grid items ([06051f6](https://github.com/katoid/angular-grid-layout/commit/06051f67b904b37c068c906998100961a104c18d))
+* **demo-app:** added github link & enhanced meta tags data with description and image ([a51cc26](https://github.com/katoid/angular-grid-layout/commit/a51cc26c22c4864778d24b70a2e1508604386ecc))
+* **grid:** grid scrollSpeed Input can be binded without the need of a variable ([8d74468](https://github.com/katoid/angular-grid-layout/commit/8d74468306d8047fde1ea04ea5e32515e066ae42))
+* **grid:** number and Boolean input properties can be binded as string value in template ([1f436f6](https://github.com/katoid/angular-grid-layout/commit/1f436f691bea4412518c504f9cd0e89a979c1323))
+
 ## [0.2.0](https://github.com/katoid/angular-grid-layout/compare/v0.1.3...v0.2.0) (2021-06-28)
 
 

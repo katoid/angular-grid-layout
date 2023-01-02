@@ -1,6 +1,6 @@
 import {
-    AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit, QueryList, Renderer2,
-    ViewChild
+    AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
+    QueryList, Renderer2, ViewChild
 } from '@angular/core';
 import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
@@ -12,6 +12,7 @@ import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
 import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
 import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
+import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
 
 @Component({
     selector: 'ktd-grid-item',
@@ -24,6 +25,15 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ContentChildren(KTD_GRID_DRAG_HANDLE, {descendants: true}) _dragHandles: QueryList<KtdGridDragHandle>;
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
     @ViewChild('resizeElem', {static: true, read: ElementRef}) resizeElem: ElementRef;
+
+    /** Template ref for placeholder */
+    @ContentChild(KTD_GRID_ITEM_PLACEHOLDER) placeholder: KtdGridItemPlaceholder;
+
+    /** Min and max size input properties. Any of these would 'override' the min/max values specified in the layout. */
+    @Input() minW?: number;
+    @Input() minH?: number;
+    @Input() maxW?: number;
+    @Input() maxH?: number;
 
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
     @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
@@ -198,11 +208,12 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
 
-    // tslint:disable-next-line
+    static ngAcceptInputType_minW: NumberInput;
+    static ngAcceptInputType_minH: NumberInput;
+    static ngAcceptInputType_maxW: NumberInput;
+    static ngAcceptInputType_maxH: NumberInput;
     static ngAcceptInputType_draggable: BooleanInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_resizable: BooleanInput;
-    // tslint:disable-next-line
     static ngAcceptInputType_dragStartThreshold: NumberInput;
 
 }

@@ -10,12 +10,13 @@ export const KTD_GRID_DRAG_HANDLE = new InjectionToken<KtdGridDragHandle>('KtdGr
 /** Handle that can be used to drag a KtdGridItem instance. */
 @Directive({
     selector: '[ktdGridDragHandle]',
+    // eslint-disable-next-line @angular-eslint/no-host-metadata-property
     host: {
         class: 'ktd-grid-drag-handle'
     },
     providers: [{provide: KTD_GRID_DRAG_HANDLE, useExisting: KtdGridDragHandle}],
 })
-// tslint:disable-next-line:directive-class-suffix
+// eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class KtdGridDragHandle {
     constructor(
         public element: ElementRef<HTMLElement>) {

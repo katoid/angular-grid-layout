@@ -57,6 +57,11 @@ Use it in your template:
           (layoutUpdated)="onLayoutUpdated($event)">
     <ktd-grid-item *ngFor="let item of layout; trackBy:trackById" [id]="item.id">
         <!-- Your grid item content goes here -->
+
+        <!-- Optional Custom placeholder template -->
+        <ng-template ktdGridItemPlaceholder>
+            <!-- Custom placeholder content goes here -->
+        </ng-template>
     </ktd-grid-item>
 </ktd-grid>
 ```
@@ -70,8 +75,8 @@ rowHeight: number = 100;
 layout: KtdGridLayout = [
     {id: '0', x: 0, y: 0, w: 3, h: 3},
     {id: '1', x: 3, y: 0, w: 3, h: 3},
-    {id: '2', x: 0, y: 3, w: 3, h: 3},
-    {id: '3', x: 3, y: 3, w: 3, h: 3},
+    {id: '2', x: 0, y: 3, w: 3, h: 3, minW: 2, minH: 3},
+    {id: '3', x: 3, y: 3, w: 3, h: 3, minW: 2, maxW: 3, minH: 2, maxH: 5},
 ];
 trackById = ktdTrackById
 ```
@@ -93,6 +98,9 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 
 /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
 @Input() layout: KtdGridLayout;
+
+/** Grid gap in css pixels */
+@Input() gap: number = 0;
 
 /**
  * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
@@ -124,12 +132,22 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 /** Emits when resize ends */
 @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
 
+/** Emits when a grid item is being resized and its bounds have changed */
+@Output() gridItemResize: EventEmitter<KtdGridItemResizeEvent> = new EventEmitter<KtdGridItemResizeEvent>();
+
 ```
 
 #### KtdGridItem
 ```ts
+
 /** Id of the grid item. This property is strictly compulsory. */
 @Input() id: string;
+
+/** Min and max sizes of the grid item. Any of these would 'override' the min/max values specified in the layout. **/
+@Input() minW?: number;
+@Input() minH?: number;
+@Input() maxW?: number;
+@Input() maxH?: number;
 
 /** Whether the item is draggable or not. Defaults to true. */
 @Input() draggable: boolean = true;
@@ -152,11 +170,11 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Add Real life example with charts and grid items with some kind of controls.
 - [x] Add dragStartThreshold option to grid items.
 - [x] Auto Scroll vertical/horizontal if container is scrollable when dragging a grid item. ([commit](https://github.com/katoid/angular-grid-layout/commit/d137d0e3f40cafdb5fdfd7b2bce4286670200c5d)).
-- [ ] Add grid gap feature.
+- [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
+- [x] Add grid gap feature. ([commit](https://github.com/katoid/angular-grid-layout/commit/a8b129d76cb7bf12a63ff92beee5d5bbb28046b3))
+- [x] Customizable drag placeholder. ([commit](https://github.com/katoid/angular-grid-layout/commit/ce7826522f67333359afcac4f10cb3cd4b76f7b0)).
 - [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
 - [ ] Grid support for static grid items.
-- [ ] Grid support for minWidth and minHeight on grid items.
-- [ ] Customizable drag placeholder.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Documentation.

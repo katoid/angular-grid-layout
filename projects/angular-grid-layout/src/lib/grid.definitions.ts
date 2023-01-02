@@ -1,5 +1,6 @@
 import { InjectionToken } from '@angular/core';
 import { CompactType } from './utils/react-grid-layout.utils';
+import { KtdClientRect } from './utils/client-rect';
 
 export interface KtdGridLayoutItem {
     id: string;
@@ -7,6 +8,10 @@ export interface KtdGridLayoutItem {
     y: number;
     w: number;
     h: number;
+    minW?: number;
+    minH?: number;
+    maxW?: number;
+    maxH?: number;
 }
 
 export type KtdGridCompactType = CompactType;
@@ -16,6 +21,7 @@ export interface KtdGridCfg {
     rowHeight: number; // row height in pixels
     layout: KtdGridLayoutItem[];
     preventCollision: boolean;
+    gap: number;
 }
 
 export type KtdGridLayout = KtdGridLayoutItem[];
@@ -46,7 +52,7 @@ export const GRID_ITEM_GET_RENDER_DATA_TOKEN: InjectionToken<KtdGridItemRenderDa
 export interface KtdDraggingData {
     pointerDownEvent: MouseEvent | TouchEvent;
     pointerDragEvent: MouseEvent | TouchEvent;
-    gridElemClientRect: ClientRect;
-    dragElemClientRect: ClientRect;
+    gridElemClientRect: KtdClientRect;
+    dragElemClientRect: KtdClientRect;
     scrollDifference: { top: number, left: number };
 }
