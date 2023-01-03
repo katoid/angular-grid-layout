@@ -1,4 +1,5 @@
 import { ktdGetGridLayoutDiff } from '../grid.utils';
+import { compact } from '../react-grid-layout.utils';
 
 describe('Grid utils', () => {
 
@@ -47,3 +48,17 @@ describe('Grid utils', () => {
     });
 
 });
+
+// Custom compact test
+describe('compact (custom tests)', () => {
+    it('compact horizontal should not compact items vertically', () => {
+        const layout = [
+            {y: 0, x: 0, h: 2, w: 5, id: '1'},
+            {y: 10, x: 0, h: 2, w: 1, id: '2'}
+        ];
+        expect(compact(layout, 'horizontal', 10)).toEqual([
+            {y: 0, x: 0, h: 2, w: 5, id: '1', moved: false, static: false},
+            {y: 10, x: 0, h: 2, w: 1, id: '2', moved: false, static: false}
+        ]);
+    });
+})

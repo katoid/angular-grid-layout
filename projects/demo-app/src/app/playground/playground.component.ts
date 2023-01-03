@@ -3,7 +3,7 @@ import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import {
-    KtdDragEnd, KtdDragStart, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
+    KtdDragEnd, KtdDragStart, ktdGridCompact, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
@@ -118,6 +118,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onCompactTypeChange(change: MatSelectChange) {
         console.log('onCompactTypeChange', change);
         this.compactType = change.value;
+        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
     }
 
     onTransitionChange(change: MatSelectChange) {
@@ -190,8 +191,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
                 // static: Math.random() < 0.05
             });
         }
-        console.log('layout', layout);
-        this.layout = layout;
+        this.layout = ktdGridCompact(layout, this.compactType, this.cols);
+        console.log('generateLayout', this.layout);
     }
 
     /** Adds a grid item to the layout */
@@ -201,8 +202,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
         const newLayoutItem: KtdGridLayoutItem = {
             id: nextId.toString(),
-            x: 0,
-            y: 0,
+            x: -1,
+            y: -1,
             w: 2,
             h: 2
         };
@@ -212,6 +213,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
             newLayoutItem,
             ...this.layout
         ];
+
+        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
     }
 
     /**
