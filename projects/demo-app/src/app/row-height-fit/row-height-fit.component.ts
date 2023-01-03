@@ -67,6 +67,11 @@ export class KtdRowHeightFitComponent implements OnInit {
         });
     }
 
+    onLayoutUpdated(layout: KtdGridLayout) {
+        console.log('on layout updated', layout);
+        this.layout = layout;
+    }
+
     /**
      * Fired when a mousedown happens on the remove grid item button.
      * Stops the event from propagating an causing the drag to start.
