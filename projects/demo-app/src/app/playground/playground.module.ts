@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
+import { KtdFooterComponent } from '../components/footer/footer.component';
 
 const routes: Routes = [
     {
@@ -28,7 +29,8 @@ const routes: Routes = [
         MatSelectModule,
         MatCheckboxModule,
         MatInputModule,
-        MatChipsModule
+        MatChipsModule,
+        KtdFooterComponent
     ]
 })
 export class KtdPlaygroundModule {}

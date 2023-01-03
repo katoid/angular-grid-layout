@@ -5,6 +5,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { KtdGridModule } from '@katoid/angular-grid-layout';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { KtdFooterComponent } from '../components/footer/footer.component';
 
 const routes: Routes = [
     {
@@ -23,7 +24,8 @@ const routes: Routes = [
         RouterModule.forChild(routes),
         KtdGridModule,
         MatFormFieldModule,
-        MatInputModule
+        MatInputModule,
+        KtdFooterComponent
     ]
 })
 export class KtdScrollTestModule {}

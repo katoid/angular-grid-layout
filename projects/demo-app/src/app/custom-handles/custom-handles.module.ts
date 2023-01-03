@@ -4,6 +4,7 @@ import { KtdCustomHandlesComponent } from './custom-handles.component';
 import { KtdGridModule } from '@katoid/angular-grid-layout';
 import { RouterModule, Routes } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { KtdFooterComponent } from '../components/footer/footer.component';
 
 const routes: Routes = [
     {
@@ -19,7 +20,8 @@ const routes: Routes = [
         CommonModule,
         RouterModule.forChild(routes),
         MatIconModule,
-        KtdGridModule
+        KtdGridModule,
+        KtdFooterComponent
     ]
 })
 export class KtdCustomHandlesModule {}

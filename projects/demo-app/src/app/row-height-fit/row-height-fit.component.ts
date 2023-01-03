@@ -5,11 +5,12 @@ import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { ktdArrayRemoveItem } from '../utils';
 import { RouterModule } from '@angular/router';
+import { KtdFooterComponent } from '../components/footer/footer.component';
 
 @Component({
     selector: 'ktd-row-height-fit',
     standalone: true,
-    imports: [CommonModule, KtdGridModule, RouterModule],
+    imports: [CommonModule, KtdGridModule, RouterModule, KtdFooterComponent],
     templateUrl: './row-height-fit.component.html',
     styleUrls: ['./row-height-fit.component.scss']
 })
