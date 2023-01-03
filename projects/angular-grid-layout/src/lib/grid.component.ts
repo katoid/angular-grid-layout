@@ -178,7 +178,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _compactType: KtdGridCompactType = 'vertical';
 
-    /** Row height in css pixels */
+    /**
+     * Row height as number or as 'fit'.
+     * If rowHeight is a number value, it means that each row would have those css pixels in height.
+     * if rowHeight is 'fit', it means that rows will fit in the height available. If 'fit' value is set, a 'height' should be also provided.
+     */
     @Input()
     get rowHeight(): number | 'fit' { return this._rowHeight; }
 
@@ -229,6 +233,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _gap: number = 0;
 
+
+    /**
+     * If height is a number, fixes the height of the grid to it, recommended when rowHeight = 'fit' is used.
+     * If height is null, height will be automatically set according to its inner grid items.
+     * Defaults to null.
+     * */
     @Input()
     get height(): number | null {
         return this._height;
@@ -238,7 +248,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         this._height = typeof val === 'number' ? Math.max(val, 0) : null;
     }
 
-    /** Total height of the grid */
     private _height: number | null = null;
     private gridCurrentHeight: number;
 

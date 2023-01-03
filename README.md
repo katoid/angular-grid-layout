@@ -90,8 +90,12 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
 @Input() compactType: KtdGridCompactType = 'vertical';
 
-/** Row height in css pixels */
-@Input() rowHeight: number = 100;
+/**
+ * Row height as number or as 'fit'.
+ * If rowHeight is a number value, it means that each row would have those css pixels in height.
+ * if rowHeight is 'fit', it means that rows will fit in the height available. If 'fit' value is set, a 'height' should be also provided.
+ */
+@Input() rowHeight: number | 'fit' = 100;
 
 /** Number of columns  */
 @Input() cols: number = 6;
@@ -101,6 +105,14 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 
 /** Grid gap in css pixels */
 @Input() gap: number = 0;
+
+/**
+ * If height is a number, fixes the height of the grid to it, recommended when rowHeight = 'fit' is used.
+ * If height is null, height will be automatically set according to its inner grid items.
+ * Defaults to null.
+ * */
+@Input() height: number | null = null;
+
 
 /**
  * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
@@ -173,7 +185,7 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Grid support for minWidth/maxWidth and minHeight/maxHeight on grid items.
 - [x] Add grid gap feature. ([commit](https://github.com/katoid/angular-grid-layout/commit/a8b129d76cb7bf12a63ff92beee5d5bbb28046b3))
 - [x] Customizable drag placeholder. ([commit](https://github.com/katoid/angular-grid-layout/commit/ce7826522f67333359afcac4f10cb3cd4b76f7b0)).
-- [ ] rowHeight to support also 'fit' as value instead of only CSS pixels ([issue](https://github.com/katoid/angular-grid-layout/issues/1)).
+- [x] rowHeight to support also 'fit' as value instead of only CSS pixels ([commit](https://github.com/katoid/angular-grid-layout/commit/fe7d0e7af9e5ede885a34a9c4700df23012cd1a9)).
 - [ ] Grid support for static grid items.
 - [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
