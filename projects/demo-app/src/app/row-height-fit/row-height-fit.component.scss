@@ -1,0 +1,67 @@
+:host {
+    width: 100%;
+    height: calc(100% - 65px);
+    padding: 12px 12px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+
+
+    .grid-container {
+        flex: 1;
+        min-height: 0; // Let it shrink
+        box-sizing: border-box;
+        border: 1px solid var(--ktd-border-color);
+        background-color: var(--ktd-background-color);
+        border-radius: 2px;
+    }
+
+    ktd-grid-item {
+        color: #121212;
+    }
+
+    ktd-grid {
+        transition: height 500ms ease;
+    }
+
+    .grid-item-content {
+        box-sizing: border-box;
+        background: #ccc;
+        border: 1px solid;
+        width: 100%;
+        height: 100%;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .grid-item-remove-handle {
+        position: absolute;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        top: 0;
+        right: 0;
+
+        &::after {
+            content: 'x';
+            color: #121212;
+            font-size: 16px;
+            font-weight: 300;
+            font-family: Arial, sans-serif;
+        }
+    }
+
+    // Add custom drag mouse styles
+    ktd-grid-item {
+        cursor: grab;
+
+        &.ktd-grid-item-dragging {
+            cursor: grabbing;
+        }
+    }
+}

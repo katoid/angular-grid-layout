@@ -6,7 +6,7 @@ import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing } from './utils/grid.utils';
+import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing } from './utils/grid.utils';
 import { compact } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridCfg, KtdGridCompactType, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
@@ -49,16 +49,17 @@ function getDragResizeEventData(gridItem: KtdGridItemComponent, layout: KtdGridL
 
 function layoutToRenderItems(config: KtdGridCfg, width: number, height: number): KtdDictionary<KtdGridItemRenderData<number>> {
     const {cols, rowHeight, layout, gap} = config;
-    const widthExcludinggap = width - Math.max((gap * (cols - 1)), 0);
-    const itemWidthPerColumn = (widthExcludinggap / cols);
+    const rowHeightInPixels = rowHeight === 'fit' ? ktdGetGridItemRowHeight(layout, height, gap) : rowHeight;
+    const widthExcludingGap = width - Math.max((gap * (cols - 1)), 0);
+    const itemWidthPerColumn = (widthExcludingGap / cols);
     const renderItems: KtdDictionary<KtdGridItemRenderData<number>> = {};
     for (const item of layout) {
         renderItems[item.id] = {
             id: item.id,
-            top: item.y * rowHeight + gap * item.y,
+            top: item.y * rowHeightInPixels + gap * item.y,
             left: item.x * itemWidthPerColumn + gap * item.x,
             width: item.w * itemWidthPerColumn + gap * Math.max(item.w - 1, 0),
-            height: item.h * rowHeight + gap * Math.max(item.h - 1, 0),
+            height: item.h * rowHeightInPixels + gap * Math.max(item.h - 1, 0),
         };
     }
     return renderItems;
@@ -228,10 +229,24 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _gap: number = 0;
 
+    @Input()
+    get height(): number | null {
+        return this._height;
+    }
+
+    set height(val: number | null) {
+        this._height = typeof val === 'number' ? Math.max(val, 0) : null;
+    }
+
+    /** Total height of the grid */
+    private _height: number | null = null;
+    private gridCurrentHeight: number;
+
     get config(): KtdGridCfg {
         return {
             cols: this.cols,
-            rowHeight: this.rowHeight as any,
+            rowHeight: this.rowHeight,
+            height: this.height,
             layout: this.layout,
             preventCollision: this.preventCollision,
             gap: this.gap,
@@ -244,8 +259,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /** Element that is rendered as placeholder when a grid item is being dragged */
     private placeholder: HTMLElement | null;
 
-    /** Total height of the grid */
-    private _height: number;
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
     private subscriptions: Subscription[];
 
@@ -258,6 +271,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     ngOnChanges(changes: SimpleChanges) {
+
+        if (this.rowHeight === 'fit' && this.height == null) {
+            console.warn(`KtdGridComponent: The @Input() height should not be null when using rowHeight 'fit'`);
+        }
+
         let needsCompactLayout = false;
         let needsRecalculateRenderData = false;
 
@@ -268,7 +286,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         }
 
         // Check if wee need to recalculate rendering data.
-        if (needsCompactLayout || changes.rowHeight || changes.gap) {
+        if (needsCompactLayout || changes.rowHeight || changes.height || changes.gap) {
             needsRecalculateRenderData = true;
         }
 
@@ -315,21 +333,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     calculateRenderData() {
         const clientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
-        if (this.rowHeight === 'fit') {
-            this._height = clientRect.height;
-            this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, clientRect.height);
-        } else {
-            this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, clientRect.height);
-            this._height = getGridHeight(this.layout, this.rowHeight, this.gap);
-        }
+        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? clientRect.height : getGridHeight(this.layout, this.rowHeight, this.gap));
+        this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, this.gridCurrentHeight);
     }
 
     render() {
-        if (this.rowHeight === 'fit') {
-            this.renderer.setStyle(this.elementRef.nativeElement, 'height', `100%`);
-        } else {
-            this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${this._height}px`);
-        }
+        this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${this.gridCurrentHeight}px`);
         this.updateGridItemsStyles();
     }
 
@@ -401,9 +410,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             }
             this.createPlaceholderElement(placeholderClientRect, gridItem.placeholder);
 
-            const rowHeight = this.rowHeight === 'fit' ? (gridElemClientRect.height / getGridHeight(this.layout, 1, 0)) : this.rowHeight;
-
-
             let newLayout: KtdGridLayoutItem[];
 
             // TODO (enhancement): consider move this 'side effect' observable inside the main drag loop.
@@ -450,7 +456,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
                         const {layout, draggedItemPos} = calcNewStateFunc(gridItem, {
                             layout: currentLayout,
-                            rowHeight,
+                            rowHeight: this.rowHeight,
+                            height: this.height,
                             cols: this.cols,
                             preventCollision: this.preventCollision,
                             gap: this.gap,
@@ -463,11 +470,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         });
                         newLayout = layout;
 
-                        this._height = getGridHeight(newLayout, rowHeight, this.gap);
+                        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(newLayout, this.rowHeight, this.gap))
 
                         this._gridItemsRenderData = layoutToRenderItems({
                             cols: this.cols,
-                            rowHeight,
+                            rowHeight: this.rowHeight,
+                            height: this.height,
                             layout: newLayout,
                             preventCollision: this.preventCollision,
                             gap: this.gap,

@@ -11,6 +11,14 @@ export function ktdTrackById(index: number, item: {id: string}) {
     return item.id;
 }
 
+/** Given a layout, the gridHeight and the gap return the resulting rowHeight */
+export function ktdGetGridItemRowHeight(layout: KtdGridLayout, gridHeight: number, gap: number): number {
+    const numberOfRows = layout.reduce((acc, cur) => Math.max(acc, Math.max(cur.y + cur.h, 0)), 0);
+    const gapTotalHeight = (numberOfRows - 1) * gap;
+    const gridHeightMinusGap = gridHeight - gapTotalHeight;
+    return gridHeightMinusGap / numberOfRows;
+}
+
 /**
  * Call react-grid-layout utils 'compact()' function and return the compacted layout.
  * @param layout to be compacted.
@@ -95,11 +103,15 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
     const gridRelXPos = clientX - gridElementLeftPosition - offsetX;
     const gridRelYPos = clientY - gridElementTopPosition - offsetY;
 
+    const rowHeightInPixels = config.rowHeight === 'fit'
+        ? ktdGetGridItemRowHeight(config.layout, config.height ?? gridElemClientRect.height, config.gap)
+        : config.rowHeight;
+
     // Get layout item position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
         x: screenXToGridX(gridRelXPos , config.cols, gridElemClientRect.width, config.gap),
-        y: screenYToGridY(gridRelYPos, config.rowHeight, gridElemClientRect.height, config.gap)
+        y: screenYToGridY(gridRelYPos, rowHeightInPixels, gridElemClientRect.height, config.gap)
     };
 
     // Correct the values if they overflow, since 'moveElement' function doesn't do it
@@ -161,11 +173,15 @@ export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdG
     const width = clientX + resizeElemOffsetX - (dragElemClientRect.left + scrollDifference.left);
     const height = clientY + resizeElemOffsetY - (dragElemClientRect.top + scrollDifference.top);
 
+    const rowHeightInPixels = config.rowHeight === 'fit'
+        ? ktdGetGridItemRowHeight(config.layout, config.height ?? gridElemClientRect.height, config.gap)
+        : config.rowHeight;
+
     // Get layout item grid position
     const layoutItem: KtdGridLayoutItem = {
         ...draggingElemPrevItem,
         w: screenWidthToGridWidth(width, config.cols, gridElemClientRect.width, config.gap),
-        h: screenHeightToGridHeight(height, config.rowHeight, gridElemClientRect.height, config.gap)
+        h: screenHeightToGridHeight(height, rowHeightInPixels, gridElemClientRect.height, config.gap)
     };
 
     layoutItem.w = limitNumberWithinRange(layoutItem.w, gridItem.minW ?? layoutItem.minW, gridItem.maxW ?? layoutItem.maxW);
