@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/katoid/angular-grid-layout/compare/v1.2.0...v2.1.0) (2023-01-04)
+
+### Features
+
+* **grid:** Added support for rowHeight = 'fit', also added Input() height ([fe7d0e7](https://github.com/katoid/angular-grid-layout/commit/fe7d0e7af9e5ede885a34a9c4700df23012cd1a9)), closes [#1](https://github.com/katoid/angular-grid-layout/issues/1) [#51](https://github.com/katoid/angular-grid-layout/issues/51) [#58](https://github.com/katoid/angular-grid-layout/issues/58)
+
+### Bug Fixes
+
+* **grid:** Fixed compact horizontal bug that was compacting also vertically ([806a2f8](https://github.com/katoid/angular-grid-layout/commit/806a2f8f5d09ce00668165f1c32155a435deadc5))
+* **grid:** Fixed compact horizontal method not moving items to the left sometimes ([5420a6f](https://github.com/katoid/angular-grid-layout/commit/5420a6f6c2b4e2fc26b975803acd285a7ee9b471)), closes [#21](https://github.com/katoid/angular-grid-layout/issues/21)
+
 ## [2.0.0](https://github.com/katoid/angular-grid-layout/compare/v1.2.0...v2.0.0) (2022-09-22)
 
 
