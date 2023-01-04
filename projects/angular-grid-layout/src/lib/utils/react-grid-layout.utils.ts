@@ -274,6 +274,11 @@ export function compactItem(
         if (compactH && l.x + l.w > cols) {
             l.x = cols - l.w;
             l.y++;
+
+            // ALso move element as left as much as we can (ktd-custom-change)
+            while (l.x > 0 && !getFirstCollision(compareWith, l)) {
+                l.x--;
+            }
         }
     }
 

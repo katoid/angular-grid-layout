@@ -61,4 +61,38 @@ describe('compact (custom tests)', () => {
             {y: 10, x: 0, h: 2, w: 1, id: '2', moved: false, static: false}
         ]);
     });
+
+    it('compact horizontal should move all the elements to the left as much as possible', () => {
+        const cols = 6
+        const layout = [
+            {y: 0, x: 0, h: 2, w: 2, id: '1'},
+            {y: 0, x: 2, h: 2, w: 2, id: '2'},
+            {y: 0, x: 4, h: 2, w: 2, id: '3'},
+            {y: 2, x: 4, h: 2, w: 2, id: '4'}
+        ];
+
+        expect(compact(layout, 'horizontal', cols)).toEqual([
+            {y: 0, x: 0, h: 2, w: 2, id: '1', moved: false, static: false},
+            {y: 0, x: 2, h: 2, w: 2, id: '2', moved: false, static: false},
+            {y: 0, x: 4, h: 2, w: 2, id: '3', moved: false, static: false},
+            {y: 2, x: 0, h: 2, w: 2, id: '4', moved: false, static: false}
+        ]);
+    });
+
+    it('compact horizontal should put overflowing-right elements as bottom needed without colliding and as left as possible', () => {
+        const cols = 6
+        const layout = [
+            {y: 0, x: 0, h: 2, w: 2, id: '1'},
+            {y: 0, x: 2, h: 2, w: 2, id: '2'},
+            {y: 0, x: 4, h: 2, w: 2, id: '3'},
+            {y: -2, x: -2, h: 2, w: 2, id: '4'}
+        ];
+
+        expect(compact(layout, 'horizontal', cols)).toEqual([
+            {y: 0, x: 2, h: 2, w: 2, id: '1', moved: false, static: false},
+            {y: 0, x: 4, h: 2, w: 2, id: '2', moved: false, static: false},
+            {y: 2, x: 0, h: 2, w: 2, id: '3', moved: false, static: false},
+            {y: 0, x: 0, h: 2, w: 2, id: '4', moved: false, static: false},
+        ]);
+    });
 })

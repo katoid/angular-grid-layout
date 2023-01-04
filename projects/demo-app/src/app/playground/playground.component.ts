@@ -118,7 +118,6 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onCompactTypeChange(change: MatSelectChange) {
         console.log('onCompactTypeChange', change);
         this.compactType = change.value;
-        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
     }
 
     onTransitionChange(change: MatSelectChange) {
