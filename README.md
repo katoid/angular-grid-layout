@@ -23,6 +23,13 @@ Both cover the same necessities.
 - Supports touch devices
 - Auto-scrolling while dragging
 
+## Compatibility
+| Version              | Compatibility       |
+|----------------------|---------------------|
+| \>= 2.0.0            | Angular 14 & 15     |
+| \>= 1.1.0 && < 2.0.0 | Angular 12, 13 & 14 |
+| \>= 0.1.1 && < 1.1.0 | Angular 9, 10 & 11  |
+
 ## Demos
 [Playground](https://katoid.github.io/angular-grid-layout/playground) - [Stackblitz](https://stackblitz.com/edit/angular-grid-layout-playground?file=src%2Fapp%2Fplayground%2Fplayground.component.ts)
 
@@ -186,8 +193,8 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 - [x] Add grid gap feature. ([commit](https://github.com/katoid/angular-grid-layout/commit/a8b129d76cb7bf12a63ff92beee5d5bbb28046b3))
 - [x] Customizable drag placeholder. ([commit](https://github.com/katoid/angular-grid-layout/commit/ce7826522f67333359afcac4f10cb3cd4b76f7b0)).
 - [x] rowHeight to support also 'fit' as value instead of only CSS pixels ([commit](https://github.com/katoid/angular-grid-layout/commit/fe7d0e7af9e5ede885a34a9c4700df23012cd1a9)).
+- [x] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Grid support for static grid items.
-- [ ] Check grid compact horizontal algorithm, estrange behaviour when overflowing, also in react-grid-layout.
 - [ ] Add all other resize options (now is only available 'se-resize').
 - [ ] Documentation.
 
