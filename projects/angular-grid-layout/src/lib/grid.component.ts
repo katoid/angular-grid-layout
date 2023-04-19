@@ -325,7 +325,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     ngOnDestroy() {
-        this.subscriptions.forEach(sub => sub.unsubscribe());
+        this.subscriptions?.forEach(sub => sub.unsubscribe());
     }
 
     compactLayout() {
