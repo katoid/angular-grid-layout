@@ -9,6 +9,7 @@ import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
 import { coerceNumberProperty } from '@angular/cdk/coercion';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import { KtdGridBackgroundCfg } from '../../../../angular-grid-layout/src/lib/grid.definitions';
 
 @Component({
     selector: 'ktd-playground',
@@ -63,7 +64,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     currentPlaceholder: string = 'Default';
 
     dragStartThreshold = 0;
-    gap = 0;
+    gap = 10;
     autoScroll = true;
     disableDrag = false;
     disableResize = false;
@@ -72,7 +73,18 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     preventCollision = false;
     isDragging = false;
     isResizing = false;
+    showBackground = false;
     resizeSubscription: Subscription;
+
+    gridBackgroundVisibilityOptions = ['never', 'always', 'whenDragging'];
+    gridBackgroundConfig: Required<KtdGridBackgroundCfg> = {
+        show: 'always',
+        borderColor: 'rgba(255, 128, 0, 0.25)',
+        gapColor: 'transparent',
+        borderWidth: 1,
+        rowColor: 'rgba(128, 128, 128, 0.10)',
+        columnColor: 'rgba(128, 128, 128, 0.10)',
+    };
 
     constructor(private ngZone: NgZone, public elementRef: ElementRef, @Inject(DOCUMENT) public document: Document) {
         // this.ngZone.onUnstable.subscribe(() => console.log('UnStable'));
@@ -137,6 +149,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         this.disableResize = checked;
     }
 
+    onShowBackgroundChange(checked: boolean) {
+        this.showBackground = checked;
+    }
+
     onDisableRemoveChange(checked: boolean) {
         this.disableRemove = checked;
     }
@@ -174,7 +190,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     }
 
     onGapChange(event: Event) {
-      this.gap = coerceNumberProperty((event.target as HTMLInputElement).value);
+        this.gap = coerceNumberProperty((event.target as HTMLInputElement).value);
     }
 
     generateLayout() {
@@ -230,5 +246,30 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     removeItem(id: string) {
         // Important: Don't mutate the array. Let Angular know that the layout has changed creating a new reference.
         this.layout = ktdArrayRemoveItem(this.layout, (item) => item.id === id);
+    }
+
+    updateGridBgBorderWidth(borderWidth: string) {
+        this.gridBackgroundConfig = {
+            ...this.gridBackgroundConfig,
+            borderWidth: Number(borderWidth)
+        };
+    }
+
+    updateGridBgColor(color: string, property: string) {
+        this.gridBackgroundConfig = {
+            ...this.gridBackgroundConfig,
+            [property]: color
+        };
+    }
+
+    getCurrentBackgroundVisibility() {
+        return this.gridBackgroundConfig?.show ?? 'never';
+    }
+
+    gridBackgroundShowChange(change: MatSelectChange) {
+        this.gridBackgroundConfig = {
+            ...this.gridBackgroundConfig,
+            show: change.value as (Required<KtdGridBackgroundCfg>['show'])
+        };
     }
 }

@@ -98,5 +98,52 @@
         user-select: none;
     }
 
+    .grid-background-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
 
+        .grid-background {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: 18px;
+            margin-left: 8px;
+
+            > span {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin-right: 4px;
+            }
+
+            mat-select {
+                border: 1px solid var(--ktd-border-color);;
+                padding: 0px 4px;
+                border-radius: 5px;
+                width: 106px;
+                line-height: 24px;
+            }
+
+            input, select {
+                border: 1px solid var(--ktd-border-color);;
+                border-radius: 5px;
+                line-height: 20px;
+            }
+
+            input {
+                width: 70px;
+            }
+
+            select {
+                width: 110px;
+            }
+
+            input[type="number"], select {
+                // border-right: 1px solid black;
+                background: transparent;
+                color: inherit;
+            }
+        }
+    }
 }

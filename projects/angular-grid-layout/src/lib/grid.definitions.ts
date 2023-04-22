@@ -16,6 +16,16 @@ export interface KtdGridLayoutItem {
 
 export type KtdGridCompactType = CompactType;
 
+
+export interface KtdGridBackgroundCfg {
+    show: 'never' | 'always' | 'whenDragging';
+    borderColor?: string;
+    gapColor?: string;
+    rowColor?: string;
+    columnColor?: string;
+    borderWidth?: number;
+}
+
 export interface KtdGridCfg {
     cols: number;
     rowHeight: number | 'fit'; // row height in pixels

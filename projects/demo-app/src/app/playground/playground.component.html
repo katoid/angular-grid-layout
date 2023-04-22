@@ -18,12 +18,21 @@
         </mat-form-field>
         <mat-form-field color="accent" style="width: 120px">
             <mat-label>Row height</mat-label>
-            <input matInput type="number" [value]="rowHeight + ''" style="width: 60%;" [disabled]="rowHeightFit" (input)="onRowHeightChange($event)">
+            <input matInput
+                   type="number"
+                   [value]="rowHeight + ''"
+                   style="width: 60%;"
+                   [disabled]="rowHeightFit"
+                   (input)="onRowHeightChange($event)">
             <mat-checkbox style="position: absolute; right: 4px; bottom: 4px;" (change)="onRowHeightFitChange($event)">Fit</mat-checkbox>
         </mat-form-field>
         <mat-form-field color="accent" style="width: 94px">
             <mat-label>Grid height</mat-label>
-            <input matInput type="number" [value]="gridHeight === null ? null : gridHeight + ''" [disabled]="!rowHeightFit" (input)="onGridHeightChange($event)">
+            <input matInput
+                   type="number"
+                   [value]="gridHeight === null ? null : gridHeight + ''"
+                   [disabled]="!rowHeightFit"
+                   (input)="onGridHeightChange($event)">
         </mat-form-field>
         <mat-form-field color="accent" style="width: 128px">
             <mat-label>Drag Threshold</mat-label>
@@ -81,10 +90,73 @@
             <mat-chip color="accent" [selected]="isDragging">isDragging</mat-chip>
             <mat-chip color="accent" [selected]="isResizing">isResizing</mat-chip>
         </mat-chip-list>
+        <div class="grid-background-container">
+            <div style="margin-right: 6px">Background grid</div>
+            <div class="grid-background">
+                <span>
+                    <span>show</span>
+                 <mat-select [value]="getCurrentBackgroundVisibility()"
+                             (selectionChange)="gridBackgroundShowChange($event)">
+                  <mat-option *ngFor="let option of gridBackgroundVisibilityOptions" [value]="option">{{option}}</mat-option>
+                </mat-select>
+                </span>
+
+                <span>
+                    <span>border px</span>
+                    <input
+                        #borderWidth
+                        id="borderWidth"
+                        type="number"
+                        [value]="gridBackgroundConfig.borderWidth"
+                        (change)="updateGridBgBorderWidth(borderWidth.value)">
+                </span>
+
+                <span>
+                    <span>border</span>
+                    <input
+                        [style.background]="gridBackgroundConfig.borderColor"
+                        [colorPicker]="gridBackgroundConfig.borderColor"
+                        (colorPickerChange)="updateGridBgColor($event, 'borderColor')"
+                        [cpAlphaChannel]="'enabled'"
+                        [cpOutputFormat]="'rgba'">
+                </span>
+
+                <span>
+                    <span>gap</span>
+                    <input
+                        [style.background]="gridBackgroundConfig.gapColor"
+                        [colorPicker]="gridBackgroundConfig.gapColor"
+                        (colorPickerChange)="updateGridBgColor($event, 'gapColor')"
+                        [cpAlphaChannel]="'enabled'"
+                        [cpOutputFormat]="'rgba'">
+                </span>
+
+                <span>
+                    <span>row</span>
+                    <input
+                        [style.background]="gridBackgroundConfig.rowColor"
+                        [colorPicker]="gridBackgroundConfig.rowColor"
+                        (colorPickerChange)="updateGridBgColor($event, 'rowColor')"
+                        [cpAlphaChannel]="'enabled'"
+                        [cpOutputFormat]="'rgba'">
+                </span>
+
+                <span>
+                    <span>column</span>
+                    <input
+                        [style.background]="gridBackgroundConfig.columnColor"
+                        [colorPicker]="gridBackgroundConfig.columnColor"
+                        (colorPickerChange)="updateGridBgColor($event, 'columnColor')"
+                        [cpAlphaChannel]="'enabled'"
+                        [cpOutputFormat]="'rgba'">
+                </span>
+            </div>
+        </div>
     </div>
 
     <div class="grid-container">
         <ktd-grid [cols]="cols"
+                  [backgroundConfig]="gridBackgroundConfig"
                   [height]="rowHeightFit && gridHeight ? gridHeight : null"
                   [rowHeight]="rowHeightFit ? 'fit' : rowHeight"
                   [layout]="layout"
@@ -92,7 +164,7 @@
                   [preventCollision]="preventCollision"
                   [scrollableParent]="autoScroll ? document : null"
                   [gap]="gap"
-                  scrollSpeed="4"
+                  [scrollSpeed]="4"
                   (dragStarted)="onDragStarted($event)"
                   (resizeStarted)="onResizeStarted($event)"
                   (dragEnded)="onDragEnded($event)"
@@ -111,9 +183,12 @@
                      (click)="removeItem(item.id)">
                 </div>
                 <ng-template *ngIf="currentPlaceholder !== 'Default'" ktdGridItemPlaceholder>
-                    <div *ngIf="currentPlaceholder === 'Custom 1'" class="grid-item-content custom-placeholder custom-placeholder-1">{{item.id}}</div>
-                    <div *ngIf="currentPlaceholder === 'Custom 2'" class="grid-item-content custom-placeholder custom-placeholder-2">{{item.id}}</div>
-                    <div *ngIf="currentPlaceholder === 'Custom 3'" class="grid-item-content custom-placeholder custom-placeholder-3">{{item.id}}</div>
+                    <div *ngIf="currentPlaceholder === 'Custom 1'"
+                         class="grid-item-content custom-placeholder custom-placeholder-1">{{item.id}}</div>
+                    <div *ngIf="currentPlaceholder === 'Custom 2'"
+                         class="grid-item-content custom-placeholder custom-placeholder-2">{{item.id}}</div>
+                    <div *ngIf="currentPlaceholder === 'Custom 3'"
+                         class="grid-item-content custom-placeholder custom-placeholder-3">{{item.id}}</div>
                 </ng-template>
             </ktd-grid-item>
         </ktd-grid>

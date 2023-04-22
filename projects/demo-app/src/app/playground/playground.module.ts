@@ -9,6 +9,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatInputModule } from '@angular/material/input';
 import { MatChipsModule } from '@angular/material/chips';
 import { KtdFooterComponent } from '../components/footer/footer.component';
+import { ColorPickerModule } from "ngx-color-picker";
 
 const routes: Routes = [
     {
@@ -30,7 +31,8 @@ const routes: Routes = [
         MatCheckboxModule,
         MatInputModule,
         MatChipsModule,
-        KtdFooterComponent
+        KtdFooterComponent,
+        ColorPickerModule
     ]
 })
 export class KtdPlaygroundModule {}
