@@ -3,6 +3,43 @@ ktd-grid {
     position: relative;
     width: 100%;
 
+    &.ktd-grid-background:before {
+        // CSS variables used here are set in the component.
+        content: '';
+        border: none;
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        z-index: 0;
+
+        transition: opacity 0.2s;
+        opacity: 0;
+
+        // First gradient is rows, second one columns
+        background-image: repeating-linear-gradient(
+                var(--border-color) 0 var(--border-width),
+                var(--row-color) var(--border-width) calc(var(--row-height) - var(--border-width)),
+                var(--border-color) calc(var(--row-height) - var(--border-width)) calc(var(--row-height)),
+                var(--gap-color) calc(var(--row-height)) calc(var(--row-height) + var(--gap))
+        ),
+        repeating-linear-gradient(
+                90deg,
+                var(--border-color) 0 var(--border-width),
+                var(--column-color) var(--border-width) calc(100% - (var(--border-width) + var(--gap))),
+                var(--border-color) calc(100% - (var(--border-width) + var(--gap))) calc(100% - var(--gap)),
+                var(--gap-color) calc(100% - var(--gap)) 100%
+        );
+        // this size represents 1 block of the pattern we want to repeat
+        background-size: calc((100% + var(--gap))/var(--columns)) calc(var(--row-height) + var(--gap));
+        background-position: 0 0;
+    }
+
+    &.ktd-grid-background.ktd-grid-background-visible:before {
+        opacity: 1;
+    }
+
     ktd-grid-item {
         &.ktd-grid-item-dragging {
             z-index: 1000;
@@ -18,7 +55,7 @@ ktd-grid {
         z-index: 0;
         transition-property: transform;
         transition: all 150ms ease;
-        
+
         &-default {
             background-color: darkred;
             opacity: 0.6;
