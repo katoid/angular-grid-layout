@@ -64,7 +64,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     private _dragStartThreshold: number = 0;
 
 
-    /** Whether the item is draggable or not. Defaults to true. If using onManualDragStart, set this to false. */
+    /** Whether the item is draggable or not. Defaults to true. */
     @Input()
     get draggable(): boolean {
         return this._draggable;
@@ -77,6 +77,13 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
     private _draggable: boolean = true;
     private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
+
+    /**
+     * Whether to use manual drag event handling for this item instead of the default automatic drag event handling. When enabled, pointer
+     * events passed to the grid item's onManualDragStart method will initiate dragging, and any KtdGridDragHandle directives will be ignored.
+     * Defaults to false.
+     */
+    @Input() enableManualDragEvents = false;
 
     private _manualDragEvents$: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
@@ -116,7 +123,6 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     ngAfterContentInit() {
         this.subscriptions.push(
             this._dragStart$().subscribe(this.dragStartSubject),
-            this._manualDragStart$().subscribe(this.dragStartSubject),
             this._resizeStart$().subscribe(this.resizeStartSubject),
         );
     }
@@ -126,7 +132,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
     /**
-     * Handle a manual drag event. To use manual dragging, set draggable to false, and route the desired pointer events to this method.
+     * Handle a manual drag event. To use manual dragging, set enableManualDragEvents to true and route the desired pointer events to this method.
      * It is the caller's responsibility to call this method with only the events that are desired to cause a drag.
      * For example, if you only want left clicks to cause a drag, it is your responsibility to filter out other mouse button events.
      * @param startEvent The pointer event that should initiate the drag.
@@ -149,29 +155,27 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
             switchMap((draggable) => {
                 if (!draggable) {
                     return NEVER;
-                } else {
-                    return this._dragHandles.changes.pipe(
-                        startWith(this._dragHandles),
-                        switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
-                            return iif(
-                                () => dragHandles.length > 0,
-                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
-                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
-                            ).pipe(
-                                exhaustMap((startEvent) => {
-                                    return this._applyDragThreshold$(startEvent);
-                                })
-                            );
-                        })
+                }
+                if (this.enableManualDragEvents) {
+                    return this._manualDragEvents$.pipe(
+                        exhaustMap(e => this._applyDragThreshold$(e))
                     );
                 }
+                return this._dragHandles.changes.pipe(
+                    startWith(this._dragHandles),
+                    switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
+                        return iif(
+                            () => dragHandles.length > 0,
+                            merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
+                            ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
+                        ).pipe(
+                            exhaustMap((startEvent) => {
+                                return this._applyDragThreshold$(startEvent);
+                            })
+                        );
+                    })
+                );
             })
-        );
-    }
-
-    private _manualDragStart$(): Observable<MouseEvent | TouchEvent> {
-        return this._manualDragEvents$.pipe(
-            exhaustMap(e => this._applyDragThreshold$(e))
         );
     }
 
