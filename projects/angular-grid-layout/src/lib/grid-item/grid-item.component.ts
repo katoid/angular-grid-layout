@@ -80,7 +80,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
     /**
      * Whether to use manual drag event handling for this item instead of the default automatic drag event handling. When enabled, pointer
-     * events passed to the grid item's onManualDragStart method will initiate dragging, and any KtdGridDragHandle directives will be ignored.
+     * events passed to the grid item's startDragManually method will initiate dragging, and any KtdGridDragHandle directives will be ignored.
      * Defaults to false.
      */
     @Input() enableManualDragEvents = false;
@@ -137,7 +137,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
      * For example, if you only want left clicks to cause a drag, it is your responsibility to filter out other mouse button events.
      * @param startEvent The pointer event that should initiate the drag.
      */
-    onManualDragStart(startEvent: MouseEvent | TouchEvent) {
+    startDragManually(startEvent: MouseEvent | TouchEvent) {
         this._manualDragEvents$.next(startEvent);
     }
 
