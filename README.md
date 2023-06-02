@@ -181,15 +181,10 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 @Input() dragStartThreshold: number = 0;
 
 /**
- * Whether to use manual drag event handling for this item instead of the default automatic drag event handling. When enabled, pointer
- * events passed to the grid item's startDragManually method will initiate dragging, and any KtdGridDragHandle directives will be ignored.
- */
-@Input() enableManualDragEvents: boolean = false;
-
-/**
- * Handle a manual drag event. To use manual dragging, set enableManualDragEvents to true and route the desired pointer events to this method.
- * It is the caller's responsibility to call this method with only the events that should initiate a drag.
- * For example, if you only left clicks should start a drag, it is your responsibility to filter out other mouse button events.
+ * To manually start dragging, route the desired pointer events to this method.
+ * Dragging initiated by this method will work regardless of the value of the draggable Input.
+ * It is the caller's responsibility to call this method with only the events that are desired to cause a drag.
+ * For example, if you only want left clicks to cause a drag, it is your responsibility to filter out other mouse button events.
  * @param startEvent The pointer event that should initiate the drag.
  */
 startDragManually(startEvent: MouseEvent | TouchEvent);

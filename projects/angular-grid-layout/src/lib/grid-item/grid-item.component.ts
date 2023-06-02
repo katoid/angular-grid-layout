@@ -78,13 +78,6 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     private _draggable: boolean = true;
     private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
 
-    /**
-     * Whether to use manual drag event handling for this item instead of the default automatic drag event handling. When enabled, pointer
-     * events passed to the grid item's startDragManually method will initiate dragging, and any KtdGridDragHandle directives will be ignored.
-     * Defaults to false.
-     */
-    @Input() enableManualDragEvents = false;
-
     private _manualDragEvents$: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
     /** Whether the item is resizable or not. Defaults to true. */
@@ -132,7 +125,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
     /**
-     * Handle a manual drag event. To use manual dragging, set enableManualDragEvents to true and route the desired pointer events to this method.
+     * To manually start dragging, route the desired pointer events to this method.
+     * Dragging initiated by this method will work regardless of the value of the draggable Input.
      * It is the caller's responsibility to call this method with only the events that are desired to cause a drag.
      * For example, if you only want left clicks to cause a drag, it is your responsibility to filter out other mouse button events.
      * @param startEvent The pointer event that should initiate the drag.
@@ -151,60 +145,54 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     }
 
     private _dragStart$(): Observable<MouseEvent | TouchEvent> {
-        return this._draggable$.pipe(
-            switchMap((draggable) => {
-                if (!draggable) {
-                    return NEVER;
-                }
-                if (this.enableManualDragEvents) {
-                    return this._manualDragEvents$.pipe(
-                        exhaustMap(e => this._applyDragThreshold$(e))
+        return merge(
+            this._manualDragEvents$,
+            this._draggable$.pipe(
+                switchMap((draggable) => {
+                    if (!draggable) {
+                        return NEVER;
+                    }
+                    return this._dragHandles.changes.pipe(
+                        startWith(this._dragHandles),
+                        switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
+                            return iif(
+                                () => dragHandles.length > 0,
+                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
+                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
+                            )
+                        })
                     );
+                })
+            )
+        ).pipe(
+            exhaustMap(startEvent => {
+                // If the event started from an element with the native HTML drag&drop, it'll interfere
+                // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
+                // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
+                // it's flaky and it fails if the user drags it away quickly. Also note that we only want
+                // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
+                // events from firing on touch devices.
+                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
+                    startEvent.preventDefault();
                 }
-                return this._dragHandles.changes.pipe(
-                    startWith(this._dragHandles),
-                    switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
-                        return iif(
-                            () => dragHandles.length > 0,
-                            merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
-                            ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
-                        ).pipe(
-                            exhaustMap((startEvent) => {
-                                return this._applyDragThreshold$(startEvent);
-                            })
-                        );
-                    })
+
+                const startPointer = ktdPointerClient(startEvent);
+                return this.gridService.mouseOrTouchMove$(document).pipe(
+                    takeUntil(ktdMouseOrTouchEnd(document, 1)),
+                    ktdOutsideZone(this.ngZone),
+                    filter((moveEvent) => {
+                        moveEvent.preventDefault();
+                        const movePointer = ktdPointerClient(moveEvent);
+                        const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
+                        const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);
+                        // When this conditions returns true mean that we are over threshold.
+                        return distanceX + distanceY >= this.dragStartThreshold;
+                    }),
+                    take(1),
+                    // Return the original start event
+                    map(() => startEvent)
                 );
             })
-        );
-    }
-
-    private _applyDragThreshold$(startEvent: MouseEvent | TouchEvent): Observable<MouseEvent | TouchEvent> {
-        // If the event started from an element with the native HTML drag&drop, it'll interfere
-        // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
-        // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
-        // it's flaky and it fails if the user drags it away quickly. Also note that we only want
-        // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
-        // events from firing on touch devices.
-        if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
-            startEvent.preventDefault();
-        }
-
-        const startPointer = ktdPointerClient(startEvent);
-        return this.gridService.mouseOrTouchMove$(document).pipe(
-            takeUntil(ktdMouseOrTouchEnd(document, 1)),
-            ktdOutsideZone(this.ngZone),
-            filter((moveEvent) => {
-                moveEvent.preventDefault();
-                const movePointer = ktdPointerClient(moveEvent);
-                const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
-                const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);
-                // When this conditions returns true mean that we are over threshold.
-                return distanceX + distanceY >= this.dragStartThreshold;
-            }),
-            take(1),
-            // Return the original start event
-            map(() => startEvent)
         );
     }
 
