@@ -168,7 +168,7 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 @Input() maxW?: number;
 @Input() maxH?: number;
 
-/** Whether the item is draggable or not. Defaults to true. */
+/** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
 @Input() draggable: boolean = true;
 
 /** Whether the item is resizable or not. Defaults to true. */

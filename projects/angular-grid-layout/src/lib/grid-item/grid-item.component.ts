@@ -64,7 +64,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     private _dragStartThreshold: number = 0;
 
 
-    /** Whether the item is draggable or not. Defaults to true. */
+    /** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
     @Input()
     get draggable(): boolean {
         return this._draggable;
