@@ -12,7 +12,7 @@ import { compact } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridBackgroundCfg, KtdGridCfg, KtdGridCompactType, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
 } from './grid.definitions';
-import { ktdMouseOrTouchEnd, ktdPointerClientX, ktdPointerClientY } from './utils/pointer.utils';
+import { ktdPointerUp, ktdPointerClientX, ktdPointerClientY } from './utils/pointer.utils';
 import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 import { getMutableClientRect, KtdClientRect } from './utils/client-rect';
@@ -513,7 +513,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     })),
                     ktdScrollIfNearElementClientRect$(scrollableParent, {scrollStep: this.scrollSpeed})
                 )).pipe(
-                    takeUntil(ktdMouseOrTouchEnd(document))
+                    takeUntil(ktdPointerUp(document))
                 ).subscribe());
 
             /**
@@ -530,8 +530,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         ])
                     ])
                 ).pipe(
-                    takeUntil(ktdMouseOrTouchEnd(document)),
-                ).subscribe(([pointerDragEvent, scrollDifference]: [MouseEvent | TouchEvent, { top: number, left: number }]) => {
+                    takeUntil(ktdPointerUp(document)),
+                ).subscribe(([pointerDragEvent, scrollDifference]: [MouseEvent | TouchEvent | PointerEvent, { top: number, left: number }]) => {
                         pointerDragEvent.preventDefault();
 
                         /**

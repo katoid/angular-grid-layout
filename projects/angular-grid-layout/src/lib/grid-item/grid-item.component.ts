@@ -4,7 +4,7 @@ import {
 } from '@angular/core';
 import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdPointerClient } from '../utils/pointer.utils';
+import { ktdPointerDown, ktdPointerUp, ktdPointerClient } from '../utils/pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
@@ -142,8 +142,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                         switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
                             return iif(
                                 () => dragHandles.length > 0,
-                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
-                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
+                                merge(...dragHandles.toArray().map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement))),
+                                ktdPointerDown(this.elementRef.nativeElement)
                             ).pipe(
                                 exhaustMap((startEvent) => {
                                     // If the event started from an element with the native HTML drag&drop, it'll interfere
@@ -158,7 +158,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
                                     const startPointer = ktdPointerClient(startEvent);
                                     return this.gridService.mouseOrTouchMove$(document).pipe(
-                                        takeUntil(ktdMouseOrTouchEnd(document, 1)),
+                                        takeUntil(ktdPointerUp(document)),
                                         ktdOutsideZone(this.ngZone),
                                         filter((moveEvent) => {
                                             moveEvent.preventDefault();
@@ -195,10 +195,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                             if (resizeHandles.length > 0) {
                                 // Side effect to hide the resizeElem if there are resize handles.
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'none');
-                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdMouseOrTouchDown(resizeHandle.element.nativeElement, 1)));
+                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdPointerDown(resizeHandle.element.nativeElement)));
                             } else {
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'block');
-                                return ktdMouseOrTouchDown(this.resizeElem.nativeElement, 1);
+                                return ktdPointerDown(this.resizeElem.nativeElement);
                             }
                         })
                     );

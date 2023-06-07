@@ -2,7 +2,7 @@ import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
 import { fromEvent, iif, Observable, Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { ktdIsMobileOrTablet } from './utils/pointer.utils';
+import { ktdIsMobileOrTablet, ktdSupportsPointerEvents } from './utils/pointer.utils';
 
 /** Event options that can be used to bind an active, capturing event. */
 const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({
@@ -27,11 +27,15 @@ export class KtdGridService implements OnDestroy {
     }
 
     mouseOrTouchMove$(element): Observable<MouseEvent | TouchEvent> {
-        return iif(
-            () => ktdIsMobileOrTablet(),
-            this.touchMove$,
-            fromEvent<MouseEvent>(element, 'mousemove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
-        );
+        if (!ktdSupportsPointerEvents()) {
+            return iif(
+                () => ktdIsMobileOrTablet(),
+                this.touchMove$,
+                fromEvent<MouseEvent>(element, 'mousemove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
+            );
+        }
+
+        return fromEvent<MouseEvent>(element, 'pointermove', activeCapturingEventOptions as AddEventListenerOptions);
     }
 
     private registerTouchMoveSubscription() {
