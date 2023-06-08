@@ -168,7 +168,7 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 @Input() maxW?: number;
 @Input() maxH?: number;
 
-/** Whether the item is draggable or not. Defaults to true. */
+/** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
 @Input() draggable: boolean = true;
 
 /** Whether the item is resizable or not. Defaults to true. */
@@ -179,6 +179,15 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 
 /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
 @Input() dragStartThreshold: number = 0;
+
+/**
+ * To manually start dragging, route the desired pointer events to this method.
+ * Dragging initiated by this method will work regardless of the value of the draggable Input.
+ * It is the caller's responsibility to call this method with only the events that are desired to cause a drag.
+ * For example, if you only want left clicks to cause a drag, it is your responsibility to filter out other mouse button events.
+ * @param startEvent The pointer event that should initiate the drag.
+ */
+startDragManually(startEvent: MouseEvent | TouchEvent);
 ```
 
 
