@@ -174,9 +174,13 @@
                            [id]="item.id"
                            [transition]="currentTransition"
                            [dragStartThreshold]="dragStartThreshold"
-                           [draggable]="!disableDrag"
-                           [resizable]="!disableResize">
-                <div class="grid-item-content">{{item.id}}</div>
+                           [draggable]="!disableDrag && !item.static"
+                           [resizable]="!disableResize && !item.static"
+                           [class.grid-item-static]="item.static">
+                <div class="grid-item-content">
+                    <span *ngIf="item.static" style="position: absolute; left: 6px; top: 6px;">STATIC</span>
+                    <span>{{item.id}}</span>
+                </div>
                 <div class="grid-item-remove-handle"
                      *ngIf="!disableRemove"
                      (mousedown)="stopEventPropagation($event)"

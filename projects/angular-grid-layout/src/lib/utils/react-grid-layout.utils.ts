@@ -524,7 +524,7 @@ export function moveElementAwayFromCollision(
                 : itemToMove.y,
             w: itemToMove.w,
             h: itemToMove.h,
-            id: '-1',
+            id: itemToMove.id, // Important to test more deeply this change. It seems to fix many visual bugs with static grid items, but it is surprising that react-grid-layout has '-1'.
         };
 
         // No collision? If so, we can go up there; otherwise, we'll end up moving down as normal

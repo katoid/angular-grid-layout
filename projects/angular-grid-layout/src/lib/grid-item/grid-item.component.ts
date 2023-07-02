@@ -34,6 +34,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @Input() minH?: number;
     @Input() maxW?: number;
     @Input() maxH?: number;
+    @Input() static?: boolean; // TODO: This property should overwrite the layout one's, right now does nothing.
 
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
     @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
