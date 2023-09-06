@@ -5,7 +5,7 @@ import {
 } from '@angular/core';
 import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
-import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
+import { combineLatest, empty, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing } from './utils/grid.utils';
 import { compact } from './utils/react-grid-layout.utils';
@@ -19,6 +19,7 @@ import { getMutableClientRect, KtdClientRect } from './utils/client-rect';
 import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
 import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 import { KtdGridItemPlaceholder } from './directives/placeholder';
+import { getTransformTransitionDurationInMs } from './utils/transition-duration';
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -272,6 +273,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     get backgroundConfig(): KtdGridBackgroundCfg | null {
         return this._backgroundConfig;
     }
+
     set backgroundConfig(val: KtdGridBackgroundCfg | null) {
         this._backgroundConfig = val;
 
@@ -611,6 +613,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             this.renderer.removeClass(gridItem.elementRef.nativeElement, 'no-transitions');
                             this.renderer.removeClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
+                            this.addGridItemAnimatingClass(gridItem).subscribe();
+                            // Consider destroying the placeholder after the animation has finished.
                             this.destroyPlaceholder();
 
                             if (newLayout) {
@@ -643,6 +647,43 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 subscription.unsubscribe();
             };
         });
+    }
+
+
+    /**
+     * It adds the `ktd-grid-item-animating` class and removes it when the animated transition is complete.
+     * This function is meant to be executed when the drag has ended.
+     * @param gridItem that has been dragged
+     */
+    private addGridItemAnimatingClass(gridItem: KtdGridItemComponent): Observable<undefined> {
+
+        return new Observable(observer => {
+
+            const duration = getTransformTransitionDurationInMs(gridItem.elementRef.nativeElement);
+
+            if (duration === 0) {
+                observer.next();
+                observer.complete();
+                return;
+            }
+
+            this.renderer.addClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-animating');
+            const handler = ((event: TransitionEvent) => {
+                if (!event || (event.target === gridItem.elementRef.nativeElement && event.propertyName === 'transform')) {
+                    this.renderer.removeClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-animating');
+                    removeEventListener();
+                    clearTimeout(timeout);
+                    observer.next();
+                    observer.complete();
+                }
+            }) as EventListener;
+
+            // If a transition is short enough, the browser might not fire the `transitionend` event.
+            // Since we know how long it's supposed to take, add a timeout with a 50% buffer that'll
+            // fire if the transition hasn't completed when it was supposed to.
+            const timeout = setTimeout(handler, duration * 1.5);
+            const removeEventListener = this.renderer.listen(gridItem.elementRef.nativeElement, 'transitionend', handler);
+        })
     }
 
     /** Creates placeholder element */
