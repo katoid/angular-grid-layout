@@ -41,7 +41,7 @@ ktd-grid {
     }
 
     ktd-grid-item {
-        &.ktd-grid-item-dragging {
+        &.ktd-grid-item-dragging, &.ktd-grid-item-animating {
             z-index: 1000;
         }
 
