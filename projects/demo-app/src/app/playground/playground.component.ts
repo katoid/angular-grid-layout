@@ -203,11 +203,12 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
                 w: 2,
                 h: y,
                 id: i.toString()
-                // static: Math.random() < 0.05
             });
         }
         this.layout = ktdGridCompact(layout, this.compactType, this.cols);
         console.log('generateLayout', this.layout);
+        // Set static items afterwards compaction to avoid collisions between them.
+        this.layout = this.layout.map(item => (item.id === '1' || item.id === '4') ? {...item, static: true} : item)
     }
 
     /** Adds a grid item to the layout */
