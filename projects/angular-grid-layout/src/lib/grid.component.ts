@@ -1,18 +1,39 @@
 import {
-    AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EmbeddedViewRef, EventEmitter,
-    HostBinding, Input,
-    NgZone, OnChanges, OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewContainerRef, ViewEncapsulation
+    AfterContentChecked,
+    AfterContentInit,
+    ChangeDetectionStrategy,
+    Component,
+    ContentChildren,
+    ElementRef,
+    EmbeddedViewRef,
+    EventEmitter,
+    Input,
+    NgZone,
+    OnChanges,
+    OnDestroy,
+    Output,
+    QueryList,
+    Renderer2,
+    SimpleChanges,
+    ViewContainerRef,
+    ViewEncapsulation
 } from '@angular/core';
 import { coerceNumberProperty, NumberInput } from './coercion/number-property';
-import { KtdGridItemComponent } from './grid-item/grid-item.component';
-import { combineLatest, empty, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
-import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing } from './utils/grid.utils';
+import { KtdGridItemComponent} from './grid-item/grid-item.component';
+import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription} from 'rxjs';
+import { exhaustMap, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {
+    ktdGetGridItemRowHeight,
+    ktdGridCompact,
+    ktdGridItemDragging,
+    ktdGridItemLayoutItemAreEqual,
+    ktdGridItemResizing
+} from './utils/grid.utils';
 import { compact } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridBackgroundCfg, KtdGridCfg, KtdGridCompactType, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
 } from './grid.definitions';
-import { ktdMouseOrTouchEnd, ktdPointerClientX, ktdPointerClientY } from './utils/pointer.utils';
+import {ktdMouseOrTouchEnd, ktdPointerClient, ktdPointerClientX, ktdPointerClientY} from './utils/pointer.utils';
 import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 import { getMutableClientRect, KtdClientRect } from './utils/client-rect';
@@ -20,6 +41,7 @@ import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$
 import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 import { KtdGridItemPlaceholder } from './directives/placeholder';
 import { getTransformTransitionDurationInMs } from './utils/transition-duration';
+import {GridDragItemRegistryService} from "./grid-drag-item-registry.service";
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -310,16 +332,19 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
     private subscriptions: Subscription[];
 
+    /**
+     * ID of the item that is being dragged. This is used for removing the item from the layout when the drag ends.
+     */
+    private ktdDragItemId: string | null = null;
+
     constructor(private gridService: KtdGridService,
+                private gridDragItemRegistry: GridDragItemRegistryService,
                 private elementRef: ElementRef,
                 private viewContainerRef: ViewContainerRef,
                 private renderer: Renderer2,
-                private ngZone: NgZone) {
-
-    }
+                private ngZone: NgZone) { }
 
     ngOnChanges(changes: SimpleChanges) {
-
         if (this.rowHeight === 'fit' && this.height == null) {
             console.warn(`KtdGridComponent: The @Input() height should not be null when using rowHeight 'fit'`);
         }
@@ -455,6 +480,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
                         this.setGridBackgroundVisible(this._backgroundConfig?.show === 'whenDragging' || this._backgroundConfig?.show === 'always');
 
+                        // TODO: When resizing and dragging, when no compactType is selected, the grid is being deformed.
+                        // - This is because the layout is being compacted on every drag and resize event.
                         // Perform drag sequence
                         return this.performDragSequence$(gridItem, event, type).pipe(
                             map((layout) => ({layout, gridItem, type})));
@@ -471,8 +498,73 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 this.layoutUpdated.emit(layout);
 
                 this.setGridBackgroundVisible(this._backgroundConfig?.show === 'always');
-            })
+            }),
+            this.gridDragItemRegistry.draggableItems$.pipe(
+                startWith(this.gridDragItemRegistry.draggableItems$.value),
+                switchMap((draggableItems) => {
+                    return merge(
+                        ...draggableItems.map((draggableItem) => draggableItem.dragStart$.pipe(
+                            map((event) => ({event, draggableItem}))
+                        )),
+                    );
+                })
+            ).subscribe(({event, draggableItem}) => {
+                const gridRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
+                const mousePos = ktdPointerClient(event);
 
+                const data = draggableItem.data != null ? draggableItem.data : {
+                    id: crypto.randomUUID(),
+                    x: -1,
+                    y: -1,
+                    w: 2,
+                    h: 2
+                };
+
+                this.layout = [
+                    data,
+                    ...this.layout
+                ];
+                this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
+                this.calculateRenderData();
+                this.layoutUpdated.emit(this.layout);
+
+                this.ktdDragItemId = data.id;
+
+                const temporaryGridItem = this._gridItems.find((item) => item.id === data.id);
+                if (temporaryGridItem != null) {
+                    const renderData = this._gridItemsRenderData[data.id];
+                    const top = mousePos.clientY - gridRect.top - renderData.height / 2;
+                    const left = mousePos.clientX - gridRect.left - renderData.width / 2;
+
+                    temporaryGridItem.setStyles({
+                        top: `${top}px`,
+                        left: `${left}px`,
+                    });
+                    temporaryGridItem.startDragManually(event);
+                }
+            }),
+            ktdMouseOrTouchEnd(document).subscribe((event) => {
+                if (this.ktdDragItemId != null) {
+                    // If we stopped dragging on the grid, keep the dragged item in the grid.
+                    const mousePos = ktdPointerClient(event);
+                    const elementsAtMouse = document.elementsFromPoint(mousePos.clientX, mousePos.clientY);
+                    const gridEl = elementsAtMouse.find((element) => element.isEqualNode(this.elementRef.nativeElement));
+                    if (gridEl != null) {
+                        this.ktdDragItemId = null;
+                        return;
+                    }
+
+                    // If we stopped dragging outside the grid, remove the dragged item from the grid.
+                    const gridItem = this._gridItems.find((item) => item.id === this.ktdDragItemId);
+                    if (gridItem != null) {
+                        this.destroyPlaceholder();
+                        this.dragEnded.emit(getDragResizeEventData(gridItem, this.layout));
+                        this.layout = this.layout.filter((item) => item.id !== this.ktdDragItemId);
+                        this.calculateRenderData();
+                        this.layoutUpdated.emit(this.layout);
+                    }
+                }
+            })
         ];
     }
 

@@ -6,6 +6,7 @@ import { KtdGridDragHandle } from './directives/drag-handle';
 import { KtdGridResizeHandle } from './directives/resize-handle';
 import { KtdGridService } from './grid.service';
 import { KtdGridItemPlaceholder } from '../public-api';
+import { KtdDrag } from './directives/ktd-drag';
 
 @NgModule({
     declarations: [
@@ -13,14 +14,16 @@ import { KtdGridItemPlaceholder } from '../public-api';
         KtdGridItemComponent,
         KtdGridDragHandle,
         KtdGridResizeHandle,
-        KtdGridItemPlaceholder
+        KtdGridItemPlaceholder,
+        KtdDrag
     ],
     exports: [
         KtdGridComponent,
         KtdGridItemComponent,
         KtdGridDragHandle,
         KtdGridResizeHandle,
-        KtdGridItemPlaceholder
+        KtdGridItemPlaceholder,
+        KtdDrag
     ],
     providers: [
         KtdGridService

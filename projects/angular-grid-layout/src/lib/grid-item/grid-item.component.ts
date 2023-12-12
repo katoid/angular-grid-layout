@@ -46,21 +46,17 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     get id(): string {
         return this._id;
     }
-
     set id(val: string) {
         this._id = val;
     }
-
     private _id: string;
 
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
     @Input()
     get dragStartThreshold(): number { return this._dragStartThreshold; }
-
     set dragStartThreshold(val: number) {
         this._dragStartThreshold = coerceNumberProperty(val);
     }
-
     private _dragStartThreshold: number = 0;
 
 
@@ -69,12 +65,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     get draggable(): boolean {
         return this._draggable;
     }
-
     set draggable(val: boolean) {
         this._draggable = coerceBooleanProperty(val);
         this._draggable$.next(this._draggable);
     }
-
     private _draggable: boolean = true;
     private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
 
@@ -85,12 +79,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     get resizable(): boolean {
         return this._resizable;
     }
-
     set resizable(val: boolean) {
         this._resizable = coerceBooleanProperty(val);
         this._resizable$.next(this._resizable);
     }
-
     private _resizable: boolean = true;
     private _resizable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._resizable);
 

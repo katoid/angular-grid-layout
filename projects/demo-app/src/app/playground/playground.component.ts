@@ -1,9 +1,17 @@
-import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {ChangeDetectorRef, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import {
-    KtdDragEnd, KtdDragStart, ktdGridCompact, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
+    KtdDragEnd,
+    KtdDragStart,
+    ktdGridCompact,
+    KtdGridComponent,
+    KtdGridLayout,
+    KtdGridLayoutItem,
+    KtdResizeEnd,
+    KtdResizeStart,
+    ktdTrackById,
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
@@ -31,13 +39,13 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         {id: '2', x: 3, y: 7, w: 1, h: 2},
         {id: '3', x: 2, y: 0, w: 3, h: 2},
         {id: '4', x: 5, y: 3, w: 2, h: 3},
-        {id: '5', x: 0, y: 4, w: 1, h: 3},
+        {id: '5', x: 5, y: 4, w: 1, h: 3},
         {id: '6', x: 9, y: 0, w: 2, h: 4},
         {id: '7', x: 9, y: 4, w: 2, h: 2},
         {id: '8', x: 3, y: 2, w: 2, h: 5},
-        {id: '9', x: 7, y: 0, w: 1, h: 3},
+        {id: '9', x: 7, y: 5, w: 1, h: 3},
         {id: '10', x: 2, y: 4, w: 1, h: 4},
-        {id: '11', x: 0, y: 0, w: 2, h: 4}
+        {id: '11', x: 9, y: 9, w: 2, h: 4}
     ];
     transitions: { name: string, value: string }[] = [
         {name: 'ease', value: 'transform 500ms ease, width 500ms ease, height 500ms ease'},
@@ -86,7 +94,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         columnColor: 'rgba(128, 128, 128, 0.10)',
     };
 
-    constructor(private ngZone: NgZone, public elementRef: ElementRef, @Inject(DOCUMENT) public document: Document) {
+    constructor(private ngZone: NgZone, public elementRef: ElementRef, @Inject(DOCUMENT) public document: Document, private cd: ChangeDetectorRef) {
         // this.ngZone.onUnstable.subscribe(() => console.log('UnStable'));
     }
 
@@ -124,7 +132,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
 
     onLayoutUpdated(layout: KtdGridLayout) {
         console.log('on layout updated', layout);
-        this.layout = layout;
+        this.layout = [...layout];
+        this.cd.detectChanges();
     }
 
     onCompactTypeChange(change: MatSelectChange) {
