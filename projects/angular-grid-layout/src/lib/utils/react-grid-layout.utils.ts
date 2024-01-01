@@ -159,6 +159,19 @@ export function compact(
     compactType: CompactType,
     cols: number,
 ): Layout {
+    return compactLayout(layout, null, compactType, cols);
+}
+
+
+export function compactLayout(
+    layout: Layout,
+    layoutItem: LayoutItem | null,
+    compactType: CompactType,
+    cols: number,
+): Layout {
+    if (layoutItem != null) {
+        layout = [...layout, layoutItem];
+    }
     // Statics go in the compareWith array right away so items flow around them.
     const compareWith = getStatics(layout);
     // We go through the items by row and column.

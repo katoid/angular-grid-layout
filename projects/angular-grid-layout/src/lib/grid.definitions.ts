@@ -1,6 +1,13 @@
 import { InjectionToken } from '@angular/core';
 import { CompactType } from './utils/react-grid-layout.utils';
 import { KtdClientRect } from './utils/client-rect';
+import {DragRef} from "./utils/drag-ref";
+
+export interface KtdDraggingItem {
+    renderData: KtdGridItemRenderData<number>;
+    dragRef: DragRef;
+    layoutItem: KtdGridLayoutItem;
+}
 
 export interface KtdGridLayoutItem {
     id: string;

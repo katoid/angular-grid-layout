@@ -1,49 +1,41 @@
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
-import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
-import { fromEvent, iif, Observable, Subject, Subscription } from 'rxjs';
-import { filter } from 'rxjs/operators';
-import { ktdIsMobileOrTablet } from './utils/pointer.utils';
+import {Injectable, NgZone} from '@angular/core';
+import {Observable, Subject, Subscription} from 'rxjs';
+import {ktdMouseOrTouchEnd, ktdMouseOrTouchMove} from './utils/pointer.utils';
+import {KtdDraggingItem} from "./grid.definitions";
 
-/** Event options that can be used to bind an active, capturing event. */
-const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({
-    passive: false,
-    capture: true
-});
 
 @Injectable({providedIn: 'root'})
-export class KtdGridService implements OnDestroy {
+export class KtdGridService {
+    mouseTouchMove$: Observable<MouseEvent | TouchEvent>;
+    private mouseTouchMoveSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
+    private mouseTouchMoveSubscription: Subscription;
 
-    touchMove$: Observable<TouchEvent>;
-    private touchMoveSubject: Subject<TouchEvent> = new Subject<TouchEvent>();
-    private touchMoveSubscription: Subscription;
+    mouseTouchEnd$: Observable<MouseEvent | TouchEvent>;
+    private mouseTouchEndSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
+    private mouseTouchEndSubscription: Subscription;
+
+    draggingItem: KtdDraggingItem | null = null;
 
     constructor(private ngZone: NgZone) {
-        this.touchMove$ = this.touchMoveSubject.asObservable();
-        this.registerTouchMoveSubscription();
+        this.mouseTouchMove$ = this.mouseTouchMoveSubject.asObservable();
+        this.mouseTouchEnd$ = this.mouseTouchEndSubject.asObservable();
+        this.initSubscriptions();
     }
 
-    ngOnDestroy() {
-        this.touchMoveSubscription.unsubscribe();
+    dispose() {
+        this.mouseTouchMoveSubscription.unsubscribe();
+        this.mouseTouchEndSubscription.unsubscribe();
     }
 
-    mouseOrTouchMove$(element): Observable<MouseEvent | TouchEvent> {
-        return iif(
-            () => ktdIsMobileOrTablet(),
-            this.touchMove$,
-            fromEvent<MouseEvent>(element, 'mousemove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
+    private initSubscriptions() {
+        this.mouseTouchMoveSubscription = this.ngZone.runOutsideAngular(() =>
+            ktdMouseOrTouchMove(document, 1)
+                .subscribe((mouseEvent: MouseEvent | TouchEvent) => this.mouseTouchMoveSubject.next(mouseEvent))
         );
-    }
 
-    private registerTouchMoveSubscription() {
-        // The `touchmove` event gets bound once, ahead of time, because WebKit
-        // won't preventDefault on a dynamically-added `touchmove` listener.
-        // See https://bugs.webkit.org/show_bug.cgi?id=184250.
-        this.touchMoveSubscription = this.ngZone.runOutsideAngular(() =>
-            // The event handler has to be explicitly active,
-            // because newer browsers make it passive by default.
-            fromEvent(document, 'touchmove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
-                .pipe(filter((touchEvent: TouchEvent) => touchEvent.touches.length === 1))
-                .subscribe((touchEvent: TouchEvent) => this.touchMoveSubject.next(touchEvent))
+        this.mouseTouchEndSubscription = this.ngZone.runOutsideAngular(() =>
+            ktdMouseOrTouchEnd(document, 1)
+                .subscribe((mouseEvent: MouseEvent | TouchEvent) => this.mouseTouchEndSubject.next(mouseEvent))
         );
     }
 }
