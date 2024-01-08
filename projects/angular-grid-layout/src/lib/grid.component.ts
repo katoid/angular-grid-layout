@@ -710,7 +710,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                 if (this.gridService.draggingItem !== null && this.isPointerInsideGridElement(lastPointerDragEvent)) {
                                     newLayout = [...newLayout, {
                                         ...this.gridService.draggingItem.layoutItem,
-                                        id: this.getNextId(),
+                                        // For now, until 'drop' is implemented, we may better use the id specified on the draggedItem.
+                                        // id: this.getNextId(),
                                     }];
                                 }
 
