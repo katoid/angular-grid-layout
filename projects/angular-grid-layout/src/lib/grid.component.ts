@@ -37,7 +37,7 @@ import {
     KtdGridLayout,
     KtdGridLayoutItem
 } from './grid.definitions';
-import { ktdPointerClientX, ktdPointerClientY} from './utils/pointer.utils';
+import { ktdPointerUp, ktdPointerClientX, ktdPointerClientY } from './utils/pointer.utils';
 import { KtdDictionary } from '../types';
 import { KtdGridService } from './grid.service';
 import { getMutableClientRect, KtdClientRect } from './utils/client-rect';

@@ -14,9 +14,9 @@ import {
     Renderer2,
     ViewChild
 } from '@angular/core';
-import {BehaviorSubject, merge, NEVER, Observable, Observer, Subject, Subscription} from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
-import { ktdMouseOrTouchDown } from '../utils/pointer.utils';
+import { BehaviorSubject, iif, merge, NEVER, Observable, Observer, Subject, Subscription } from 'rxjs';
+import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
+import { ktdPointerDown, ktdPointerUp, ktdPointerClient } from '../utils/pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
@@ -206,10 +206,10 @@ export class KtdGridItemComponent<T = any> implements OnInit, OnDestroy, AfterCo
                             if (resizeHandles.length > 0) {
                                 // Side effect to hide the resizeElem if there are resize handles.
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'none');
-                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdMouseOrTouchDown(resizeHandle.element.nativeElement, 1)));
+                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdPointerDown(resizeHandle.element.nativeElement)));
                             } else {
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'block');
-                                return ktdMouseOrTouchDown(this.resizeElem.nativeElement, 1);
+                                return ktdPointerDown(this.resizeElem.nativeElement);
                             }
                         })
                     );

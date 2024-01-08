@@ -1,8 +1,15 @@
-import {Injectable, NgZone} from '@angular/core';
-import {Observable, Subject, Subscription} from 'rxjs';
-import {ktdMouseOrTouchEnd, ktdMouseOrTouchMove} from './utils/pointer.utils';
+import {Injectable, NgZone, OnDestroy} from '@angular/core';
 import {KtdDraggingItem} from "./grid.definitions";
+import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
+import { fromEvent, iif, Observable, Subject, Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { ktdIsMobileOrTablet, ktdSupportsPointerEvents, ktdPointerMove, ktdPointerUp } from './utils/pointer.utils';
 
+/** Event options that can be used to bind an active, capturing event. */
+const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({
+    passive: false,
+    capture: true
+});
 
 @Injectable({providedIn: 'root'})
 export class KtdGridService {
@@ -29,12 +36,12 @@ export class KtdGridService {
 
     private initSubscriptions() {
         this.mouseTouchMoveSubscription = this.ngZone.runOutsideAngular(() =>
-            ktdMouseOrTouchMove(document, 1)
+            ktdPointerMove(document)
                 .subscribe((mouseEvent: MouseEvent | TouchEvent) => this.mouseTouchMoveSubject.next(mouseEvent))
         );
 
         this.mouseTouchEndSubscription = this.ngZone.runOutsideAngular(() =>
-            ktdMouseOrTouchEnd(document, 1)
+            ktdPointerUp(document)
                 .subscribe((mouseEvent: MouseEvent | TouchEvent) => this.mouseTouchEndSubject.next(mouseEvent))
         );
     }

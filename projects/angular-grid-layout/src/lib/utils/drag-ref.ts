@@ -2,7 +2,7 @@ import {ElementRef, NgZone} from "@angular/core";
 import {coerceBooleanProperty} from "../coercion/boolean-property";
 import {BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription} from "rxjs";
 import {exhaustMap, filter, map, switchMap, take, takeUntil} from "rxjs/operators";
-import {ktdMouseOrTouchDown, ktdPointerClient} from "./pointer.utils";
+import { ktdPointerClient, ktdPointerDown, ktdPointerMove } from './pointer.utils';
 import {ktdOutsideZone} from "./operators";
 import {KtdGridService} from "../grid.service";
 import {KtdGridDragHandle} from "../directives/drag-handle";
@@ -108,8 +108,8 @@ export class DragRef<T = any> {
                         switchMap((dragHandles: KtdGridDragHandle[]) => {
                             return iif(
                                 () => dragHandles.length > 0,
-                                merge(...dragHandles.map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
-                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
+                                merge(...dragHandles.map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement))),
+                                ktdPointerDown(this.elementRef.nativeElement)
                             )
                         })
                     );
