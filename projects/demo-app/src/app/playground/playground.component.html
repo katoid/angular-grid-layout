@@ -1,12 +1,13 @@
 <div class="playground-container">
     <div class="layout-json">
     </div>
-    <div ktdDrag [ktdDragData]="element" *ngFor="let element of elements"
+    <div ktdDrag (dragEnd)="onKtdDragEnded($event)" [scrollableParent]="document" [connectedTo]="[grid]" [ktdDragData]="element" *ngFor="let element of elements"
          [width]="3"
          style="width: 100px; height: 20px; background-color: #d37373; margin-bottom: 10px"
     >
         {{element}}
     </div>
+    <div ktdDrag [ktdDragData]="25">25</div>
     <div class="controls-container">
         <button mat-raised-button (click)="generateLayout()">Generate layout</button>
         <button mat-raised-button (click)="addItemToLayout()">Add item</button>
@@ -161,7 +162,9 @@
     </div>
 
     <div class="grid-container">
-        <ktd-grid [cols]="cols"
+        <ktd-grid #grid
+                  [id]="'jozko'"
+                  [cols]="cols"
                   [backgroundConfig]="gridBackgroundConfig"
                   [height]="rowHeightFit && gridHeight ? gridHeight : null"
                   [rowHeight]="rowHeightFit ? 'fit' : rowHeight"
@@ -175,7 +178,8 @@
                   (resizeStarted)="onResizeStarted($event)"
                   (dragEnded)="onDragEnded($event)"
                   (resizeEnded)="onResizeEnded($event)"
-                  (layoutUpdated)="onLayoutUpdated($event)">
+                  (layoutUpdated)="onLayoutUpdated($event)"
+                  (dropped)="onItemDrop($event)">
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            [id]="item.id"
                            [transition]="currentTransition"

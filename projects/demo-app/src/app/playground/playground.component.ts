@@ -3,15 +3,15 @@ import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import {
-    KtdDragEnd,
-    KtdDragStart,
     ktdGridCompact,
     KtdGridComponent,
     KtdGridLayout,
     KtdGridLayoutItem,
-    KtdResizeEnd,
-    KtdResizeStart,
     ktdTrackById,
+    KtdDragEnd,
+    KtdDragStart, KtdDropped,
+    KtdResizeEnd,
+    KtdResizeStart
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
@@ -128,6 +128,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         this.isDragging = false;
     }
 
+    onKtdDragEnded(event) {
+        this.isDragging = false;
+    }
+
     onResizeEnded(event: KtdResizeEnd) {
         this.isResizing = false;
     }
@@ -135,6 +139,31 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onLayoutUpdated(layout: KtdGridLayout) {
         console.log('on layout updated', layout);
         this.layout = layout;
+    }
+
+    onItemDrop(event: KtdDropped) {
+        console.log('dropped', event);
+
+        // Inserting new item
+        if (event.previousLayout === null) {
+            console.log('inserting new item');
+            this.layout = [event.currentLayoutItem, ...event.currentLayout]
+            this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
+        } else {
+            if (event.previousLayoutItem !== null) {
+                const newLayout = event.currentLayout.filter((item) => item.id !== event.previousLayoutItem!.id);
+                this.layout = [event.currentLayoutItem, ...newLayout];
+                this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
+            }
+        }
+        /*const index = this.layout.findIndex(item => item.id === event.layoutItem.id);
+
+        // We need to remove the item from the layout and add it again to make sure the Grid component knows that the layout has changed.
+        if (index > -1) {
+            this.layout.splice(index, 1);
+        }
+        this.layout = [event.layoutItem, ...this.layout];
+        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);*/
     }
 
     onCompactTypeChange(change: MatSelectChange) {

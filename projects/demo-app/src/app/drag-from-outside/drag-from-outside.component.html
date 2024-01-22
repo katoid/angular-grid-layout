@@ -1,6 +1,6 @@
 
 <div class="pokemons-container">
-    <div *ngFor="let pokemon of pokemonsGen1; let i = index" ktdDrag [width]="1" [id]="pokemon.name" class="pokemon-drag-item">
+    <div *ngFor="let pokemon of pokemonsGen1; let i = index" ktdDrag [connectedTo]="[gridLeft, gridRight]" [width]="1" [id]="pokemon.name" class="pokemon-drag-item">
         <img [src]="pokemonsGen1Dict[pokemon.name].img">
         {{pokemon.name}}
     </div>
@@ -8,7 +8,8 @@
 <div class="grids-container">
 
     <div class="grid-container">
-        <ktd-grid cols="12"
+        <ktd-grid #gridLeft
+                  cols="12"
                   rowHeight="50"
                   [compactType]="compactType"
                   compactOnPropsChange="true"
@@ -16,13 +17,14 @@
                   [backgroundConfig]="{show: 'always'}"
                   [layout]="layout"
                   [scrollableParent]="document"
+                  (dropped)="onLayoutDropped($event)"
                   (layoutUpdated)="onLayoutUpdated($event)">
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            draggable="true"
                            resizable="true"
                            dragStartThreshold="0"
                            [id]="item.id">
-
+                {{item.id}} {{pokemonsGen1Dict[item.id] | json}}
                 <img [src]="pokemonsGen1Dict[item.id].img">
                 {{pokemonsGen1Dict[item.id].name}}
             </ktd-grid-item>
@@ -32,7 +34,8 @@
 
     <div class="grid-container">
 
-        <ktd-grid cols="12"
+        <ktd-grid #gridRight
+                  cols="12"
                   rowHeight="50"
                   [compactType]="compactType"
                   compactOnPropsChange="true"
@@ -40,6 +43,7 @@
                   [backgroundConfig]="{show: 'always'}"
                   [layout]="layout2"
                   [scrollableParent]="document"
+                  (dropped)="onLayout2Dropped($event)"
                   (layoutUpdated)="onLayout2Updated($event)">
             <ktd-grid-item *ngFor="let item of layout2; trackBy:trackById"
                            draggable="true"

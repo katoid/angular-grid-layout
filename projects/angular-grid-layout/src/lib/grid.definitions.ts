@@ -1,13 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { CompactType } from './utils/react-grid-layout.utils';
 import { KtdClientRect } from './utils/client-rect';
-import {DragRef} from "./utils/drag-ref";
 
-export interface KtdDraggingItem {
-    renderData: KtdGridItemRenderData<number>;
-    dragRef: DragRef;
-    layoutItem: KtdGridLayoutItem;
-}
 
 export interface KtdGridLayoutItem {
     id: string;
@@ -22,7 +16,7 @@ export interface KtdGridLayoutItem {
 }
 
 export type KtdGridCompactType = CompactType;
-
+export type DragActionType = 'drag' | 'resize';
 
 export interface KtdGridBackgroundCfg {
     show: 'never' | 'always' | 'whenDragging';
@@ -64,7 +58,7 @@ export interface KtdGridItemRenderData<T = number | string> {
  * We inject a token because of the 'circular dependency issue warning'. In case we don't had this issue with the circular dependency, we could just
  * import KtdGridComponent on KtdGridItem and execute the needed function to get the rendering data.
  */
-export type KtdGridItemRenderDataTokenType = (id: string) => KtdGridItemRenderData<string>;
+export type KtdGridItemRenderDataTokenType = (id: string) => KtdGridItemRenderData<number>;
 export const GRID_ITEM_GET_RENDER_DATA_TOKEN: InjectionToken<KtdGridItemRenderDataTokenType> = new InjectionToken('GRID_ITEM_GET_RENDER_DATA_TOKEN');
 
 export interface KtdDraggingData {

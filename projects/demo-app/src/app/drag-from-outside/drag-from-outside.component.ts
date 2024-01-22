@@ -7,7 +7,8 @@ import { RouterModule } from '@angular/router';
 import { KtdFooterComponent } from '../components/footer/footer.component';
 import { pokemonsGen1 } from './pokemons-gen1';
 import { KtdDictionary } from '../types';
-
+import {compact} from "../../../../angular-grid-layout/src/lib/utils/react-grid-layout.utils";
+import {KtdDropped} from "../../../../angular-grid-layout/src/lib/grid.component";
 
 @Component({
     selector: 'ktd-drag-from-outside',
@@ -58,9 +59,20 @@ export class KtdDragFromOutsideComponent implements OnInit, OnDestroy {
         this.layout = layout;
     }
 
+    onLayoutDropped(event: KtdDropped) {
+        console.log('onLayoutDropped', event);
+        this.layout = [event.currentLayoutItem, ...event.currentLayout];
+        this.layout = compact(this.layout, this.compactType, this.grid.cols);
+    }
+
     onLayout2Updated(layout: KtdGridLayout) {
         console.log('onLayout2Updated', layout);
         this.layout2 = layout;
     }
 
+    onLayout2Dropped(event: KtdDropped) {
+        console.log('onLayoutDropped', event);
+        this.layout2 = [event.currentLayoutItem, ...event.currentLayout];
+        this.layout2 = compact(this.layout2, this.compactType, this.grid.cols);
+    }
 }

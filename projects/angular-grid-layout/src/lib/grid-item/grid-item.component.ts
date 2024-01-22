@@ -14,9 +14,9 @@ import {
     Renderer2,
     ViewChild
 } from '@angular/core';
-import { BehaviorSubject, iif, merge, NEVER, Observable, Observer, Subject, Subscription } from 'rxjs';
-import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdPointerDown, ktdPointerUp, ktdPointerClient } from '../utils/pointer.utils';
+import { BehaviorSubject, merge, NEVER, Observable, Observer, Subject, Subscription} from 'rxjs';
+import { startWith, switchMap} from 'rxjs/operators';
+import { ktdPointerDown} from '../utils/pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
@@ -25,6 +25,7 @@ import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
 import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
 import {DragRef} from "../utils/drag-ref";
 import {KtdRegistryService} from "../ktd-registry.service";
+import {KtdGridService} from "../grid.service";
 
 @Component({
     selector: 'ktd-grid-item',
@@ -55,35 +56,27 @@ export class KtdGridItemComponent<T = any> implements OnInit, OnDestroy, AfterCo
     /** Id of the grid item. This property is strictly compulsory. */
     @Input()
     get id(): string {
-        return this._id;
+        return this._dragRef.id;
     }
     set id(val: string) {
-        this._id = val;
         this._dragRef.id = val;
     }
-    private _id: string;
 
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
     @Input()
-    get dragStartThreshold(): number { return this._dragStartThreshold; }
+    get dragStartThreshold(): number { return this._dragRef.dragStartThreshold; }
     set dragStartThreshold(val: number) {
-        this._dragStartThreshold = coerceNumberProperty(val);
-        this._dragRef.dragStartThreshold = this._dragStartThreshold;
+        this._dragRef.dragStartThreshold = coerceNumberProperty(val);
     }
-    private _dragStartThreshold: number = 0;
-
 
     /** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
     @Input()
     get draggable(): boolean {
-        return this._draggable;
+        return this._dragRef.draggable;
     }
     set draggable(val: boolean) {
-        this._draggable = coerceBooleanProperty(val);
-        this._draggable$.next(this._draggable);
+        this._dragRef.draggable = coerceBooleanProperty(val);
     }
-    private _draggable: boolean = true;
-    private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
 
     /** Whether the item is resizable or not. Defaults to true. */
     @Input()
@@ -143,12 +136,13 @@ export class KtdGridItemComponent<T = any> implements OnInit, OnDestroy, AfterCo
     );
 
     constructor(public elementRef: ElementRef,
+                private gridService: KtdGridService,
                 private registryService: KtdRegistryService,
                 private renderer: Renderer2,
                 @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
         this.resizeStart$ = this.resizeStartSubject.asObservable();
 
-        this._dragRef = this.registryService.createKtgDrag(this.elementRef, this);
+        this._dragRef = this.registryService.createKtgDrag(this.elementRef, this.gridService, this);
     }
 
     ngOnInit() {
@@ -157,11 +151,13 @@ export class KtdGridItemComponent<T = any> implements OnInit, OnDestroy, AfterCo
     }
 
     ngAfterContentInit() {
-        this._dragRef.placeholder = this.placeholder;
         this.subscriptions.push(
             this._resizeStart$().subscribe(this.resizeStartSubject),
             this._dragHandles.changes.subscribe(() => {
                 this._dragRef.dragHandles = this._dragHandles.toArray();
+            }),
+            this._resizeHandles.changes.subscribe(() => {
+                this._dragRef.resizeHandles = this._resizeHandles.toArray();
             }),
         );
     }
@@ -179,17 +175,19 @@ export class KtdGridItemComponent<T = any> implements OnInit, OnDestroy, AfterCo
      * @param startEvent The pointer event that should initiate the drag.
      */
     startDragManually(startEvent: MouseEvent | TouchEvent) {
-        // this._manualDragEvents$.next(startEvent);
         this._dragRef.startDragManual(startEvent);
     }
 
-    setStyles({top, left, width, height}: { top: string, left: string, width?: string, height?: string }) {
+    setStyles({top, left, width, height}: { top: number, left: number, width?: number, height?: number }) {
+        this._dragRef.transformX = left;
+        this._dragRef.transformY = top;
+
         // transform is 6x times faster than top/left
-        this.renderer.setStyle(this.elementRef.nativeElement, 'transform', `translateX(${left}) translateY(${top})`);
+        this.renderer.setStyle(this.elementRef.nativeElement, 'transform', `translateX(${left}px) translateY(${top}px)`);
         this.renderer.setStyle(this.elementRef.nativeElement, 'display', `block`);
         this.renderer.setStyle(this.elementRef.nativeElement, 'transition', this.transition);
-        if (width != null) { this.renderer.setStyle(this.elementRef.nativeElement, 'width', width); }
-        if (height != null) {this.renderer.setStyle(this.elementRef.nativeElement, 'height', height); }
+        if (width != null) { this.renderer.setStyle(this.elementRef.nativeElement, 'width', `${width}px`); }
+        if (height != null) {this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${height}px`); }
     }
 
     private _resizeStart$(): Observable<MouseEvent | TouchEvent> {

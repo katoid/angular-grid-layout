@@ -4,14 +4,14 @@ import {
     InjectionToken, Input, OnDestroy, Output, QueryList
 } from '@angular/core';
 import {coerceBooleanProperty} from "../coercion/boolean-property";
-import {BehaviorSubject, Observable, Observer, Subscription} from "rxjs";
+import {Observable, Observer, Subscription} from "rxjs";
 import {coerceNumberProperty} from "../coercion/number-property";
 import {KtdRegistryService} from "../ktd-registry.service";
 import {KTD_GRID_DRAG_HANDLE, KtdGridDragHandle} from "./drag-handle";
 import {DragRef} from "../utils/drag-ref";
 import {KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder} from "./placeholder";
-import {ktdPointerClientX, ktdPointerClientY} from "../utils/pointer.utils";
-import {takeUntil} from "rxjs/operators";
+import {KtdGridComponent, PointingDeviceEvent} from "../grid.component";
+import {KtdGridService} from "../grid.service";
 
 
 export const KTD_DRAG = new InjectionToken<KtdDrag<any>>('KtdDrag');
@@ -45,25 +45,62 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
     @Input()
     get dragStartThreshold(): number {
-        return this._dragStartThreshold;
+        return this._dragRef.dragStartThreshold;
     }
     set dragStartThreshold(val: number) {
-        this._dragStartThreshold = coerceNumberProperty(val);
+        this._dragRef.dragStartThreshold = coerceNumberProperty(val);
     }
-    private _dragStartThreshold: number = 0;
+
+    /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
+    @Input()
+    get scrollSpeed(): number { return this._dragRef.scrollSpeed; }
+    set scrollSpeed(value: number) {
+        this._dragRef.scrollSpeed = coerceNumberProperty(value, 2);
+    }
+
+    /**
+     * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
+     * If no data provided or null autoscroll is not performed.
+     */
+    @Input()
+    get scrollableParent(): HTMLElement | Document | string | null { return this._dragRef.scrollableParent; }
+    set scrollableParent(value: HTMLElement | Document | string | null) {
+        this._dragRef.scrollableParent = value;
+    }
 
     /** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
     @Input()
     get draggable(): boolean {
-        return this._draggable;
+        return this._dragRef.draggable;
     }
     set draggable(val: boolean) {
-        this._draggable = coerceBooleanProperty(val);
-        this._dragRef.draggable = this._draggable;
-        this._draggable$.next(this._draggable);
+        this._dragRef.draggable = coerceBooleanProperty(val);
     }
-    private _draggable: boolean = true;
-    private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
+
+    /**
+     * List of ids of grids or grid components that the item is connected to.
+     */
+    @Input()
+    get connectedTo(): KtdGridComponent[] {
+        return this._connectedTo;
+    }
+    set connectedTo(val: (string|KtdGridComponent|any)[]) {
+        this._connectedTo = val.map((item: string|KtdGridComponent|any) => {
+            if (typeof item === 'string') {
+                const grid = this.registryService._ktgGrids.find(grid => grid.id === item);
+                if (grid === undefined) {
+                    throw new Error(`KtdDrag connectedTo: could not find grid with id ${item}`);
+                }
+                return grid;
+            }
+            if (item instanceof KtdGridComponent) {
+                return item;
+            }
+            throw new Error(`KtdDrag connectedTo: connectedTo must be an array of KtdGridComponent or string`);
+        });
+        this.registryService.updateConnectedTo(this._dragRef, this._connectedTo);
+    }
+    private _connectedTo: KtdGridComponent[] = [];
 
     @Input()
     get id(): string {
@@ -95,14 +132,14 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
         this._dragRef.height = coerceNumberProperty(val);
     }
 
-    /**
-     * TODO: Add support for custom drag data.
-     */
-    @Input('ktdDragData') data: T;
+    @Input('ktdDragData')
+    set data(val: T) {
+        this._dragRef.data = val;
+    }
 
     @Output('dragStart')
-    readonly dragStart: Observable<{source: DragRef<T>, event: MouseEvent | TouchEvent}> = new Observable(
-        (observer: Observer<{source: DragRef<T>, event: MouseEvent | TouchEvent}>) => {
+    readonly dragStart: Observable<{source: DragRef<T>, event: PointingDeviceEvent}> = new Observable(
+        (observer: Observer<{source: DragRef<T>, event: PointingDeviceEvent}>) => {
             const subscription = this._dragRef.dragStart$
                 .subscribe(observer);
 
@@ -113,8 +150,8 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
     );
 
     @Output('dragMove')
-    readonly dragMove: Observable<{source: DragRef<T>, event: MouseEvent | TouchEvent}> = new Observable(
-        (observer: Observer<{source: DragRef<T>, event: MouseEvent | TouchEvent}>) => {
+    readonly dragMove: Observable<{source: DragRef<T>, event: PointingDeviceEvent}> = new Observable(
+        (observer: Observer<{source: DragRef<T>, event: PointingDeviceEvent}>) => {
             const subscription = this._dragRef.dragMove$
                 .subscribe(observer);
 
@@ -125,8 +162,8 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
     );
 
     @Output('dragEnd')
-    readonly dragEnd: Observable<{source: DragRef<T>, event: MouseEvent | TouchEvent}> = new Observable(
-        (observer: Observer<{source: DragRef<T>, event: MouseEvent | TouchEvent}>) => {
+    readonly dragEnd: Observable<{source: DragRef<T>, event: PointingDeviceEvent}> = new Observable(
+        (observer: Observer<{source: DragRef<T>, event: PointingDeviceEvent}>) => {
             const subscription = this._dragRef.dragEnd$
                 .subscribe(observer);
 
@@ -137,76 +174,30 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
     );
 
     public _dragRef: DragRef<T>;
+
     private subscriptions: Subscription[] = [];
-    private element: HTMLElement;
 
     constructor(
         /** Element that the draggable is attached to. */
         public elementRef: ElementRef,
+        private gridService: KtdGridService,
         private registryService: KtdRegistryService,
     ) {
-        this._dragRef = this.registryService.createKtgDrag(this.elementRef, this, this.data);
+        this._dragRef = this.registryService.createKtgDrag(this.elementRef, this.gridService, this);
     }
 
     ngAfterContentInit(): void {
-        this.element = this.elementRef.nativeElement as HTMLElement;
         this.registryService.registerKtgDragItem(this);
-        this.initDrag();
+        this.subscriptions.push(
+            this._dragHandles.changes.subscribe(() => {
+                this._dragRef.dragHandles = this._dragHandles.toArray();
+            })
+        );
     }
 
     ngOnDestroy(): void {
         this.registryService.unregisterKtgDragItem(this);
         this.registryService.destroyKtgDrag(this._dragRef);
         this.subscriptions.forEach(subscription => subscription.unsubscribe());
-    }
-
-    /**
-     * Initialize the drag of ktd-drag element, placeholder dragging is handled by ktd-grid.
-     * The element will be freely draggable, when drag ends it will snap back to its initial place.
-     */
-    private initDrag() {
-        this._dragRef.dragStartThreshold = this.dragStartThreshold;
-        this._dragRef.placeholder = this.placeholder;
-        this._dragRef.draggable = this.draggable;
-        this._dragRef.dragHandles = this._dragHandles.toArray();
-
-        const handlesSub$ = this._dragHandles.changes.subscribe(() => {
-            console.log(this._dragHandles.toArray());
-            this._dragRef.dragHandles = this._dragHandles.toArray();
-        });
-
-        const dragStart$ = this.dragStart.subscribe(({event}) => {
-            let currentX = 0,
-                currentY = 0;
-
-            const initialX = ktdPointerClientX(event) - currentX;
-            const initialY = ktdPointerClientY(event) - currentY;
-
-            this.dragMove.pipe(
-                takeUntil(this.dragEnd),
-            ).subscribe(({event}) => {
-                event.preventDefault();
-
-                // Calculate the new cursor position:
-                currentX = ktdPointerClientX(event) - initialX;
-                currentY = ktdPointerClientY(event) - initialY;
-
-                /**
-                 * TODO: Add support handling scroll offset
-                 *
-                 * Possible solution would be to add for each scrollParent element observable that emits scroll offset,
-                 * and use the offset when we are on top of the scrollParent.
-                 * Still dont know how we would handle nested scrollParents, generated by nested grids.
-                 */
-
-                this.element.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-            });
-        });
-
-        const dragEnd$ = this.dragEnd.subscribe(() => {
-            this.element.style.transform = 'none';
-        });
-
-        this.subscriptions.push(handlesSub$, dragStart$, dragEnd$);
     }
 }
