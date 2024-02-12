@@ -215,7 +215,7 @@ export class DragRef<T = any> {
             exhaustMap((startEvent) => {
                 // If the event started from an element with the native HTML drag&drop, it'll interfere
                 // with our positioning logic since it'll start dragging the native element.
-                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
+                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'pointerdown') {
                     startEvent.preventDefault();
                 }
 

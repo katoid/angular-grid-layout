@@ -505,7 +505,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 startWith(this._gridItems),
                 switchMap((gridItems: QueryList<KtdGridItemComponent>) => {
                     return merge(
-                        ...gridItems.map((gridItem) => gridItem.dragStart.pipe(map(({event}) => ({event, gridItem, type: 'drag' as DragActionType})))),
+                        ...gridItems.map((gridItem) => gridItem.dragStart.pipe(map(({event}) => ({
+                            event,
+                            gridItem,
+                            type: 'drag' as DragActionType
+                        })))),
                         ...gridItems.map((gridItem) => gridItem.resizeStart$.pipe(map((event) => ({
                             event,
                             gridItem,
@@ -513,7 +517,21 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         })))),
                     ).pipe(exhaustMap((data) => of(data)));
                 })
-            ).subscribe(({event, gridItem, type}) => this.gridService.startDrag(event, gridItem.dragRef, type, this)),
+            ).subscribe(({event, gridItem, type}) => {
+                // Prevents the event from bubbling up the DOM tree, preventing any parent event handlers from being notified of the event.
+                // Specifically, it prevents the event from being sent to any parent event handlers that may be listening for it.
+                if (type === 'resize') {
+                    event.stopPropagation();
+                }
+
+                // If the event started from an element with the native HTML drag&drop, it'll interfere
+                // with our positioning logic since it'll start dragging the native element.
+                if (event.target && ((event.target as HTMLElement).draggable || true) && event.type === 'pointerdown') {
+                    event.preventDefault();
+                }
+
+                return this.gridService.startDrag(event, gridItem.dragRef, type, this);
+            }),
 
             connectedToItems$.pipe(
                 startWith(connectedToItems$.value),
@@ -691,6 +709,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         };
     }
 
+    // TODO: Call this only when the drag ended, when the drag is paused do nothing.
     public stopDragSequence(): void {
         const dragInfo = this.gridService.drag!;
 
@@ -699,7 +718,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'no-transitions');
             this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
-            (dragInfo.type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(dragInfo.dragRef, this.layout));
+            this.ngZone.run(() => {
+                (dragInfo.type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(dragInfo.dragRef, this.layout));
+            });
 
             this.addGridItemAnimatingClass(dragInfo.dragRef).subscribe();
             // Consider destroying the placeholder after the animation has finished.

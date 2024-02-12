@@ -128,7 +128,7 @@ export function ktdPointerDown(element): Observable<MouseEvent | TouchEvent | Po
         return ktdMouseOrTouchDown(element);
     }
 
-    return fromEvent<PointerEvent>(element, 'pointerdown', passiveEventListenerOptions as AddEventListenerOptions).pipe(
+    return fromEvent<PointerEvent>(element, 'pointerdown', activeEventListenerOptions as AddEventListenerOptions).pipe(
         filter((pointerEvent) => pointerEvent.isPrimary)
     )
 }
