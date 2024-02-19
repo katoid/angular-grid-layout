@@ -21,7 +21,7 @@ import {
 import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent} from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, of, Subscription} from 'rxjs';
-import { exhaustMap, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
+import {exhaustMap, map, startWith, switchMap, takeUntil} from 'rxjs/operators';
 import {
     ktdGetGridItemRowHeight,
     ktdGridItemDragging, ktdGridItemLayoutItemAreEqual,
@@ -40,7 +40,7 @@ import {
 } from './grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './utils/pointer.utils';
 import { KtdDictionary } from '../types';
-import { KtdGridService } from './grid.service';
+import {KtdGridService, PointerEventInfo} from './grid.service';
 import { getMutableClientRect, KtdClientRect } from './utils/client-rect';
 import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$ } from './utils/scroll';
 import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
@@ -50,6 +50,7 @@ import {KtdRegistryService} from "./ktd-registry.service";
 import {DragRef} from "./utils/drag-ref";
 import {KtdDrag} from "./directives/ktd-drag";
 
+// region Types
 
 interface KtdGridDrag {
     dragSubscription: Subscription;
@@ -178,6 +179,8 @@ const defaultBackgroundConfig: Required<Omit<KtdGridBackgroundCfg, 'show'>> = {
     borderWidth: 1,
 };
 
+// endregion
+
 @Component({
     selector: 'ktd-grid',
     templateUrl: './grid.component.html',
@@ -193,6 +196,7 @@ const defaultBackgroundConfig: Required<Omit<KtdGridBackgroundCfg, 'show'>> = {
     ]
 })
 export class KtdGridComponent implements OnChanges, AfterContentInit, AfterContentChecked, OnDestroy {
+    // region Parameters
     private static _nextUniqueId: number = 0;
 
     /** Query list of grid items that are being rendered. */
@@ -368,6 +372,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private readonly gridElement: HTMLElement;
 
+    // endregion
+
     constructor(private gridService: KtdGridService,
                 private ktdRegistryService: KtdRegistryService,
                 private elementRef: ElementRef,
@@ -499,7 +505,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     private initSubscriptions() {
-        const connectedToItems$ = this.ktdRegistryService.getKtdDragItemsConnectedToGrid(this);
+        const itemsConnectedToGrid$ = this.ktdRegistryService.getKtdDragItemsConnectedToGrid(this);
         this.subscriptions = [
             this._gridItems.changes.pipe(
                 startWith(this._gridItems),
@@ -533,8 +539,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 return this.gridService.startDrag(event, gridItem.dragRef, type, this);
             }),
 
-            connectedToItems$.pipe(
-                startWith(connectedToItems$.value),
+            itemsConnectedToGrid$.pipe(
+                startWith(itemsConnectedToGrid$.value),
                 switchMap((draggableItems) => {
                     return merge(
                         ...draggableItems.map((draggableItem) => draggableItem.dragStart.pipe(
@@ -547,37 +553,31 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             }),
 
             this.dragEntered.subscribe(({event, }) => {
-                this.startDragSequenceOld(event);
+                this.startRestoreDragSequence(event);
             }),
             this.dragExited.subscribe(() => {
-                this.stopDragSequence();
+                this.pauseDragSequence();
+            }),
+            this.gridService.pointerBeforeEnd$.subscribe(({dragInfo}) => {
+                if (this.drag !== null && dragInfo !== null) {
+                    this.updateLayout(dragInfo);
+                    this.stopDragSequence(dragInfo);
+                }
+                console.log(this.drag, dragInfo);
             }),
             this.gridService.pointerEnd$.subscribe(() => {
-                this.stopDragSequence();
-            })
+                this.drag = null;
+            }),
         ];
     }
 
-    private startDragSequenceOld(event: PointingDeviceEvent): void {
+    /**
+     * Starts the drag sequence when a drag event is triggered. It will restore paused drag sequence if it's already started.
+     * @param event The event that triggered the drag sequence.
+     */
+    private startRestoreDragSequence(event: PointingDeviceEvent): void {
         const dragInfo = this.gridService.drag!;
-        let renderData: KtdGridItemRenderData<number> | null = null;
-
-        // Retrieve grid (parent) and gridItem (draggedElem) client rects.
-        const gridElemClientRect: KtdClientRect = getMutableClientRect(this.gridElement);
-        const dragElemClientRect: KtdClientRect = getMutableClientRect(dragInfo.dragRef.elementRef.nativeElement as HTMLElement);
-
         const scrollableParent = typeof this.scrollableParent === 'string' ? document.getElementById(this.scrollableParent) : this.scrollableParent;
-
-        this.renderer.addClass(dragInfo.dragRef.elementRef.nativeElement, 'no-transitions');
-        this.renderer.addClass(dragInfo.dragRef.elementRef.nativeElement, 'ktd-grid-item-dragging');
-
-        const placeholderClientRect: KtdClientRect = {
-            ...dragElemClientRect,
-            left: dragElemClientRect.left - gridElemClientRect.left,
-            top: dragElemClientRect.top - gridElemClientRect.top
-        }
-
-        this.createPlaceholderElement(placeholderClientRect, dragInfo.dragRef.placeholder);
 
         // TODO (enhancement): consider move this 'side effect' observable inside the main drag loop.
         //  - Pros are that we would not repeat subscriptions and takeUntil would shut down observables at the same time.
@@ -590,11 +590,70 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 })),
                 ktdScrollIfNearElementClientRect$(scrollableParent, {scrollStep: this.scrollSpeed})
             )).pipe(
-                takeUntil(this.gridService.pointerEnd$)
+                takeUntil(this.gridService.pointerEnd$),
             ).subscribe());
 
+        if (this.drag != null) {
+            this.drag.dragSubscription = this.createDragResizeLoop(scrollableParent, dragInfo);
+            this.drag.scrollSubscription = scrollSubscription;
+            return;
+        }
+
+        this.drag = {
+            dragSubscription: this.createDragResizeLoop(scrollableParent, dragInfo),
+            scrollSubscription,
+            startEvent: event,
+            newLayout: null,
+            newLayoutItem: dragInfo.dragRef.itemRef instanceof KtdDrag ? {
+                id: dragInfo.dragRef.id,
+                w: 1,
+                h: 1,
+                x: -1,
+                y: -1,
+            } : null,
+        };
+    }
+
+    private pauseDragSequence(): void {
+        const dragInfo = this.gridService.drag!;
+
+        // If the drag is a resize, we don't need to pause the drag sequence.
+        if (dragInfo.type === 'resize') {
+            return;
+        }
+
+        if (this.drag != null) {
+            this.drag.dragSubscription.unsubscribe();
+            this.drag.scrollSubscription.unsubscribe();
+            this.destroyPlaceholder();
+        }
+    }
+
+    /**
+     * Creates the drag loop. It listens for 'pointer move' and 'scroll' events and recalculates the layout on each emission.
+     * @param scrollableParent The parent element that contains the scroll.
+     * @param dragInfo The drag info.
+     */
+    private createDragResizeLoop(scrollableParent: HTMLElement | Document | null, dragInfo: PointerEventInfo): Subscription {
+        let renderData: KtdGridItemRenderData<number> | null = null;
+
+        // Retrieve grid (parent) and gridItem (draggedElem) client rects.
+        const gridElemClientRect: KtdClientRect = getMutableClientRect(this.gridElement);
+        const dragElemClientRect: KtdClientRect = getMutableClientRect(dragInfo.dragRef.elementRef.nativeElement as HTMLElement);
+
+        this.renderer.addClass(dragInfo.dragRef.elementRef.nativeElement, 'no-transitions');
+        this.renderer.addClass(dragInfo.dragRef.elementRef.nativeElement, 'ktd-grid-item-dragging');
+
+        const placeholderClientRect: KtdClientRect = {
+            ...dragElemClientRect,
+            left: dragElemClientRect.left - gridElemClientRect.left,
+            top: dragElemClientRect.top - gridElemClientRect.top
+        }
+
+        this.createPlaceholderElement(placeholderClientRect, dragInfo.dragRef.placeholder);
+
         // Main subscription, it listens for 'pointer move' and 'scroll' events and recalculates the layout on each emission
-        const dragSubscription = this.ngZone.runOutsideAngular(() =>
+        return this.ngZone.runOutsideAngular(() =>
             merge(
                 combineLatest([
                     this.gridService.pointerMove$,
@@ -693,47 +752,33 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 }
             })
         );
-
-        this.drag = {
-            dragSubscription,
-            scrollSubscription,
-            startEvent: event,
-            newLayout: null,
-            newLayoutItem: dragInfo.dragRef.itemRef instanceof KtdDrag ? {
-                id: dragInfo.dragRef.id,
-                w: 1,
-                h: 1,
-                x: -1,
-                y: -1,
-            } : null,
-        };
     }
 
     // TODO: Call this only when the drag ended, when the drag is paused do nothing.
-    public stopDragSequence(): void {
-        const dragInfo = this.gridService.drag!;
-
-        if (this.drag != null) {
-            // Remove drag classes
-            this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'no-transitions');
-            this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'ktd-grid-item-dragging');
-
-            this.ngZone.run(() => {
-                (dragInfo.type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(dragInfo.dragRef, this.layout));
-            });
-
-            this.addGridItemAnimatingClass(dragInfo.dragRef).subscribe();
-            // Consider destroying the placeholder after the animation has finished.
-            this.destroyPlaceholder();
-            this.drag.dragSubscription.unsubscribe();
-            this.drag.scrollSubscription?.unsubscribe();
-            this.drag = null;
+    private stopDragSequence(dragInfo: PointerEventInfo): void {
+        if (this.drag === null) {
+            return;
         }
+
+        console.log('stopDragSequence');
+
+        // Remove drag classes
+        this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'no-transitions');
+        this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'ktd-grid-item-dragging');
+
+        this.ngZone.run(() => {
+            (dragInfo.type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(dragInfo.dragRef, this.layout));
+        });
+
+        this.addGridItemAnimatingClass(dragInfo.dragRef).subscribe();
+        // Consider destroying the placeholder after the animation has finished.
+        this.destroyPlaceholder();
+        this.drag.dragSubscription.unsubscribe();
+        this.drag.scrollSubscription?.unsubscribe();
+        this.drag = null;
     }
 
-    public updateLayout(): void {
-        const dragInfo = this.gridService.drag!;
-
+    public updateLayout(dragInfo: PointerEventInfo): void {
         if (this.drag != null && this.drag.newLayout) {
             const previousLayoutItem = this.layout.find(item => item.id === dragInfo.dragRef.id);
             const currentLayoutItem = this.drag!.newLayout.find(item => item.id === dragInfo.dragRef.id);
@@ -760,8 +805,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 });
             });
         }
-
-        this.stopDragSequence();
     }
 
     public isPointerInsideGridElement(event: MouseEvent | TouchEvent): boolean {

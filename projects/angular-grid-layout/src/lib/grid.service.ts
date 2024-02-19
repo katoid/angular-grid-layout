@@ -29,6 +29,9 @@ export class KtdGridService {
     private pointerEndSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
     private pointerEndSubscription: Subscription;
 
+    pointerBeforeEnd$: Observable<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}>;
+    private pointerBeforeEndSubject: Subject<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}> = new Subject<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}>();
+
     drag: PointerEventInfo | null = null;
 
     constructor(
@@ -37,6 +40,7 @@ export class KtdGridService {
     ) {
         this.pointerMove$ = this.pointerMoveSubject.asObservable();
         this.pointerEnd$ = this.pointerEndSubject.asObservable();
+        this.pointerBeforeEnd$ = this.pointerBeforeEndSubject.asObservable();
         this.initSubscriptions();
     }
 
@@ -49,12 +53,23 @@ export class KtdGridService {
         this.pointerEndSubscription = this.ngZone.runOutsideAngular(() =>
             ktdPointerUp(document)
                 .subscribe((mouseEvent: MouseEvent | TouchEvent) => {
-                    this.stopDrag();
+                    this.pointerBeforeEndSubject.next({
+                        event: mouseEvent,
+                        dragInfo: this.drag,
+                    });
+                    this.drag = null;
                     this.pointerEndSubject.next(mouseEvent);
                 })
         );
     }
 
+    /**
+     * Start a drag sequence.
+     * @param event The event that triggered the drag sequence.
+     * @param dragRef The dragRef that started the drag sequence.
+     * @param type The type of drag sequence.
+     * @param grid The grid where the drag sequence started. It can be null if the drag sequence started outside a grid.
+     */
     public startDrag(event: MouseEvent | TouchEvent | PointerEvent, dragRef: DragRef, type: DragActionType, grid: KtdGridComponent | null = null): void {
         // Make sure, this function is only being called once
         if (this.drag !== null) {
@@ -76,21 +91,15 @@ export class KtdGridService {
             this.ngZone.run(() => (type === 'drag' ? grid.dragStarted : grid.resizeStarted).emit(getDragResizeEventData(dragRef, grid.layout)));
         }
 
+        const connectedToGrids = isKtdDrag ? (dragRef.itemRef as KtdDrag<any>).connectedTo : this.registryService._ktgGrids;
         this.pointerMove$.pipe(
             takeUntil(this.pointerEnd$),
             ktdOutsideZone(this.ngZone),
         ).subscribe((moveEvent: MouseEvent | TouchEvent) => {
             this.drag!.moveEvent = moveEvent;
-            const connectedToGrids = isKtdDrag ? (dragRef.itemRef as KtdDrag<any>).connectedTo : this.registryService._ktgGrids;
             this.handleGridInteraction(moveEvent, connectedToGrids);
         });
     }
-
-    public stopDrag(): void {
-        this.drag?.currentGrid?.updateLayout();
-        this.drag = null;
-    }
-
 
     private handleGridInteraction(moveEvent: MouseEvent | TouchEvent, connectedToGrids: KtdGridComponent[]): void {
         for (const grid of connectedToGrids) {
