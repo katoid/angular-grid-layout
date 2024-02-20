@@ -1,4 +1,4 @@
-import {ElementRef, NgZone, Renderer2, RendererFactory2} from "@angular/core";
+import {ElementRef, NgZone} from "@angular/core";
 import {coerceBooleanProperty} from "../coercion/boolean-property";
 import {BehaviorSubject, combineLatest, iif, merge, NEVER, Observable, of, Subject, Subscription} from "rxjs";
 import {exhaustMap, filter, map, startWith, switchMap, take, takeUntil} from "rxjs/operators";
@@ -90,13 +90,11 @@ export class DragRef<T = any> {
     private dragStartSubscription: Subscription;
 
     private readonly element: HTMLElement;
-    private readonly renderer: Renderer2;
 
     constructor(
         public elementRef: ElementRef<HTMLElement>,
         private _gridService: KtdGridService,
         private _ngZone: NgZone,
-        rendererFactory: RendererFactory2,
         private _itemRef: KtdGridItemComponent | KtdDrag<any>,
     ) {
         this.dragStart$ = this.dragStartSubject.asObservable();
@@ -105,7 +103,6 @@ export class DragRef<T = any> {
 
         this.dragStartSubscription = this._dragStart$().subscribe(this.dragStartSubject);
 
-        this.renderer = rendererFactory.createRenderer(null, null);
         this.element = this.elementRef.nativeElement as HTMLElement;
         this.initDrag();
     }
@@ -140,9 +137,6 @@ export class DragRef<T = any> {
                 let dragSubscription: Subscription | null = null;
 
                 const dragStart$ = this.dragStart$.subscribe(({event}) => {
-                    this.renderer.addClass(this.element, 'no-transitions');
-                    this.renderer.addClass(this.element, 'ktd-grid-item-dragging');
-
                     const initialX = ktdPointerClientX(event) - this.transformX;
                     const initialY = ktdPointerClientY(event) - this.transformY;
 
@@ -182,8 +176,6 @@ export class DragRef<T = any> {
                     scrollSubscription?.unsubscribe();
                     dragSubscription?.unsubscribe();
                     this.element.style.transform = `translate3d(${this.transformX}px, ${this.transformY}px, 0)`;
-                    this.renderer.removeClass(this.element, 'no-transitions');
-                    this.renderer.removeClass(this.element, 'ktd-grid-item-dragging');
                 });
 
                 this.subscriptions = [dragStart$, dragEnd$];

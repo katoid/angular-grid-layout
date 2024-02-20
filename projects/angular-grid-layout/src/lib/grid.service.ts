@@ -32,7 +32,7 @@ export class KtdGridService {
     pointerBeforeEnd$: Observable<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}>;
     private pointerBeforeEndSubject: Subject<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}> = new Subject<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}>();
 
-    drag: PointerEventInfo | null = null;
+    private drag: PointerEventInfo | null = null;
 
     constructor(
         private ngZone: NgZone,
@@ -130,6 +130,7 @@ export class KtdGridService {
                 source: this.drag!.dragRef,
                 event: moveEvent,
                 grid: this.drag!.currentGrid,
+                dragInfo: this.drag!,
             });
         }
 
@@ -138,6 +139,7 @@ export class KtdGridService {
                 source: this.drag!.dragRef,
                 event: moveEvent,
                 grid: grid,
+                dragInfo: this.drag!,
             });
         }
 

@@ -1,4 +1,4 @@
-import {ElementRef, Injectable, NgZone, RendererFactory2} from '@angular/core';
+import {ElementRef, Injectable, NgZone} from '@angular/core';
 import {KtdDrag} from "./directives/ktd-drag";
 import {BehaviorSubject} from "rxjs";
 import {KtdGridService} from "./grid.service";
@@ -27,11 +27,10 @@ export class KtdRegistryService<T = any> {
 
     constructor(
         private _ngZone: NgZone,
-        private rendererFactory: RendererFactory2,
     ) { }
 
     public createKtgDrag(element: ElementRef<HTMLElement>, gridService: KtdGridService, itemRef: KtdGridItemComponent | KtdDrag<any>): DragRef<T> {
-        const dragRef = new DragRef<T>(element, gridService, this._ngZone, this.rendererFactory, itemRef);
+        const dragRef = new DragRef<T>(element, gridService, this._ngZone, itemRef);
         this._dragRefItems.push(dragRef);
         this.dragRefItems$.next(this._dragRefItems);
         return dragRef;

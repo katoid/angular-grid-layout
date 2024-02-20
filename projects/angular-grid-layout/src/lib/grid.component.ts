@@ -96,6 +96,7 @@ export interface KtdGridEnterLeaveEvent {
     grid: KtdGridComponent;
     event: PointingDeviceEvent;
     source: DragRef;
+    dragInfo: PointerEventInfo;
 }
 
 export function getDragResizeEventData(dragRef: DragRef, layout: KtdGridLayout): KtdDragResizeEvent {
@@ -551,19 +552,17 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             ).subscribe(({event, draggableItem}) => {
                 this.gridService.startDrag(event, draggableItem._dragRef, 'drag');
             }),
-
-            this.dragEntered.subscribe(({event, }) => {
-                this.startRestoreDragSequence(event);
+            this.dragEntered.subscribe(({event, dragInfo }) => {
+                this.startRestoreDragSequence(event, dragInfo);
             }),
-            this.dragExited.subscribe(() => {
-                this.pauseDragSequence();
+            this.dragExited.subscribe(({dragInfo}) => {
+                this.pauseDragSequence(dragInfo);
             }),
             this.gridService.pointerBeforeEnd$.subscribe(({dragInfo}) => {
                 if (this.drag !== null && dragInfo !== null) {
                     this.updateLayout(dragInfo);
                     this.stopDragSequence(dragInfo);
                 }
-                console.log(this.drag, dragInfo);
             }),
             this.gridService.pointerEnd$.subscribe(() => {
                 this.drag = null;
@@ -574,9 +573,13 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /**
      * Starts the drag sequence when a drag event is triggered. It will restore paused drag sequence if it's already started.
      * @param event The event that triggered the drag sequence.
+     * @param dragInfo The drag info.
      */
-    private startRestoreDragSequence(event: PointingDeviceEvent): void {
-        const dragInfo = this.gridService.drag!;
+    private startRestoreDragSequence(event: PointingDeviceEvent, dragInfo: PointerEventInfo): void {
+        if (this.drag !== null && dragInfo.type === 'resize') {
+            return;
+        }
+
         const scrollableParent = typeof this.scrollableParent === 'string' ? document.getElementById(this.scrollableParent) : this.scrollableParent;
 
         // TODO (enhancement): consider move this 'side effect' observable inside the main drag loop.
@@ -593,12 +596,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 takeUntil(this.gridService.pointerEnd$),
             ).subscribe());
 
-        if (this.drag != null) {
-            this.drag.dragSubscription = this.createDragResizeLoop(scrollableParent, dragInfo);
-            this.drag.scrollSubscription = scrollSubscription;
-            return;
-        }
-
         this.drag = {
             dragSubscription: this.createDragResizeLoop(scrollableParent, dragInfo),
             scrollSubscription,
@@ -614,8 +611,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         };
     }
 
-    private pauseDragSequence(): void {
-        const dragInfo = this.gridService.drag!;
+    private pauseDragSequence(dragInfo: PointerEventInfo): void {
 
         // If the drag is a resize, we don't need to pause the drag sequence.
         if (dragInfo.type === 'resize') {
@@ -623,9 +619,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         }
 
         if (this.drag != null) {
+            this.destroyPlaceholder();
             this.drag.dragSubscription.unsubscribe();
             this.drag.scrollSubscription.unsubscribe();
-            this.destroyPlaceholder();
         }
     }
 
@@ -754,13 +750,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         );
     }
 
-    // TODO: Call this only when the drag ended, when the drag is paused do nothing.
     private stopDragSequence(dragInfo: PointerEventInfo): void {
         if (this.drag === null) {
             return;
         }
-
-        console.log('stopDragSequence');
 
         // Remove drag classes
         this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'no-transitions');
