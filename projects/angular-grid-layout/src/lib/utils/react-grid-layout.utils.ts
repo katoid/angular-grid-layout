@@ -20,6 +20,7 @@ export type LayoutItem = {
     static?: boolean;
     isDraggable?: boolean | null | undefined;
     isResizable?: boolean | null | undefined;
+    data?: any;
 };
 export type Layout = Array<LayoutItem>;
 export type Position = {
@@ -117,6 +118,7 @@ export function cloneLayoutItem(layoutItem: LayoutItem): LayoutItem {
     if (layoutItem.minH !== undefined) { clonedLayoutItem.minH = layoutItem.minH;}
     if (layoutItem.maxH !== undefined) { clonedLayoutItem.maxH = layoutItem.maxH;}
     // These can be null
+    if (layoutItem.data !== undefined) { clonedLayoutItem.data = layoutItem.data;}
     if (layoutItem.isDraggable !== undefined) { clonedLayoutItem.isDraggable = layoutItem.isDraggable;}
     if (layoutItem.isResizable !== undefined) { clonedLayoutItem.isResizable = layoutItem.isResizable;}
 

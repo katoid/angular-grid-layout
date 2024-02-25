@@ -6,10 +6,15 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { KtdFooterComponent } from '../components/footer/footer.component';
 import { pokemonsGen1 } from './pokemons-gen1';
-import { KtdDictionary } from '../types';
 import {compact} from "../../../../angular-grid-layout/src/lib/utils/react-grid-layout.utils";
 import {KtdDropped} from "../../../../angular-grid-layout/src/lib/grid.component";
 
+
+interface Pokemon {
+    name: string,
+    url: string,
+    img: string
+}
 @Component({
     selector: 'ktd-drag-from-outside',
     standalone: true,
@@ -25,15 +30,10 @@ export class KtdDragFromOutsideComponent implements OnInit, OnDestroy {
     compactType: KtdGridCompactType = null;
     backgroundConfig: KtdGridBackgroundCfg = {show: 'always'};
 
-    pokemonsGen1 = pokemonsGen1;
-
-    pokemonsGen1Dict: KtdDictionary<{ name: string, url: string, img: string }> = pokemonsGen1.reduce((acc, cur, index) => ({
-        ...acc,
-        [cur.name as string]: {
-            ...cur,
-            img: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`
-        }
-    }), {})
+    pokemonsGen1Dict: Pokemon[] = pokemonsGen1.map((pokemon, index) => ({
+        ...pokemon,
+        img: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${index + 1}.png`
+    }));
 
     private resizeSubscription: Subscription;
 
@@ -59,7 +59,7 @@ export class KtdDragFromOutsideComponent implements OnInit, OnDestroy {
         this.layout = layout;
     }
 
-    onLayoutDropped(event: KtdDropped) {
+    onLayoutDropped(event: KtdDropped<Pokemon>) {
         console.log('onLayoutDropped', event);
         this.layout = [event.currentLayoutItem, ...event.currentLayout];
         this.layout = compact(this.layout, this.compactType, this.grid.cols);
@@ -70,7 +70,7 @@ export class KtdDragFromOutsideComponent implements OnInit, OnDestroy {
         this.layout2 = layout;
     }
 
-    onLayout2Dropped(event: KtdDropped) {
+    onLayout2Dropped(event: KtdDropped<Pokemon>) {
         console.log('onLayoutDropped', event);
         this.layout2 = [event.currentLayoutItem, ...event.currentLayout];
         this.layout2 = compact(this.layout2, this.compactType, this.grid.cols);

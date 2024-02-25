@@ -1,7 +1,7 @@
 
 <div class="pokemons-container">
-    <div *ngFor="let pokemon of pokemonsGen1; let i = index" ktdDrag [connectedTo]="[gridLeft, gridRight]" [width]="1" [id]="pokemon.name" class="pokemon-drag-item">
-        <img [src]="pokemonsGen1Dict[pokemon.name].img">
+    <div *ngFor="let pokemon of pokemonsGen1Dict; let i = index" ktdDrag [ktdDragData]="pokemon" [connectedTo]="[gridLeft, gridRight]" [width]="1" class="pokemon-drag-item">
+        <img [src]="pokemon.img">
         {{pokemon.name}}
     </div>
 </div>
@@ -18,15 +18,17 @@
                   [layout]="layout"
                   [scrollableParent]="document"
                   (dropped)="onLayoutDropped($event)"
-                  (layoutUpdated)="onLayoutUpdated($event)">
+                  (layoutUpdated)="onLayoutUpdated($event)"
+        >
             <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
                            draggable="true"
                            resizable="true"
                            dragStartThreshold="0"
                            [id]="item.id">
-                {{item.id}} {{pokemonsGen1Dict[item.id] | json}}
-                <img [src]="pokemonsGen1Dict[item.id].img">
-                {{pokemonsGen1Dict[item.id].name}}
+                <div class="pokemon-drag-item">
+                    <img [src]="item.data.img">
+                    <a [href]="item.data.url" target="_blank">{{item.data.name}}</a>
+                </div>
             </ktd-grid-item>
         </ktd-grid>
 
@@ -50,9 +52,10 @@
                            resizable="true"
                            dragStartThreshold="0"
                            [id]="item.id">
-
-                <img [src]="pokemonsGen1Dict[item.id].img">
-                {{pokemonsGen1Dict[item.id].name}}
+                <div class="pokemon-drag-item">
+                    <img [src]="item.data.img">
+                    <a [href]="item.data.url" target="_blank">{{item.data.name}}</a>
+                </div>
             </ktd-grid-item>
         </ktd-grid>
     </div>

@@ -3,7 +3,7 @@ import { CompactType } from './utils/react-grid-layout.utils';
 import { KtdClientRect } from './utils/client-rect';
 
 
-export interface KtdGridLayoutItem {
+export interface KtdGridLayoutItem<T = any> {
     id: string;
     x: number;
     y: number;
@@ -13,6 +13,7 @@ export interface KtdGridLayoutItem {
     minH?: number;
     maxW?: number;
     maxH?: number;
+    data?: T;
 }
 
 export type KtdGridCompactType = CompactType;
