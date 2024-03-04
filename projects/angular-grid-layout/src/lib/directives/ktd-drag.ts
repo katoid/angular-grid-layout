@@ -191,7 +191,10 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
         this.subscriptions.push(
             this._dragHandles.changes.subscribe(() => {
                 this._dragRef.dragHandles = this._dragHandles.toArray();
-            })
+            }),
+            this.dragStart.subscribe(({event}) => {
+                this.gridService.startDrag(event, this._dragRef, 'drag');
+            }),
         );
     }
 

@@ -61,7 +61,9 @@ export class KtdDragFromOutsideComponent implements OnInit, OnDestroy {
 
     onLayoutDropped(event: KtdDropped<Pokemon>) {
         console.log('onLayoutDropped', event);
-        this.layout = [event.currentLayoutItem, ...event.currentLayout];
+
+        const id = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+        this.layout = [{...event.currentLayoutItem, id}, ...event.currentLayout];
         this.layout = compact(this.layout, this.compactType, this.grid.cols);
     }
 
@@ -72,7 +74,8 @@ export class KtdDragFromOutsideComponent implements OnInit, OnDestroy {
 
     onLayout2Dropped(event: KtdDropped<Pokemon>) {
         console.log('onLayoutDropped', event);
-        this.layout2 = [event.currentLayoutItem, ...event.currentLayout];
+        const id = crypto.getRandomValues(new Uint32Array(1))[0].toString(16);
+        this.layout2 = [{...event.currentLayoutItem, id}, ...event.currentLayout];
         this.layout2 = compact(this.layout2, this.compactType, this.grid.cols);
     }
 }

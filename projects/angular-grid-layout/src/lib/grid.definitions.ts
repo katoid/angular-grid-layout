@@ -35,6 +35,7 @@ export interface KtdGridCfg {
     layout: KtdGridLayoutItem[];
     preventCollision: boolean;
     gap: number;
+    gridId: string;
 }
 
 export type KtdGridLayout = KtdGridLayoutItem[];
@@ -68,4 +69,5 @@ export interface KtdDraggingData {
     gridElemClientRect: KtdClientRect;
     dragElemClientRect: KtdClientRect;
     scrollDifference: { top: number, left: number };
+    draggingFromOutside: boolean;
 }

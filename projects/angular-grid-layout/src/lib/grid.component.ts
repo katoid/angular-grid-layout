@@ -27,7 +27,7 @@ import {
     ktdGridItemDragging, ktdGridItemLayoutItemAreEqual,
     ktdGridItemResizing
 } from './utils/grid.utils';
-import {compact, Layout, LayoutItem} from './utils/react-grid-layout.utils';
+import {compact, Layout} from './utils/react-grid-layout.utils';
 import {
     DragActionType,
     GRID_ITEM_GET_RENDER_DATA_TOKEN,
@@ -57,7 +57,6 @@ interface KtdGridDrag {
     scrollSubscription: Subscription | null;
     startEvent: MouseEvent | TouchEvent;
     newLayout: Layout | null;
-    newLayoutItem: LayoutItem | null;
 }
 
 interface KtdDragResizeEvent {
@@ -77,7 +76,6 @@ export type KtdResizeEnd = KtdDragResizeEvent;
 
 interface KtdDroppedEvent<T> {
     event: PointingDeviceEvent;
-    previousLayout: KtdGridLayout | null;           // Previous layout is null only when dragging ktdDrag
     currentLayout: KtdGridLayout;
     previousLayoutItem: KtdGridLayoutItem<T> | null;   // Previous layout is null only when dragging ktdDrag
     currentLayoutItem: KtdGridLayoutItem<T>;
@@ -356,6 +354,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             layout: this.layout,
             preventCollision: this.preventCollision,
             gap: this.gap,
+            gridId: this.id,
         };
     }
 
@@ -505,7 +504,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     private initSubscriptions() {
-        const itemsConnectedToGrid$ = this.ktdRegistryService.getKtdDragItemsConnectedToGrid(this);
+        // const itemsConnectedToGrid$ = this.ktdRegistryService.getKtdDragItemsConnectedToGrid(this);
         this.subscriptions = [
             this._gridItems.changes.pipe(
                 startWith(this._gridItems),
@@ -536,20 +535,15 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     event.preventDefault();
                 }
 
-                return this.gridService.startDrag(event, gridItem.dragRef, type, this);
-            }),
+                const layoutItem = this.layout.find((item) => item.id === gridItem.id);
+                const renderData = this._gridItemsRenderData[gridItem.id];
 
-            itemsConnectedToGrid$.pipe(
-                startWith(itemsConnectedToGrid$.value),
-                switchMap((draggableItems) => {
-                    return merge(
-                        ...draggableItems.map((draggableItem) => draggableItem.dragStart.pipe(
-                            map(({source, event}) => ({event, draggableItem, source}))
-                        )),
-                    ).pipe(exhaustMap((data) => of(data)));
-                })
-            ).subscribe(({event, draggableItem}) => {
-                this.gridService.startDrag(event, draggableItem._dragRef, 'drag');
+                if (layoutItem === undefined || renderData === undefined) {
+                    console.error(`Couldn\'t find the specified grid item for the id: ${gridItem.id}`);
+                    return;
+                }
+
+                return this.gridService.startDrag(event, gridItem.dragRef, type, this, {layoutItem, renderData});
             }),
             this.dragEntered.subscribe(({event, dragInfo }) => {
                 this.startRestoreDragSequence(event, dragInfo);
@@ -558,12 +552,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 this.pauseDragSequence(dragInfo);
             }),
             this.gridService.pointerBeforeEnd$.subscribe(({dragInfo}) => {
-                if (this.drag !== null && dragInfo !== null) {
+                if (this.drag !== null && dragInfo !== null && dragInfo.currentGrid === this) {
+                    console.log('Grid ', this.id);
                     this.updateLayout(dragInfo);
                     this.stopDragSequence(dragInfo);
                 }
-            }),
-            this.gridService.pointerEnd$.subscribe(() => {
                 this.drag = null;
             }),
         ];
@@ -600,19 +593,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             scrollSubscription,
             startEvent: event,
             newLayout: null,
-            newLayoutItem: dragInfo.dragRef.itemRef instanceof KtdDrag ? {
-                id: dragInfo.dragRef.id,
-                w: 1,
-                h: 1,
-                x: -1,
-                y: -1,
-                data: dragInfo.dragRef.data,
-            } : null,
         };
     }
 
     private pauseDragSequence(dragInfo: PointerEventInfo): void {
-
         // If the drag is a resize, we don't need to pause the drag sequence.
         if (dragInfo.type === 'resize') {
             return;
@@ -672,7 +656,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 //  some utilities from 'react-grid-layout' would not work as expected.
                 //
                 const currentLayout: KtdGridLayout = this.drag!.newLayout || this.layout;
-                const ktdLayoutItem = this.drag!.newLayoutItem !== null ? this.drag!.newLayoutItem : currentLayout.find(item => item.id === dragInfo.dragRef.id)!;
+                // const ktdLayoutItem = dragInfo.fromGrid !== this ? dragInfo.newLayoutItem : currentLayout.find(item => item.id === dragInfo.dragRef.id)!;
+                const ktdLayoutItem = dragInfo.newLayoutItem;
 
                 // Get the correct newStateFunc depending on if we are dragging or resizing
                 const calcNewStateFunc = dragInfo.type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
@@ -684,12 +669,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     cols: this.cols,
                     preventCollision: this.preventCollision,
                     gap: this.gap,
+                    gridId: this.id,
                 }, this.compactType, {
                     pointerDownEvent: this.drag!.startEvent!,
                     pointerDragEvent,
                     gridElemClientRect,
                     dragElemClientRect,
-                    scrollDifference
+                    scrollDifference,
+                    draggingFromOutside: dragInfo.fromGrid !== this,
                 });
                 this.drag!.newLayout = layout;
 
@@ -702,15 +689,16 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     layout: this.drag!.newLayout,
                     preventCollision: this.preventCollision,
                     gap: this.gap,
+                    gridId: this.id,
                 }, gridElemClientRect.width, gridElemClientRect.height, draggedLayoutItem);
                 this._gridItemsRenderData = dict;
 
-                if (this.drag!.newLayoutItem !== null) {
-                    this.drag!.newLayoutItem = draggedLayoutItem;
+                if (dragInfo.fromGrid !== this) {
+                    dragInfo.newLayoutItem = draggedLayoutItem;
                     renderData = draggingItem!;
                 }
 
-                const newGridItemRenderData = renderData !== null ? renderData : this._gridItemsRenderData[dragInfo.dragRef.id];
+                const newGridItemRenderData = renderData !== null && dragInfo.fromGrid !== this ? renderData : this._gridItemsRenderData[dragInfo.dragRef.id];
 
                 // Put the real final position to the placeholder element
                 this.placeholder!.style.width = `${newGridItemRenderData.width}px`;
@@ -718,7 +706,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 this.placeholder!.style.transform = `translateX(${newGridItemRenderData.left}px) translateY(${newGridItemRenderData.top}px)`;
 
                 // modify the position of the dragged item to be the once we want (for example the mouse position or whatever)
-                if (renderData !== null) {
+                if (renderData !== null && dragInfo.fromGrid !== this ) {
                     renderData = {
                         ...renderData,
                         ...draggedItemPos,
@@ -775,40 +763,77 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     public updateLayout(dragInfo: PointerEventInfo): void {
         if (this.drag != null && this.drag.newLayout) {
+            const currentLayoutItem = dragInfo.fromGrid === null ? {...dragInfo.newLayoutItem, id: this.getNextId()} : dragInfo.newLayoutItem;
             const previousLayoutItem = this.layout.find(item => item.id === dragInfo.dragRef.id);
-            const currentLayoutItem = this.drag!.newLayout.find(item => item.id === dragInfo.dragRef.id);
 
-            // Add new item to the layout if it is being dragged from outside the grid.
-            this.ngZone.run(() => {
-                // Do not emit when:
-                // - Drag is a resize and bounds have not changed.
-                // - Drag is a normal drag and the item is being dragged inside the same grid.
-                // - We are dragging from outside the grid and the item was dragged into the grid, but then pointer was released outside the grid.
-                if (dragInfo.type !== 'resize' && this.drag!.newLayoutItem !== null && dragInfo.currentGrid === this) {
-                    this.dropped.emit({
-                        event: dragInfo.moveEvent,
-                        previousLayout: dragInfo.fromGrid !== null ? dragInfo.fromGrid.layout : null,
-                        currentLayout: this.drag!.newLayout!.map(item => ({
-                            id: item.id,
-                            x: item.x,
-                            y: item.y,
-                            w: item.w,
-                            h: item.h,
-                            minW: item.minW,
-                            minH: item.minH,
-                            maxW: item.maxW,
-                            maxH: item.maxH,
-                            data: item.data,
-                        })) as KtdGridLayout,
-                        previousLayoutItem: previousLayoutItem !== undefined ? previousLayoutItem : null,
-                        currentLayoutItem: currentLayoutItem !== undefined ? currentLayoutItem : {...this.drag!.newLayoutItem!, id: this.getNextId()},
-                    });
-                    return;
-                }
+            // Dragging from one grid to another
+            if (dragInfo.fromGrid !== dragInfo.currentGrid) {
+                // Add new item to the layout if it is being dragged from outside the grid.
+                this.ngZone.run(() => {
+                    if (dragInfo.fromGrid !== null) {
+                        dragInfo.fromGrid.layoutUpdated.emit(dragInfo.fromGrid.layout.filter(item => item.id !== dragInfo.dragRef.id));
+                    }
 
-                // Emit when we are not dragging or resizing items already inside the grid.
-                this.layoutUpdated.emit(this.drag!.newLayout!);
-            });
+                    // Do not emit when:
+                    // - Drag is a resize and bounds have not changed.
+                    // - Drag is a normal drag and the item is being dragged inside the same grid.
+                    // - We are dragging from outside the grid and the item was dragged into the grid, but then pointer was released outside the grid.
+                    if (dragInfo.type !== 'resize' && dragInfo.currentGrid === this) {
+                        this.dropped.emit({
+                            event: dragInfo.moveEvent,
+                            currentLayout: this.drag!.newLayout!.map(item => ({
+                                id: item.id,
+                                x: item.x,
+                                y: item.y,
+                                w: item.w,
+                                h: item.h,
+                                minW: item.minW,
+                                minH: item.minH,
+                                maxW: item.maxW,
+                                maxH: item.maxH,
+                                data: item.data,
+                            })) as KtdGridLayout,
+                            previousLayoutItem: previousLayoutItem !== undefined ? previousLayoutItem : null,
+                            currentLayoutItem: currentLayoutItem,
+                        });
+                        return;
+                    }
+
+                    // Emit when we are not dragging or resizing items already inside the grid.
+                    // this.layoutUpdated.emit(this.drag!.newLayout!);
+                });
+            } else {
+                // Add new item to the layout if it is being dragged from outside the grid.
+                this.ngZone.run(() => {
+                    // Do not emit when:
+                    // - Drag is a resize and bounds have not changed.
+                    // - Drag is a normal drag and the item is being dragged inside the same grid.
+                    // - We are dragging from outside the grid and the item was dragged into the grid, but then pointer was released outside the grid.
+                    if (dragInfo.type !== 'resize' && dragInfo.fromGrid === null && dragInfo.currentGrid === this) {
+                        this.dropped.emit({
+                            event: dragInfo.moveEvent,
+                            currentLayout: this.drag!.newLayout!.map(item => ({
+                                id: item.id,
+                                x: item.x,
+                                y: item.y,
+                                w: item.w,
+                                h: item.h,
+                                minW: item.minW,
+                                minH: item.minH,
+                                maxW: item.maxW,
+                                maxH: item.maxH,
+                                data: item.data,
+                            })) as KtdGridLayout,
+                            previousLayoutItem: previousLayoutItem !== undefined ? previousLayoutItem : null,
+                            currentLayoutItem: currentLayoutItem,
+                        });
+                        return;
+                    }
+
+                    // Emit when we are not dragging or resizing items already inside the grid.
+                    this.layoutUpdated.emit(this.drag!.newLayout!);
+                });
+            }
         }
     }
 

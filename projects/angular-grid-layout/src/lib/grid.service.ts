@@ -1,6 +1,6 @@
 import {Injectable, NgZone} from '@angular/core';
 import {Observable, Subject, Subscription} from 'rxjs';
-import {DragActionType} from "./grid.definitions";
+import {DragActionType, KtdGridItemRenderData} from "./grid.definitions";
 import {DragRef} from "./utils/drag-ref";
 import {getDragResizeEventData, KtdGridComponent, PointingDeviceEvent} from "./grid.component";
 import {KtdDrag} from "./directives/ktd-drag";
@@ -8,6 +8,7 @@ import {ktdOutsideZone} from "./utils/operators";
 import {takeUntil} from "rxjs/operators";
 import {ktdPointerMove, ktdPointerUp} from './utils/pointer.utils';
 import {KtdRegistryService} from "./ktd-registry.service";
+import {LayoutItem} from "./utils/react-grid-layout.utils";
 
 
 export interface PointerEventInfo {
@@ -15,6 +16,8 @@ export interface PointerEventInfo {
     startEvent: PointingDeviceEvent;
     moveEvent: PointingDeviceEvent;
     type: DragActionType;
+    newLayoutItem: LayoutItem;
+    renderData: KtdGridItemRenderData<number> | null;
     fromGrid: KtdGridComponent | null; // The grid where the drag started, it can be null if the drag started outside a grid. For example, when dragging from a connected drag item
     currentGrid: KtdGridComponent | null;
 }
@@ -70,13 +73,18 @@ export class KtdGridService {
      * @param type The type of drag sequence.
      * @param grid The grid where the drag sequence started. It can be null if the drag sequence started outside a grid.
      */
-    public startDrag(event: MouseEvent | TouchEvent | PointerEvent, dragRef: DragRef, type: DragActionType, grid: KtdGridComponent | null = null): void {
+    public startDrag(event: MouseEvent | TouchEvent | PointerEvent, dragRef: DragRef, type: DragActionType, grid: KtdGridComponent | null = null, gridItem: {layoutItem: LayoutItem, renderData: KtdGridItemRenderData<number>} | null = null): void {
         // Make sure, this function is only being called once
         if (this.drag !== null) {
             return;
         }
 
         const isKtdDrag = dragRef.itemRef instanceof KtdDrag;
+
+        if (!isKtdDrag && gridItem === null) {
+            throw new Error('layoutItem must be provided when dragging from a connected drag item');
+        }
+
         this.drag = {
             dragRef,
             startEvent: event,
@@ -84,6 +92,15 @@ export class KtdGridService {
             type,
             fromGrid: isKtdDrag ? null : grid,
             currentGrid: null,
+            newLayoutItem: isKtdDrag ? {
+                id: dragRef.id,
+                w: 1,
+                h: 1,
+                x: -1,
+                y: -1,
+                data: dragRef.data,
+            } : gridItem!.layoutItem!,
+            renderData: isKtdDrag ? null : gridItem!.renderData!,
         };
 
         if (grid !== null) {

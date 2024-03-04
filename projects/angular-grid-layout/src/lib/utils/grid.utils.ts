@@ -96,10 +96,12 @@ export function ktdGridItemDragging(
         pointerDragEvent,
         gridElemClientRect,
         dragElemClientRect,
-        scrollDifference
+        scrollDifference,
+        draggingFromOutside
     } = draggingData;
 
-    const gridItemId = item.id;
+    const tmpGridItemId = 'tmp-dragging-item';
+    const gridItemId = draggingFromOutside ? tmpGridItemId + item.id : item.id;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
     const clientStartY = ktdPointerClientY(pointerDownEvent);
@@ -124,6 +126,7 @@ export function ktdGridItemDragging(
     // Get layout item position
     const layoutItem: KtdGridLayoutItem = {
         ...item,
+        id: gridItemId,
         x: screenXToGridX(gridRelXPos , config.cols, gridElemClientRect.width, config.gap),
         y: screenYToGridY(gridRelYPos, rowHeightInPixels, gridElemClientRect.height, config.gap)
     };
@@ -136,13 +139,10 @@ export function ktdGridItemDragging(
     }
     // Parse to LayoutItem array data in order to use 'react.grid-layout' utils
     const layoutItems: LayoutItem[] = config.layout;
-    let draggedLayoutItem: LayoutItem = layoutItems.find(item => item.id === gridItemId)!;
-    let draggingFromOutside = false;
-
-    if (draggedLayoutItem == null) {
-        draggedLayoutItem = item;
-        draggingFromOutside = true;
-    }
+    const draggedLayoutItem = draggingFromOutside ? {
+        ...item,
+        id: gridItemId
+    } : layoutItems.find(item => item.id === gridItemId)!;
 
     let newLayoutItems: LayoutItem[] = moveElement(
         layoutItems,
@@ -168,7 +168,10 @@ export function ktdGridItemDragging(
                 width: dragElemClientRect.width,
                 height: dragElemClientRect.height,
             },
-            draggedLayoutItem: newLayoutItem,
+            draggedLayoutItem: {
+                ...newLayoutItem,
+                id: newLayoutItem.id.replace(tmpGridItemId, '')
+            },
         };
     }
 

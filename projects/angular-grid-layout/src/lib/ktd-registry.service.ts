@@ -110,12 +110,4 @@ export class KtdRegistryService<T = any> {
             this.ktdDragItemConnectedToGrid[dragRef.id].push(grid);
         });
     }
-
-    public getKtdDragItemsConnectedToGrid(grid: KtdGridComponent): BehaviorSubject<KtdDrag<T>[]> {
-        return this.gridConnectedToKtdDragItems[grid.id] ? this.gridConnectedToKtdDragItems[grid.id] : new BehaviorSubject<KtdDrag<T>[]>([]);
-    }
-
-    public getGridItemsConnectedToGrid(grid: KtdGridComponent): BehaviorSubject<KtdGridItemComponent<T>[]> {
-        return this.gridConnectedToGridItems[grid.id] ? this.gridConnectedToGridItems[grid.id] : new BehaviorSubject<KtdGridItemComponent<T>[]>([]);
-    }
 }

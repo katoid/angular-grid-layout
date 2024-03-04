@@ -145,25 +145,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         console.log('dropped', event);
 
         // Inserting new item
-        if (event.previousLayout === null) {
-            console.log('inserting new item');
-            this.layout = [event.currentLayoutItem, ...event.currentLayout]
-            this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
-        } else {
-            if (event.previousLayoutItem !== null) {
-                const newLayout = event.currentLayout.filter((item) => item.id !== event.previousLayoutItem!.id);
-                this.layout = [event.currentLayoutItem, ...newLayout];
-                this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
-            }
-        }
-        /*const index = this.layout.findIndex(item => item.id === event.layoutItem.id);
-
-        // We need to remove the item from the layout and add it again to make sure the Grid component knows that the layout has changed.
-        if (index > -1) {
-            this.layout.splice(index, 1);
-        }
-        this.layout = [event.layoutItem, ...this.layout];
-        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);*/
+        this.layout = [event.currentLayoutItem, ...event.currentLayout]
+        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
     }
 
     onCompactTypeChange(change: MatSelectChange) {
