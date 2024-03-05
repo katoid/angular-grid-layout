@@ -32,9 +32,6 @@ export class KtdGridService {
     private pointerEndSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
     private pointerEndSubscription: Subscription;
 
-    pointerBeforeEnd$: Observable<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}>;
-    private pointerBeforeEndSubject: Subject<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}> = new Subject<{event: MouseEvent | TouchEvent, dragInfo: PointerEventInfo | null}>();
-
     private drag: PointerEventInfo | null = null;
 
     constructor(
@@ -43,7 +40,6 @@ export class KtdGridService {
     ) {
         this.pointerMove$ = this.pointerMoveSubject.asObservable();
         this.pointerEnd$ = this.pointerEndSubject.asObservable();
-        this.pointerBeforeEnd$ = this.pointerBeforeEndSubject.asObservable();
         this.initSubscriptions();
     }
 
@@ -56,12 +52,11 @@ export class KtdGridService {
         this.pointerEndSubscription = this.ngZone.runOutsideAngular(() =>
             ktdPointerUp(document)
                 .subscribe((mouseEvent: MouseEvent | TouchEvent) => {
-                    this.pointerBeforeEndSubject.next({
-                        event: mouseEvent,
-                        dragInfo: this.drag,
-                    });
-                    this.drag = null;
                     this.pointerEndSubject.next(mouseEvent);
+                    if (this.drag !== null) {
+                        this.updateGrids(this.drag);
+                    }
+                    this.drag = null;
                 })
         );
     }
@@ -72,6 +67,7 @@ export class KtdGridService {
      * @param dragRef The dragRef that started the drag sequence.
      * @param type The type of drag sequence.
      * @param grid The grid where the drag sequence started. It can be null if the drag sequence started outside a grid.
+     * @param gridItem The grid item that is being dragged. It can be null if the drag sequence started from outside a grid.
      */
     public startDrag(event: MouseEvent | TouchEvent | PointerEvent, dragRef: DragRef, type: DragActionType, grid: KtdGridComponent | null = null, gridItem: {layoutItem: LayoutItem, renderData: KtdGridItemRenderData<number>} | null = null): void {
         // Make sure, this function is only being called once
@@ -161,6 +157,60 @@ export class KtdGridService {
         }
 
         this.drag!.currentGrid = grid;
+    }
+
+    private updateGrids(drag: PointerEventInfo): void {
+        // If the drag ended outside a grid, we don't need to do anything
+        if (drag.currentGrid === null) {
+            /*
+            * This emit is not required, but when it is not here, it cases a bug where the grid-element,
+            * does not return to its original position when the drag ends outside the grid.
+            * The same thing happens when the resize ends outside the grid.
+            * */
+            drag.fromGrid?.layoutUpdated.emit(drag.fromGrid!.layout);
+            drag.fromGrid?.stopDragSequence(drag);
+            return;
+        }
+
+        if (drag.type === 'resize') {
+            if (drag.fromGrid === drag.currentGrid) {
+                drag.currentGrid.layoutUpdated.emit(drag.currentGrid.drag!.newLayout!);
+            } else {
+                /*
+                 * This emit is not required, but when it is not here, it cases a bug where the grid-element,
+                 * does not return to its original position when the resize ends on another grid than the one it started.
+                 */
+                if (drag.fromGrid !== null && drag.fromGrid.drag !== null) {
+                    drag.fromGrid.layoutUpdated.emit(drag.fromGrid.drag.newLayout!);
+                }
+            }
+        } else {
+            const currentLayoutItem = drag.fromGrid === null ? {
+                ...drag.newLayoutItem,
+                id: drag.currentGrid.getNextId()
+            } : drag.newLayoutItem;
+
+            // Dragging between two distinct grids
+            if (drag.fromGrid !== drag.currentGrid) {
+                // Notify the previous grid that the item has left it
+                drag.fromGrid?.layoutUpdated.emit(drag.fromGrid!.layout.filter(item => item.id !== drag.dragRef.id));
+
+                // Notify the new grid that we dropped new item that was not in any grid
+                drag.currentGrid?.dropped.emit({
+                    event: drag.moveEvent,
+                    currentLayout: drag.currentGrid.drag!.newLayout!.map(item => ({...item})),
+                    currentLayoutItem: currentLayoutItem,
+                });
+            } else {
+                // Update the new grid layout
+                drag.currentGrid.layoutUpdated.emit(drag.currentGrid.drag!.newLayout!);
+            }
+        }
+
+        // Clean up
+        drag.fromGrid?.stopDragSequence(drag);
+        drag.currentGrid?.stopDragSequence(drag);
+        this.registryService._ktgGrids.forEach(grid => grid.clearDragSequence());
     }
 
     dispose() {

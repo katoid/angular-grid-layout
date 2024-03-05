@@ -77,7 +77,6 @@ export type KtdResizeEnd = KtdDragResizeEvent;
 interface KtdDroppedEvent<T> {
     event: PointingDeviceEvent;
     currentLayout: KtdGridLayout;
-    previousLayoutItem: KtdGridLayoutItem<T> | null;   // Previous layout is null only when dragging ktdDrag
     currentLayoutItem: KtdGridLayoutItem<T>;
 }
 
@@ -367,7 +366,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
     private subscriptions: Subscription[];
 
-    private drag: KtdGridDrag | null = null;
+    public get drag(): KtdGridDrag | null {
+        return this._drag;
+    }
+    private _drag: KtdGridDrag | null = null;
 
     private readonly gridElement: HTMLElement;
 
@@ -551,14 +553,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             this.dragExited.subscribe(({dragInfo}) => {
                 this.pauseDragSequence(dragInfo);
             }),
-            this.gridService.pointerBeforeEnd$.subscribe(({dragInfo}) => {
-                if (this.drag !== null && dragInfo !== null && dragInfo.currentGrid === this) {
-                    console.log('Grid ', this.id);
-                    this.updateLayout(dragInfo);
-                    this.stopDragSequence(dragInfo);
-                }
-                this.drag = null;
-            }),
         ];
     }
 
@@ -568,7 +562,13 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * @param dragInfo The drag info.
      */
     private startRestoreDragSequence(event: PointingDeviceEvent, dragInfo: PointerEventInfo): void {
+        // Drag sequence can be paused, but the resize sequence can't be paused.
         if (this.drag !== null && dragInfo.type === 'resize') {
+            return;
+        }
+
+        // Prevents the resize from starting if the resize already started on another grid.
+        if (dragInfo.type === 'resize' && this.drag === null && dragInfo.fromGrid !== this) {
             return;
         }
 
@@ -588,7 +588,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 takeUntil(this.gridService.pointerEnd$),
             ).subscribe());
 
-        this.drag = {
+        this._drag = {
             dragSubscription: this.createDragResizeLoop(scrollableParent, dragInfo),
             scrollSubscription,
             startEvent: event,
@@ -740,7 +740,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         );
     }
 
-    private stopDragSequence(dragInfo: PointerEventInfo): void {
+    public stopDragSequence(dragInfo: PointerEventInfo): void {
         if (this.drag === null) {
             return;
         }
@@ -754,86 +754,18 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         });
 
         this.addGridItemAnimatingClass(dragInfo.dragRef).subscribe();
-        // Consider destroying the placeholder after the animation has finished.
-        this.destroyPlaceholder();
-        this.drag.dragSubscription?.unsubscribe();
-        this.drag.scrollSubscription?.unsubscribe();
-        this.drag = null;
     }
 
-    public updateLayout(dragInfo: PointerEventInfo): void {
-        if (this.drag != null && this.drag.newLayout) {
-            const currentLayoutItem = dragInfo.fromGrid === null ? {...dragInfo.newLayoutItem, id: this.getNextId()} : dragInfo.newLayoutItem;
-            const previousLayoutItem = this.layout.find(item => item.id === dragInfo.dragRef.id);
-
-            // Dragging from one grid to another
-            if (dragInfo.fromGrid !== dragInfo.currentGrid) {
-                // Add new item to the layout if it is being dragged from outside the grid.
-                this.ngZone.run(() => {
-                    if (dragInfo.fromGrid !== null) {
-                        dragInfo.fromGrid.layoutUpdated.emit(dragInfo.fromGrid.layout.filter(item => item.id !== dragInfo.dragRef.id));
-                    }
-
-                    // Do not emit when:
-                    // - Drag is a resize and bounds have not changed.
-                    // - Drag is a normal drag and the item is being dragged inside the same grid.
-                    // - We are dragging from outside the grid and the item was dragged into the grid, but then pointer was released outside the grid.
-                    if (dragInfo.type !== 'resize' && dragInfo.currentGrid === this) {
-                        this.dropped.emit({
-                            event: dragInfo.moveEvent,
-                            currentLayout: this.drag!.newLayout!.map(item => ({
-                                id: item.id,
-                                x: item.x,
-                                y: item.y,
-                                w: item.w,
-                                h: item.h,
-                                minW: item.minW,
-                                minH: item.minH,
-                                maxW: item.maxW,
-                                maxH: item.maxH,
-                                data: item.data,
-                            })) as KtdGridLayout,
-                            previousLayoutItem: previousLayoutItem !== undefined ? previousLayoutItem : null,
-                            currentLayoutItem: currentLayoutItem,
-                        });
-                        return;
-                    }
-
-                    // Emit when we are not dragging or resizing items already inside the grid.
-                    // this.layoutUpdated.emit(this.drag!.newLayout!);
-                });
-            } else {
-                // Add new item to the layout if it is being dragged from outside the grid.
-                this.ngZone.run(() => {
-                    // Do not emit when:
-                    // - Drag is a resize and bounds have not changed.
-                    // - Drag is a normal drag and the item is being dragged inside the same grid.
-                    // - We are dragging from outside the grid and the item was dragged into the grid, but then pointer was released outside the grid.
-                    if (dragInfo.type !== 'resize' && dragInfo.fromGrid === null && dragInfo.currentGrid === this) {
-                        this.dropped.emit({
-                            event: dragInfo.moveEvent,
-                            currentLayout: this.drag!.newLayout!.map(item => ({
-                                id: item.id,
-                                x: item.x,
-                                y: item.y,
-                                w: item.w,
-                                h: item.h,
-                                minW: item.minW,
-                                minH: item.minH,
-                                maxW: item.maxW,
-                                maxH: item.maxH,
-                                data: item.data,
-                            })) as KtdGridLayout,
-                            previousLayoutItem: previousLayoutItem !== undefined ? previousLayoutItem : null,
-                            currentLayoutItem: currentLayoutItem,
-                        });
-                        return;
-                    }
-
-                    // Emit when we are not dragging or resizing items already inside the grid.
-                    this.layoutUpdated.emit(this.drag!.newLayout!);
-                });
-            }
+    /**
+     * Clears the drag sequence.
+     * This is called from grid-service when drag/resize finishes.
+     */
+    public clearDragSequence(): void {
+        if (this.drag !== null) {
+            this.destroyPlaceholder();
+            this.drag?.dragSubscription?.unsubscribe();
+            this.drag?.scrollSubscription?.unsubscribe();
+            this._drag = null;
         }
     }
 
@@ -844,7 +776,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         return gridElemClientRect.left < pointerX && pointerX < gridElemClientRect.right && gridElemClientRect.top < pointerY && pointerY < gridElemClientRect.bottom;
     }
 
-    private getNextId(): string {
+    public getNextId(): string {
         return this._gridItems.toArray().reduce((acc, cur) => acc > parseInt(cur.id) ? acc : parseInt(cur.id), 0) + 1 + '';
     }
 
@@ -854,9 +786,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * @param dragRef that has been dragged
      */
     private addGridItemAnimatingClass(dragRef: DragRef): Observable<undefined> {
-
         return new Observable(observer => {
-
             const duration = getTransformTransitionDurationInMs(dragRef.elementRef.nativeElement);
 
             if (duration === 0) {
