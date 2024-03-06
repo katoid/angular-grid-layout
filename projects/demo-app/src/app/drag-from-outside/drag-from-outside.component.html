@@ -1,0 +1,63 @@
+
+<div class="pokemons-container">
+    <div *ngFor="let pokemon of pokemonsGen1Dict; let i = index" ktdDrag [ktdDragData]="pokemon" [connectedTo]="[gridLeft, gridRight]" [width]="1" class="pokemon-drag-item">
+        <img [src]="pokemon.img">
+        {{pokemon.name}}
+    </div>
+</div>
+<div class="grids-container">
+
+    <div class="grid-container">
+        <ktd-grid #gridLeft
+                  cols="12"
+                  rowHeight="50"
+                  [compactType]="compactType"
+                  compactOnPropsChange="true"
+                  preventCollision="false"
+                  [backgroundConfig]="{show: 'always'}"
+                  [layout]="layout"
+                  [scrollableParent]="document"
+                  (dropped)="onLayoutDropped($event)"
+                  (layoutUpdated)="onLayoutUpdated($event)"
+        >
+            <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
+                           draggable="true"
+                           resizable="true"
+                           dragStartThreshold="0"
+                           [id]="item.id">
+                <div class="pokemon-drag-item">
+                    <img [src]="item.data.img">
+                    <a [href]="item.data.url" target="_blank">{{item.data.name}}</a>
+                </div>
+            </ktd-grid-item>
+        </ktd-grid>
+
+    </div>
+
+    <div class="grid-container">
+
+        <ktd-grid #gridRight
+                  cols="12"
+                  rowHeight="50"
+                  [compactType]="compactType"
+                  compactOnPropsChange="true"
+                  preventCollision="false"
+                  [backgroundConfig]="{show: 'always'}"
+                  [layout]="layout2"
+                  [scrollableParent]="document"
+                  (dropped)="onLayout2Dropped($event)"
+                  (layoutUpdated)="onLayout2Updated($event)">
+            <ktd-grid-item *ngFor="let item of layout2; trackBy:trackById"
+                           draggable="true"
+                           resizable="true"
+                           dragStartThreshold="0"
+                           [id]="item.id">
+                <div class="pokemon-drag-item">
+                    <img [src]="item.data.img">
+                    <a [href]="item.data.url" target="_blank">{{item.data.name}}</a>
+                </div>
+            </ktd-grid-item>
+        </ktd-grid>
+    </div>
+</div>
+<ktd-footer></ktd-footer>

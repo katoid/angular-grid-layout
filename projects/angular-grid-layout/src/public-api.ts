@@ -6,6 +6,7 @@ export { KtdClientRect } from './lib/utils/client-rect';
 export * from './lib/directives/drag-handle';
 export * from './lib/directives/resize-handle';
 export * from './lib/directives/placeholder';
+export * from './lib/directives/ktd-drag';
 export * from './lib/grid-item/grid-item.component';
 export * from './lib/grid.definitions';
 export * from './lib/grid.component';

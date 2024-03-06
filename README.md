@@ -190,7 +190,101 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
 startDragManually(startEvent: MouseEvent | TouchEvent);
 ```
 
+#### KtdGridComponent
+```ts
+/** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
+@Input() compactType: KtdGridCompactType = 'vertical';
 
+/**
+ * Row height as number or as 'fit'.
+ * If rowHeight is a number value, it means that each row would have those css pixels in height.
+ * if rowHeight is 'fit', it means that rows will fit in the height available. If 'fit' value is set, a 'height' should be also provided.
+ */
+@Input() rowHeight: number | 'fit' = 100;
+
+/** Number of columns  */
+@Input() cols: number = 6;
+
+/** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
+@Input() layout: KtdGridLayout;
+
+/** Grid gap in css pixels */
+@Input() gap: number = 0;
+
+/**
+ * If height is a number, fixes the height of the grid to it, recommended when rowHeight = 'fit' is used.
+ * If height is null, height will be automatically set according to its inner grid items.
+ * Defaults to null.
+ * */
+@Input() height: number | null = null;
+
+
+/**
+ * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
+ * If no data provided or null autoscroll is not performed.
+ */
+@Input() scrollableParent: HTMLElement | Document | string | null = null;
+
+/** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
+@Input() scrollSpeed: number = 2;
+
+/** Whether or not to update the internal layout when some dependent property change. */
+@Input() compactOnPropsChange = true;
+
+/** If true, grid items won't change position when being dragged over. Handy when using no compaction */
+@Input() preventCollision = false;
+
+/** Emits when layout change */
+@Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
+
+/** Emits when drag starts */
+@Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+
+/** Emits when resize starts */
+@Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+
+/** Emits when drag ends */
+@Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+
+/** Emits when resize ends */
+@Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+
+/** Emits when a grid item is being resized and its bounds have changed */
+@Output() gridItemResize: EventEmitter<KtdGridItemResizeEvent> = new EventEmitter<KtdGridItemResizeEvent>();
+
+```
+
+#### KtdDrag<T>
+```ts
+
+/** Id of the ktd drag item. This property is strictly compulsory. */
+@Input() id: string;
+
+/** Whether the item is disabled or not. Defaults to false. */
+@Input() disabled: boolean = false;
+
+/** Minimum amount of pixels that the user should move before it starts the drag sequence. */
+@Input() dragStartThreshold: number = 0;
+
+/** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
+@Input() draggable: boolean = true;
+
+/** Width of draggable item in number of cols. Defaults to the width of grid. */
+@Input() width: number;
+
+/** Height of draggable item in number of rows. Defaults to 1. */
+@Input() height: number = 1;
+
+/** Event emitted when the user starts dragging the item. */
+@Output() dragStart: Observable<KtdDragStart>;
+
+/** Event emitted when the user is dragging the item. !!! Emitted for every pixel. !!! */
+@Output() dragMove: Observable<KtdDragStart>;
+
+/** Event emitted when the user stops dragging the item. */
+@Output() dragEnd: Observable<KtdDragStart>;
+
+```
 ## TODO features
 
 - [x] Add delete feature to Playground page.
