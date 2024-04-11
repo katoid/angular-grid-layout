@@ -602,13 +602,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             return;
         }
 
-        if (this.drag != null) {
-            this.destroyPlaceholder();
-            this.drag.dragSubscription?.unsubscribe();
-            this.drag.scrollSubscription?.unsubscribe();
-            this.drag.dragSubscription = null;
-            this.drag.scrollSubscription = null;
-        }
+        // Partially reset the drag sequence.
+        this.clearDragSequence();
     }
 
     /**
@@ -693,7 +688,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 }, gridElemClientRect.width, gridElemClientRect.height, draggedLayoutItem);
                 this._gridItemsRenderData = dict;
 
-                if (dragInfo.fromGrid !== this) {
+                if (dragInfo.fromGrid !== this || dragInfo.type === 'resize') {
                     dragInfo.newLayoutItem = draggedLayoutItem;
                     renderData = draggingItem!;
                 }
@@ -750,9 +745,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         this.renderer.removeClass(dragInfo.dragRef.elementRef.nativeElement, 'ktd-grid-item-dragging');
 
         this.ngZone.run(() => {
-            (dragInfo.type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(dragInfo.dragRef, this.layout));
+            (dragInfo.type === 'drag' ? this.dragEnded : this.resizeEnded).emit(getDragResizeEventData(dragInfo.dragRef, this.drag!.newLayout!));
         });
 
+        this.clearDragSequence();
+        this._drag = null;
         this.addGridItemAnimatingClass(dragInfo.dragRef).subscribe();
     }
 
@@ -765,7 +762,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             this.destroyPlaceholder();
             this.drag?.dragSubscription?.unsubscribe();
             this.drag?.scrollSubscription?.unsubscribe();
-            this._drag = null;
+            this.drag.dragSubscription = null;
+            this.drag.scrollSubscription = null;
         }
     }
 

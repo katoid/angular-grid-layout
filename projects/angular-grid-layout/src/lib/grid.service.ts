@@ -20,6 +20,7 @@ export interface PointerEventInfo {
     renderData: KtdGridItemRenderData<number> | null;
     fromGrid: KtdGridComponent | null; // The grid where the drag started, it can be null if the drag started outside a grid. For example, when dragging from a connected drag item
     currentGrid: KtdGridComponent | null;
+    lastGrid: KtdGridComponent | null; // The last grid that we were in, is used so when we stop resizing outside a grid, we can notify the last grid of new layout
 }
 
 @Injectable({providedIn: 'root'})
@@ -88,6 +89,7 @@ export class KtdGridService {
             type,
             fromGrid: isKtdDrag ? null : grid,
             currentGrid: null,
+            lastGrid: isKtdDrag ? null : grid,
             newLayoutItem: isKtdDrag ? {
                 id: dragRef.id,
                 w: 1,
@@ -157,11 +159,12 @@ export class KtdGridService {
         }
 
         this.drag!.currentGrid = grid;
+        this.drag!.lastGrid = grid === null ? this.drag!.lastGrid : grid;
     }
 
     private updateGrids(drag: PointerEventInfo): void {
         // If the drag ended outside a grid, we don't need to do anything
-        if (drag.currentGrid === null) {
+        if (drag.currentGrid === null && drag.type === 'drag') {
             /*
             * This emit is not required, but when it is not here, it cases a bug where the grid-element,
             * does not return to its original position when the drag ends outside the grid.
@@ -173,21 +176,28 @@ export class KtdGridService {
         }
 
         if (drag.type === 'resize') {
-            if (drag.fromGrid === drag.currentGrid) {
-                drag.currentGrid.layoutUpdated.emit(drag.currentGrid.drag!.newLayout!);
-            } else {
-                /*
-                 * This emit is not required, but when it is not here, it cases a bug where the grid-element,
-                 * does not return to its original position when the resize ends on another grid than the one it started.
-                 */
-                if (drag.fromGrid !== null && drag.fromGrid.drag !== null) {
-                    drag.fromGrid.layoutUpdated.emit(drag.fromGrid.drag.newLayout!);
-                }
+            if (drag.lastGrid === null) {
+                console.error('lastGrid is null');
+                return;
             }
+            drag.lastGrid.layoutUpdated.emit(drag.lastGrid.drag!.newLayout!);
+            //
+            // if (drag.fromGrid === drag.currentGrid) {
+            //     drag.currentGrid!.layoutUpdated.emit(drag.currentGrid!.drag!.newLayout!);
+            // } else {
+            //     /*
+            //      * This emit is not required, but when it is not here, it cases a bug where the grid-element,
+            //      * does not return to its original position when the resize ends on another grid than the one it started.
+            //      */
+            //     if (drag.fromGrid !== null && drag.fromGrid.drag !== null) {
+            //         drag.fromGrid.layoutUpdated.emit(drag.fromGrid.drag.newLayout!);
+            //     }
+            // }
+
         } else {
             const currentLayoutItem = drag.fromGrid === null ? {
                 ...drag.newLayoutItem,
-                id: drag.currentGrid.getNextId()
+                id: drag.currentGrid!.getNextId()
             } : drag.newLayoutItem;
 
             // Dragging between two distinct grids
@@ -203,7 +213,7 @@ export class KtdGridService {
                 });
             } else {
                 // Update the new grid layout
-                drag.currentGrid.layoutUpdated.emit(drag.currentGrid.drag!.newLayout!);
+                drag.currentGrid!.layoutUpdated.emit(drag.currentGrid!.drag!.newLayout!);
             }
         }
 
