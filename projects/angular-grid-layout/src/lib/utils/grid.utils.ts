@@ -27,13 +27,13 @@ export function ktdGetGridItemRowHeight(layout: KtdGridLayout, gridHeight: numbe
 /**
  * Call react-grid-layout utils 'compact()' function and return the compacted layout.
  * @param layout to be compacted.
- * @param compactType, type of compaction.
- * @param cols, number of columns of the grid.
+ * @param compactType type of compaction.
+ * @param cols number of columns of the grid.
  */
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
     return compact(layout, compactType, cols)
         // Prune react-grid-layout compact extra properties.
-        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH, data: item.data }));
 }
 
 function screenXToGridX(screenXPos: number, cols: number, width: number, gap: number): number {
@@ -298,7 +298,7 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
 
 /**
  * Given the current number and min/max values, returns the number within the range
- * @param number can be any numeric value
+ * @param num can be any numeric value
  * @param min minimum value of range
  * @param max maximum value of range
  */
