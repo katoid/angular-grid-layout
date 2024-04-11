@@ -17,8 +17,8 @@ export class DragRef<T = any> {
     private static _nextUniqueId: number = 0;
 
     id: string = `ktd-drag-${DragRef._nextUniqueId++}`;
-    width: number = 0;
-    height: number = 0;
+    width: number = 1;
+    height: number = 1;
     dragStartThreshold: number = 0;
     data: T;
 

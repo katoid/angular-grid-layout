@@ -111,25 +111,27 @@ export class KtdDrag<T> implements AfterContentInit, OnDestroy {
     }
 
     /**
-     * Width of the draggable item, in cols. When set to 0 we will use the width of grid.
+     * Width of the draggable item, in cols. Minimum value is 1. Maximum value is how many cols the grid has.
      */
     @Input()
     get width(): number {
         return this._dragRef.width;
     }
     set width(val: number) {
-        this._dragRef.width = coerceNumberProperty(val);
+        const width = coerceNumberProperty(val);
+        this._dragRef.width = width <= 0 ? 1 : width;
     }
 
     /**
-     * Height of the draggable item, in cols. When set to 0 we will use the height of grid.
+     * Height of the draggable item, in cols. Minimum value is 1. Maximum value is how many rows the grid has.
      */
     @Input()
     get height(): number {
         return this._dragRef.height;
     }
     set height(val: number) {
-        this._dragRef.height = coerceNumberProperty(val);
+        const height = coerceNumberProperty(val);
+        this._dragRef.height = height <= 0 ? 1 : height;
     }
 
     @Input('ktdDragData')

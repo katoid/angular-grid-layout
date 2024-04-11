@@ -92,8 +92,8 @@ export class KtdGridService {
             lastGrid: isKtdDrag ? null : grid,
             newLayoutItem: isKtdDrag ? {
                 id: dragRef.id,
-                w: 1,
-                h: 1,
+                w: dragRef.width,
+                h: dragRef.height,
                 x: -1,
                 y: -1,
                 data: dragRef.data,
