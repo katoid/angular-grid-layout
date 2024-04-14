@@ -145,7 +145,7 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         console.log('dropped', event);
 
         // Inserting new item
-        this.layout = [event.currentLayoutItem, ...event.currentLayout]
+        this.layout = [...event.currentLayout, event.currentLayoutItem];
         this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
     }
 

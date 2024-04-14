@@ -151,8 +151,9 @@ function layoutToRenderItems(
     };
 }
 
-function getGridHeight(layout: KtdGridLayout, rowHeight: number, gap: number): number {
-    return layout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight + Math.max(cur.y + cur.h - 1, 0) * gap), 0);
+function getGridHeight(layout: KtdGridLayout, rowHeight: number, gap: number, draggedItem: KtdGridLayoutItem<number> | null): number {
+    const newLayout = draggedItem !== null ? [...layout, draggedItem] : layout;
+    return newLayout.reduce((acc, cur) => Math.max(acc, (cur.y + cur.h) * rowHeight + Math.max(cur.y + cur.h - 1, 0) * gap), 0);
 }
 
 // eslint-disable-next-line @katoid/prefix-exported-code
@@ -449,7 +450,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     calculateRenderData() {
         const clientRect = this.gridElement.getBoundingClientRect();
-        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? clientRect.height : getGridHeight(this.layout, this.rowHeight, this.gap));
+        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? clientRect.height : getGridHeight(this.layout, this.rowHeight, this.gap, null));
         const {dict} = layoutToRenderItems(this.config, clientRect.width, this.gridCurrentHeight);
         this._gridItemsRenderData = dict;
 
@@ -675,7 +676,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 });
                 this.drag!.newLayout = layout;
 
-                this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(this.drag!.newLayout, this.rowHeight, this.gap))
+                this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(this.drag!.newLayout, this.rowHeight, this.gap, draggedLayoutItem));
 
                 const {dict, draggingItem} = layoutToRenderItems({
                     cols: this.cols,
