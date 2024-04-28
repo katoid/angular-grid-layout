@@ -180,7 +180,15 @@ export class KtdGridService {
                 console.error('lastGrid is null');
                 return;
             }
-            drag.lastGrid.layoutUpdated.emit(drag.lastGrid.drag!.newLayout!);
+
+            // Do not update the layout if the resize did not change the layout,
+            // this can happen when the user only clicks on the resize handle, but does not resize
+            if (drag.fromGrid !== null && drag.fromGrid.drag !== null && drag.fromGrid.drag.newLayout !== null) {
+                drag.fromGrid.layoutUpdated.emit(drag.fromGrid.drag.newLayout);
+            } else if (drag.lastGrid.drag !== null && drag.lastGrid.drag.newLayout !== null) {
+                drag.lastGrid.layoutUpdated.emit(drag.lastGrid.drag!.newLayout!);
+            }
+
             //
             // if (drag.fromGrid === drag.currentGrid) {
             //     drag.currentGrid!.layoutUpdated.emit(drag.currentGrid!.drag!.newLayout!);
@@ -212,6 +220,12 @@ export class KtdGridService {
                     currentLayoutItem: currentLayoutItem,
                 });
             } else {
+                // Skip the update if the layout did not change,
+                // this may happen when the user only clicks on the drag handle, but does not drag
+                if (drag.currentGrid!.drag === null) {
+                    return;
+                }
+
                 // Update the new grid layout
                 drag.currentGrid!.layoutUpdated.emit(drag.currentGrid!.drag!.newLayout!);
             }
