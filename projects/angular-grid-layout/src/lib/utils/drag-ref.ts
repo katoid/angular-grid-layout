@@ -63,6 +63,9 @@ export class DragRef<T = any> {
     set draggable(val: boolean) {
         this._draggable = coerceBooleanProperty(val);
         this._draggable$.next(this._draggable);
+        // Re-subscribe to the drag start observable to update the draggable state.
+        // this.dragStartSubscription?.unsubscribe();
+        // this.dragStartSubscription = this._dragStart$().subscribe(this.dragStartSubject);
     }
     private _draggable: boolean = true;
     private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
@@ -190,19 +193,20 @@ export class DragRef<T = any> {
     }
 
     private _dragStart$(): Observable<{source: DragRef, event: MouseEvent | TouchEvent}> {
-        return merge(
-            this._manualDragEvents$,
-            this._draggable$.pipe(
-                filter(draggable => draggable),
-                switchMap(() => this._dragHandles$.pipe(
+        return this._draggable$.pipe(
+            switchMap(draggable =>
+            draggable ?
+            merge(
+                this._manualDragEvents$,
+                this._dragHandles$.pipe(
                     switchMap(dragHandles =>
                         iif(() => dragHandles.length > 0,
                             merge(...dragHandles.map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement))),
                             ktdPointerDown(this.elementRef.nativeElement)
                         )
                     )
-                ))
-            )
+                )
+            ) : NEVER)
         ).pipe(
             exhaustMap((startEvent) => {
                 // If the event started from an element with the native HTML drag&drop, it'll interfere
