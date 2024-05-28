@@ -1,15 +1,19 @@
 import { ChangeDetectorRef, Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { KtdGridComponent, KtdGridItemResizeEvent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
+import { KtdGridComponent, KtdGridItemResizeEvent, KtdGridLayout, ktdTrackById, KtdGridItemComponent, KtdGridItemPlaceholder } from '@katoid/angular-grid-layout';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { countriesPopulation, countriesPopulationByYear } from './data/countries-population.data';
-import { Color, LegendPosition, ScaleType } from '@swimlane/ngx-charts';
+import { Color, LegendPosition, ScaleType, BarChartModule, TreeMapModule, PieChartModule } from '@swimlane/ngx-charts';
 import { DOCUMENT } from '@angular/common';
+import { KtdFooterComponent } from '../components/footer/footer.component';
+import { KtdTableSortingComponent } from './table-sorting/table-sorting.component';
 
 @Component({
+    standalone: true,
     selector: 'ktd-real-life-example',
     templateUrl: './real-life-example.component.html',
-    styleUrls: ['./real-life-example.component.scss']
+    styleUrls: ['./real-life-example.component.scss'],
+    imports: [KtdGridComponent, KtdGridItemComponent, BarChartModule, KtdGridItemPlaceholder, TreeMapModule, KtdTableSortingComponent, PieChartModule, KtdFooterComponent]
 })
 export class KtdRealLifeExampleComponent implements OnInit, OnDestroy {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;

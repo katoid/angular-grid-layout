@@ -9,6 +9,7 @@ export const KTD_GRID_DRAG_HANDLE = new InjectionToken<KtdGridDragHandle>('KtdGr
 
 /** Handle that can be used to drag a KtdGridItem instance. */
 @Directive({
+    standalone: true,
     selector: '[ktdGridDragHandle]',
     // eslint-disable-next-line @angular-eslint/no-host-metadata-property
     host: {

@@ -1,14 +1,18 @@
 import { Component } from '@angular/core';
-import { MatIconRegistry } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
+import { ActivatedRouteSnapshot, RouterOutlet } from '@angular/router';
 import { ActivatedRoute, Router, RoutesRecognized } from '@angular/router';
 
 const defaultTitle = 'Angular Grid Layout';
 
 @Component({
+    standalone: true,
     selector: 'ktd-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.scss']
+    styleUrls: ['./app.component.scss'],
+    imports: [RouterOutlet, MatIconModule, MatButtonModule]
 })
 export class KtdAppComponent {
     title: string = defaultTitle;
@@ -21,8 +25,18 @@ export class KtdAppComponent {
 
         this.router.events.subscribe((data) => {
             if (data instanceof RoutesRecognized) {
-                this.title = data.state.root.firstChild?.data.title || defaultTitle;
+                const firstChild = data.state.root;
+                this.title = this.getTitle(firstChild) || defaultTitle;
             }
         });
+    }
+
+    getTitle(firstChild: ActivatedRouteSnapshot | null) {
+        while (firstChild) {
+            if (firstChild.data?.title) {
+                return firstChild.data.title;
+            }
+            return this.getTitle(firstChild?.firstChild);
+        }
     }
 }
