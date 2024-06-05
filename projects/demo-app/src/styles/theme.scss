@@ -56,15 +56,6 @@ $dark-theme-background-palette: (
     tooltip: map.get(mat.$grey-palette, 700),
 );
 
-// $app-theme: (
-//     primary: $app-primary,
-//     accent: $app-accent,
-//     warn: $app-warn,
-//     is-dark: true,
-//     foreground: $dark-theme-foreground-palette,
-//     background: $dark-theme-background-palette,
-// );
-
 $app-theme: mat.define-dark-theme((
     color: (
         primary: $app-primary,
@@ -72,7 +63,7 @@ $app-theme: mat.define-dark-theme((
         warn: $app-warn
     ),
     typography: mat.define-typography-config(),
-    density: -2,
+    density: 0,
 ));
 
 
