@@ -4,7 +4,7 @@
     <div class="controls-container">
         <button mat-raised-button (click)="generateLayout()">Generate layout</button>
         <button mat-raised-button (click)="addItemToLayout()">Add item</button>
-        <mat-form-field color="accent">
+        <mat-form-field color="accent" style="width: 150px;">
             <mat-label>Compact type</mat-label>
             <mat-select [value]="compactType" (selectionChange)="onCompactTypeChange($event)">
                 <mat-option [value]="'vertical'">vertical</mat-option>
@@ -12,20 +12,21 @@
                 <mat-option [value]="'none'">-</mat-option>
             </mat-select>
         </mat-form-field>
-        <mat-form-field color="accent" style="width: 64px">
+        <mat-form-field color="accent" style="width: 84px">
             <mat-label>Columns</mat-label>
             <input matInput type="number" [value]="cols + ''" (input)="onColsChange($event)">
         </mat-form-field>
-        <mat-form-field color="accent" style="width: 120px">
-            <mat-label>Row height</mat-label>
-            <input matInput
-                   type="number"
-                   [value]="rowHeight + ''"
-                   style="width: 60%;"
-                   [disabled]="rowHeightFit"
-                   (input)="onRowHeightChange($event)">
-            <mat-checkbox style="position: absolute; right: 4px; bottom: 4px;" (change)="onRowHeightFitChange($event)">Fit</mat-checkbox>
-        </mat-form-field>
+        <div>
+            <mat-form-field color="accent" style="width: 100px">
+                <mat-label>Row height</mat-label>
+                <input matInput
+                    type="number"
+                    [value]="rowHeight + ''"
+                    [disabled]="rowHeightFit"
+                    (input)="onRowHeightChange($event)">
+            </mat-form-field>
+            <mat-checkbox (change)="onRowHeightFitChange($event)">Fit</mat-checkbox>
+        </div>
         <mat-form-field color="accent" style="width: 94px">
             <mat-label>Grid height</mat-label>
             <input matInput
@@ -38,18 +39,18 @@
             <mat-label>Drag Threshold</mat-label>
             <input matInput type="number" [value]="dragStartThreshold + ''" (input)="onDragStartThresholdChange($event)">
         </mat-form-field>
-        <mat-form-field>
+        <mat-form-field style="width: 84px;">
             <mat-label>Gap</mat-label>
             <input matInput type="number" [value]="gap" (input)="onGapChange($event)">
         </mat-form-field>
-        <mat-form-field color="accent">
+        <mat-form-field color="accent" style="width: 164px;">
             <mat-label>Transition type</mat-label>
             <mat-select [value]="currentTransition" (selectionChange)="onTransitionChange($event)">
                 <mat-option *ngFor="let transition of transitions" [value]="transition.value">{{transition.name}}</mat-option>
             </mat-select>
         </mat-form-field>
 
-        <mat-form-field *ngIf="placeholders && placeholders.length > 0" color="accent">
+        <mat-form-field *ngIf="placeholders && placeholders.length > 0" color="accent" style="width: 184px;">
             <mat-label>Custom Placeholder</mat-label>
             <mat-select [value]="currentPlaceholder" (selectionChange)="onPlaceholderChange($event)">
                 <mat-option *ngFor="let placeholder of placeholders" [value]="placeholder">{{placeholder}}</mat-option>
@@ -86,10 +87,10 @@
                       (change)="onPreventCollisionChange($event.checked)">
             Prevent Collision
         </mat-checkbox>
-        <mat-chip-list>
-            <mat-chip color="accent" [selected]="isDragging">isDragging</mat-chip>
-            <mat-chip color="accent" [selected]="isResizing">isResizing</mat-chip>
-        </mat-chip-list>
+        <mat-chip-listbox>
+            <mat-chip-option color="accent" [selected]="isDragging">isDragging</mat-chip-option>
+            <mat-chip-option color="accent" [selected]="isResizing">isResizing</mat-chip-option>
+        </mat-chip-listbox>
         <div class="grid-background-container">
             <div style="margin-right: 6px">Background grid</div>
             <div class="grid-background">
