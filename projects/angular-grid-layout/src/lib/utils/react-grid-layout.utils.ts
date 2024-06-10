@@ -20,6 +20,7 @@ export type LayoutItem = {
     static?: boolean;
     isDraggable?: boolean | null | undefined;
     isResizable?: boolean | null | undefined;
+    data?: any;
 };
 export type Layout = Array<LayoutItem>;
 export type Position = {
@@ -117,6 +118,7 @@ export function cloneLayoutItem(layoutItem: LayoutItem): LayoutItem {
     if (layoutItem.minH !== undefined) { clonedLayoutItem.minH = layoutItem.minH;}
     if (layoutItem.maxH !== undefined) { clonedLayoutItem.maxH = layoutItem.maxH;}
     // These can be null
+    if (layoutItem.data !== undefined) { clonedLayoutItem.data = layoutItem.data;}
     if (layoutItem.isDraggable !== undefined) { clonedLayoutItem.isDraggable = layoutItem.isDraggable;}
     if (layoutItem.isResizable !== undefined) { clonedLayoutItem.isResizable = layoutItem.isResizable;}
 
@@ -159,6 +161,19 @@ export function compact(
     compactType: CompactType,
     cols: number,
 ): Layout {
+    return compactLayout(layout, null, compactType, cols);
+}
+
+
+export function compactLayout(
+    layout: Layout,
+    layoutItem: LayoutItem | null,
+    compactType: CompactType,
+    cols: number,
+): Layout {
+    if (layoutItem != null) {
+        layout = [...layout, layoutItem];
+    }
     // Statics go in the compareWith array right away so items flow around them.
     const compareWith = getStatics(layout);
     // We go through the items by row and column.

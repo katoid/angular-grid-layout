@@ -1,9 +1,17 @@
-import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import {
-    KtdDragEnd, KtdDragStart, ktdGridCompact, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
+    ktdGridCompact,
+    KtdGridComponent,
+    KtdGridLayout,
+    KtdGridLayoutItem,
+    ktdTrackById,
+    KtdDragEnd,
+    KtdDragStart, KtdDropped,
+    KtdResizeEnd,
+    KtdResizeStart
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT } from '@angular/common';
@@ -20,11 +28,13 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;
     trackById = ktdTrackById;
 
+    elements = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
     cols = 12;
     rowHeight = 50;
     rowHeightFit = false;
     gridHeight: null | number = null;
-    compactType: 'vertical' | 'horizontal' | null = 'vertical';
+    compactType: 'vertical' | 'horizontal' | null = null;
     layout: KtdGridLayout = [
         {id: '0', x: 5, y: 0, w: 2, h: 3},
         {id: '1', x: 2, y: 2, w: 1, h: 2},
@@ -118,6 +128,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
         this.isDragging = false;
     }
 
+    onKtdDragEnded(event) {
+        this.isDragging = false;
+    }
+
     onResizeEnded(event: KtdResizeEnd) {
         this.isResizing = false;
     }
@@ -125,6 +139,14 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     onLayoutUpdated(layout: KtdGridLayout) {
         console.log('on layout updated', layout);
         this.layout = layout;
+    }
+
+    onItemDrop(event: KtdDropped) {
+        console.log('dropped', event);
+
+        // Inserting new item
+        this.layout = [...event.currentLayout, event.currentLayoutItem];
+        this.layout = ktdGridCompact(this.layout, this.compactType, this.cols);
     }
 
     onCompactTypeChange(change: MatSelectChange) {
@@ -240,6 +262,10 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     stopEventPropagation(event: Event) {
         event.preventDefault();
         event.stopPropagation();
+    }
+
+    log(event: any) {
+        console.log(event);
     }
 
     /** Removes the item from the layout */

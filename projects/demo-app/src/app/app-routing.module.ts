@@ -32,6 +32,11 @@ const routes: Routes = [
         data: {title: 'Angular Grid Layout - Row Height Fit'}
     },
     {
+        path: 'drag-from-outside',
+        loadComponent: () => import('./drag-from-outside/drag-from-outside.component').then(m => m.KtdDragFromOutsideComponent),
+        data: {title: 'Angular Grid Layout - Drag From Outside'}
+    },
+    {
         path: '**',
         redirectTo: 'playground'
     },

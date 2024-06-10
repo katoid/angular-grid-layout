@@ -1,18 +1,31 @@
 import {
-    AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
-    QueryList, Renderer2, ViewChild
+    AfterContentInit,
+    ChangeDetectionStrategy,
+    Component,
+    ContentChild,
+    ContentChildren,
+    ElementRef,
+    Inject,
+    Input,
+    OnDestroy,
+    OnInit,
+    Output,
+    QueryList,
+    Renderer2,
+    ViewChild
 } from '@angular/core';
-import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
-import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdMouseOrTouchDown, ktdMouseOrTouchEnd, ktdPointerClient } from '../utils/pointer.utils';
+import { BehaviorSubject, merge, NEVER, Observable, Observer, Subject, Subscription} from 'rxjs';
+import { startWith, switchMap} from 'rxjs/operators';
+import { ktdPointerDown} from '../utils/pointer.utils';
 import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
-import { KtdGridService } from '../grid.service';
-import { ktdOutsideZone } from '../utils/operators';
 import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
 import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
 import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
+import {DragRef} from "../utils/drag-ref";
+import {KtdRegistryService} from "../ktd-registry.service";
+import {KtdGridService} from "../grid.service";
 
 @Component({
     selector: 'ktd-grid-item',
@@ -20,7 +33,7 @@ import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives
     styleUrls: ['./grid-item.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit {
+export class KtdGridItemComponent<T = any> implements OnInit, OnDestroy, AfterContentInit {
     /** Elements that can be used to drag the grid item. */
     @ContentChildren(KTD_GRID_DRAG_HANDLE, {descendants: true}) _dragHandles: QueryList<KtdGridDragHandle>;
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
@@ -38,74 +51,98 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
     @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
 
-    dragStart$: Observable<MouseEvent | TouchEvent>;
     resizeStart$: Observable<MouseEvent | TouchEvent>;
 
     /** Id of the grid item. This property is strictly compulsory. */
     @Input()
     get id(): string {
-        return this._id;
+        return this._dragRef.id;
     }
-
     set id(val: string) {
-        this._id = val;
+        this._dragRef.id = val;
     }
-
-    private _id: string;
 
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
     @Input()
-    get dragStartThreshold(): number { return this._dragStartThreshold; }
-
+    get dragStartThreshold(): number { return this._dragRef.dragStartThreshold; }
     set dragStartThreshold(val: number) {
-        this._dragStartThreshold = coerceNumberProperty(val);
+        this._dragRef.dragStartThreshold = coerceNumberProperty(val);
     }
-
-    private _dragStartThreshold: number = 0;
-
 
     /** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
     @Input()
     get draggable(): boolean {
-        return this._draggable;
+        return this._dragRef.draggable;
     }
-
     set draggable(val: boolean) {
-        this._draggable = coerceBooleanProperty(val);
-        this._draggable$.next(this._draggable);
+        this._dragRef.draggable = coerceBooleanProperty(val);
     }
-
-    private _draggable: boolean = true;
-    private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
-
-    private _manualDragEvents$: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
     /** Whether the item is resizable or not. Defaults to true. */
     @Input()
     get resizable(): boolean {
         return this._resizable;
     }
-
     set resizable(val: boolean) {
         this._resizable = coerceBooleanProperty(val);
         this._resizable$.next(this._resizable);
     }
-
     private _resizable: boolean = true;
     private _resizable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._resizable);
 
-    private dragStartSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
     private resizeStartSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
     private subscriptions: Subscription[] = [];
 
+    get dragRef(): DragRef<T> {
+        return this._dragRef;
+    }
+    private readonly _dragRef: DragRef<T>;
+
+    @Output('dragStart')
+    readonly dragStart: Observable<{source: DragRef<T>, event: MouseEvent | TouchEvent}> = new Observable(
+        (observer: Observer<{source: DragRef<T>, event: MouseEvent | TouchEvent}>) => {
+            const subscription = this._dragRef.dragStart$
+                .subscribe(observer);
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        },
+    );
+
+    @Output('dragMove')
+    readonly dragMove: Observable<{source: DragRef<T>, event: MouseEvent | TouchEvent}> = new Observable(
+        (observer: Observer<{source: DragRef<T>, event: MouseEvent | TouchEvent}>) => {
+            const subscription = this._dragRef.dragMove$
+                .subscribe(observer);
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        },
+    );
+
+    @Output('dragEnd')
+    readonly dragEnd: Observable<{source: DragRef<T>, event: MouseEvent | TouchEvent}> = new Observable(
+        (observer: Observer<{source: DragRef<T>, event: MouseEvent | TouchEvent}>) => {
+            const subscription = this._dragRef.dragEnd$
+                .subscribe(observer);
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        },
+    );
+
     constructor(public elementRef: ElementRef,
                 private gridService: KtdGridService,
+                private registryService: KtdRegistryService,
                 private renderer: Renderer2,
-                private ngZone: NgZone,
                 @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
-        this.dragStart$ = this.dragStartSubject.asObservable();
         this.resizeStart$ = this.resizeStartSubject.asObservable();
+
+        this._dragRef = this.registryService.createKtgDrag(this.elementRef, this.gridService, this);
     }
 
     ngOnInit() {
@@ -115,12 +152,18 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
     ngAfterContentInit() {
         this.subscriptions.push(
-            this._dragStart$().subscribe(this.dragStartSubject),
             this._resizeStart$().subscribe(this.resizeStartSubject),
+            this._dragHandles.changes.subscribe(() => {
+                this._dragRef.dragHandles = this._dragHandles.toArray();
+            }),
+            this._resizeHandles.changes.subscribe(() => {
+                this._dragRef.resizeHandles = this._resizeHandles.toArray();
+            }),
         );
     }
 
     ngOnDestroy() {
+        this.registryService.destroyKtgDrag(this._dragRef);
         this.subscriptions.forEach(sub => sub.unsubscribe());
     }
 
@@ -132,68 +175,19 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
      * @param startEvent The pointer event that should initiate the drag.
      */
     startDragManually(startEvent: MouseEvent | TouchEvent) {
-        this._manualDragEvents$.next(startEvent);
+        this._dragRef.startDragManual(startEvent);
     }
 
-    setStyles({top, left, width, height}: { top: string, left: string, width?: string, height?: string }) {
+    setStyles({top, left, width, height}: { top: number, left: number, width?: number, height?: number }) {
+        this._dragRef.transformX = left;
+        this._dragRef.transformY = top;
+
         // transform is 6x times faster than top/left
-        this.renderer.setStyle(this.elementRef.nativeElement, 'transform', `translateX(${left}) translateY(${top})`);
+        this.renderer.setStyle(this.elementRef.nativeElement, 'transform', `translateX(${left}px) translateY(${top}px)`);
         this.renderer.setStyle(this.elementRef.nativeElement, 'display', `block`);
         this.renderer.setStyle(this.elementRef.nativeElement, 'transition', this.transition);
-        if (width != null) { this.renderer.setStyle(this.elementRef.nativeElement, 'width', width); }
-        if (height != null) {this.renderer.setStyle(this.elementRef.nativeElement, 'height', height); }
-    }
-
-    private _dragStart$(): Observable<MouseEvent | TouchEvent> {
-        return merge(
-            this._manualDragEvents$,
-            this._draggable$.pipe(
-                switchMap((draggable) => {
-                    if (!draggable) {
-                        return NEVER;
-                    }
-                    return this._dragHandles.changes.pipe(
-                        startWith(this._dragHandles),
-                        switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
-                            return iif(
-                                () => dragHandles.length > 0,
-                                merge(...dragHandles.toArray().map(dragHandle => ktdMouseOrTouchDown(dragHandle.element.nativeElement, 1))),
-                                ktdMouseOrTouchDown(this.elementRef.nativeElement, 1)
-                            )
-                        })
-                    );
-                })
-            )
-        ).pipe(
-            exhaustMap(startEvent => {
-                // If the event started from an element with the native HTML drag&drop, it'll interfere
-                // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
-                // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
-                // it's flaky and it fails if the user drags it away quickly. Also note that we only want
-                // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
-                // events from firing on touch devices.
-                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
-                    startEvent.preventDefault();
-                }
-
-                const startPointer = ktdPointerClient(startEvent);
-                return this.gridService.mouseOrTouchMove$(document).pipe(
-                    takeUntil(ktdMouseOrTouchEnd(document, 1)),
-                    ktdOutsideZone(this.ngZone),
-                    filter((moveEvent) => {
-                        moveEvent.preventDefault();
-                        const movePointer = ktdPointerClient(moveEvent);
-                        const distanceX = Math.abs(startPointer.clientX - movePointer.clientX);
-                        const distanceY = Math.abs(startPointer.clientY - movePointer.clientY);
-                        // When this conditions returns true mean that we are over threshold.
-                        return distanceX + distanceY >= this.dragStartThreshold;
-                    }),
-                    take(1),
-                    // Return the original start event
-                    map(() => startEvent)
-                );
-            })
-        );
+        if (width != null) { this.renderer.setStyle(this.elementRef.nativeElement, 'width', `${width}px`); }
+        if (height != null) {this.renderer.setStyle(this.elementRef.nativeElement, 'height', `${height}px`); }
     }
 
     private _resizeStart$(): Observable<MouseEvent | TouchEvent> {
@@ -210,10 +204,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                             if (resizeHandles.length > 0) {
                                 // Side effect to hide the resizeElem if there are resize handles.
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'none');
-                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdMouseOrTouchDown(resizeHandle.element.nativeElement, 1)));
+                                return merge(...resizeHandles.toArray().map(resizeHandle => ktdPointerDown(resizeHandle.element.nativeElement)));
                             } else {
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'block');
-                                return ktdMouseOrTouchDown(this.resizeElem.nativeElement, 1);
+                                return ktdPointerDown(this.resizeElem.nativeElement);
                             }
                         })
                     );

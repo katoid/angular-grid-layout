@@ -1,10 +1,15 @@
-import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElement } from './react-grid-layout.utils';
 import {
-    KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
-} from '../grid.definitions';
+    compact,
+    compactLayout,
+    CompactType,
+    getFirstCollision,
+    Layout,
+    LayoutItem,
+    moveElement
+} from './react-grid-layout.utils';
+import { KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridLayout, KtdGridLayoutItem } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
-import { KtdGridItemComponent } from '../grid-item/grid-item.component';
 
 /** Tracks items by id. This function is mean to be used in conjunction with the ngFor that renders the 'ktd-grid-items' */
 export function ktdTrackById(index: number, item: {id: string}) {
@@ -22,13 +27,13 @@ export function ktdGetGridItemRowHeight(layout: KtdGridLayout, gridHeight: numbe
 /**
  * Call react-grid-layout utils 'compact()' function and return the compacted layout.
  * @param layout to be compacted.
- * @param compactType, type of compaction.
- * @param cols, number of columns of the grid.
+ * @param compactType type of compaction.
+ * @param cols number of columns of the grid.
  */
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
     return compact(layout, compactType, cols)
         // Prune react-grid-layout compact extra properties.
-        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH, data: item.data }));
 }
 
 function screenXToGridX(screenXPos: number, cols: number, width: number, gap: number): number {
@@ -75,17 +80,28 @@ export function ktdGetGridLayoutDiff(gridLayoutA: KtdGridLayoutItem[], gridLayou
 
 /**
  * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
- * @param gridItem grid item that is been dragged
+ * @param item grid item that is been dragged
  * @param config current grid configuration
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
-    const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
+export function ktdGridItemDragging(
+    item: KtdGridLayoutItem,
+    config: KtdGridCfg,
+    compactionType: CompactType,
+    draggingData: KtdDraggingData
+): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect, draggedLayoutItem: KtdGridLayoutItem } {
+    const {
+        pointerDownEvent,
+        pointerDragEvent,
+        gridElemClientRect,
+        dragElemClientRect,
+        scrollDifference,
+        draggingFromOutside
+    } = draggingData;
 
-    const gridItemId = gridItem.id;
-
-    const draggingElemPrevItem = config.layout.find(item => item.id === gridItemId)!;
+    const tmpGridItemId = 'tmp-dragging-item';
+    const gridItemId = draggingFromOutside ? tmpGridItemId + item.id : item.id;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
     const clientStartY = ktdPointerClientY(pointerDownEvent);
@@ -109,7 +125,8 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
 
     // Get layout item position
     const layoutItem: KtdGridLayoutItem = {
-        ...draggingElemPrevItem,
+        ...item,
+        id: gridItemId,
         x: screenXToGridX(gridRelXPos , config.cols, gridElemClientRect.width, config.gap),
         y: screenYToGridY(gridRelYPos, rowHeightInPixels, gridElemClientRect.height, config.gap)
     };
@@ -120,10 +137,12 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.x = Math.max(0, config.cols - layoutItem.w);
     }
-
     // Parse to LayoutItem array data in order to use 'react.grid-layout' utils
     const layoutItems: LayoutItem[] = config.layout;
-    const draggedLayoutItem: LayoutItem = layoutItems.find(item => item.id === gridItemId)!;
+    const draggedLayoutItem = draggingFromOutside ? {
+        ...item,
+        id: gridItemId
+    } : layoutItems.find(item => item.id === gridItemId)!;
 
     let newLayoutItems: LayoutItem[] = moveElement(
         layoutItems,
@@ -136,6 +155,26 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
         config.cols
     );
 
+    if (draggingFromOutside) {
+        newLayoutItems = compactLayout(newLayoutItems, layoutItem, compactionType, config.cols);
+        const newLayoutItem = newLayoutItems.find(item => item.id === gridItemId)!;
+        newLayoutItems = newLayoutItems.filter((item) => item.id !== gridItemId);
+
+        return {
+            layout: newLayoutItems,
+            draggedItemPos: {
+                top: gridRelYPos,
+                left: gridRelXPos,
+                width: dragElemClientRect.width,
+                height: dragElemClientRect.height,
+            },
+            draggedLayoutItem: {
+                ...newLayoutItem,
+                id: newLayoutItem.id.replace(tmpGridItemId, '')
+            },
+        };
+    }
+
     newLayoutItems = compact(newLayoutItems, compactionType, config.cols);
 
     return {
@@ -145,20 +184,21 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
             left: gridRelXPos,
             width: dragElemClientRect.width,
             height: dragElemClientRect.height,
-        }
+        },
+        draggedLayoutItem: draggedLayoutItem,
     };
 }
 
 /**
  * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
- * @param gridItem grid item that is been dragged
+ * @param item grid item that is been dragged
  * @param config current grid configuration
  * @param compactionType type of compaction that will be performed
  * @param draggingData contains all the information about the drag
  */
-export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect } {
+export function ktdGridItemResizing(item: KtdGridLayoutItem, config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingData): { layout: KtdGridLayoutItem[]; draggedItemPos: KtdGridItemRect, draggedLayoutItem: KtdGridLayoutItem } {
     const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElemClientRect, scrollDifference} = draggingData;
-    const gridItemId = gridItem.id;
+    const gridItemId = item.id;
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
     const clientStartY = ktdPointerClientY(pointerDownEvent);
@@ -184,8 +224,8 @@ export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdG
         h: screenHeightToGridHeight(height, rowHeightInPixels, gridElemClientRect.height, config.gap)
     };
 
-    layoutItem.w = limitNumberWithinRange(layoutItem.w, gridItem.minW ?? layoutItem.minW, gridItem.maxW ?? layoutItem.maxW);
-    layoutItem.h = limitNumberWithinRange(layoutItem.h, gridItem.minH ?? layoutItem.minH, gridItem.maxH ?? layoutItem.maxH);
+    layoutItem.w = limitNumberWithinRange(layoutItem.w, item.minW ?? layoutItem.minW, item.maxW ?? layoutItem.maxW);
+    layoutItem.h = limitNumberWithinRange(layoutItem.h, item.minH ?? layoutItem.minH, item.maxH ?? layoutItem.maxH);
 
     if (layoutItem.x + layoutItem.w > config.cols) {
         layoutItem.w = Math.max(1, config.cols - layoutItem.x);
@@ -236,7 +276,8 @@ export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdG
             left: dragElemClientRect.left - gridElemClientRect.left,
             width,
             height,
-        }
+        },
+        draggedLayoutItem: layoutItem,
     };
 }
 
@@ -257,7 +298,7 @@ function getDimensionToShrink(layoutItem, lastShrunk): 'w' | 'h' {
 
 /**
  * Given the current number and min/max values, returns the number within the range
- * @param number can be any numeric value
+ * @param num can be any numeric value
  * @param min minimum value of range
  * @param max maximum value of range
  */
