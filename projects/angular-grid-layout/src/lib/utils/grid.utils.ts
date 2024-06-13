@@ -28,7 +28,7 @@ export function ktdGetGridItemRowHeight(layout: KtdGridLayout, gridHeight: numbe
 export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompactType, cols: number): KtdGridLayout {
     return compact(layout, compactType, cols)
         // Prune react-grid-layout compact extra properties.
-        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH }));
+        .map(item => ({ id: item.id, x: item.x, y: item.y, w: item.w, h: item.h, minW: item.minW, minH: item.minH, maxW: item.maxW, maxH: item.maxH, static: item.static }));
 }
 
 function screenXToGridX(screenXPos: number, cols: number, width: number, gap: number): number {
