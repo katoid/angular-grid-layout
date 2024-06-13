@@ -309,7 +309,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private placeholder: HTMLElement | null;
 
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
-    private subscriptions: Subscription[];
+    private subscriptions: Subscription[] = [];
 
     constructor(private gridService: KtdGridService,
                 private elementRef: ElementRef,
