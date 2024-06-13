@@ -1,20 +1,27 @@
 import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { MatSelectChange } from '@angular/material/select';
+import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
-import {
-    KtdDragEnd, KtdDragStart, ktdGridCompact, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById
-} from '@katoid/angular-grid-layout';
+import { KtdDragEnd, KtdDragStart, ktdGridCompact, KtdGridComponent, KtdGridLayout, KtdGridLayoutItem, KtdResizeEnd, KtdResizeStart, ktdTrackById, KtdGridItemComponent, KtdGridItemPlaceholder } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, NgFor, NgIf } from '@angular/common';
 import { coerceNumberProperty } from '@angular/cdk/coercion';
-import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatCheckboxChange, MatCheckboxModule } from '@angular/material/checkbox';
 import { KtdGridBackgroundCfg } from '../../../../angular-grid-layout/src/lib/grid.definitions';
+import { KtdFooterComponent } from '../components/footer/footer.component';
+import { ColorPickerModule } from 'ngx-color-picker';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatInputModule } from '@angular/material/input';
+import { MatOptionModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
+    standalone: true,
     selector: 'ktd-playground',
     templateUrl: './playground.component.html',
-    styleUrls: ['./playground.component.scss']
+    styleUrls: ['./playground.component.scss'],
+    imports: [MatButtonModule, MatFormFieldModule, MatSelectModule, MatOptionModule, MatInputModule, MatCheckboxModule, NgFor, NgIf, MatChipsModule, ColorPickerModule, KtdGridComponent, KtdGridItemComponent, KtdGridItemPlaceholder, KtdFooterComponent]
 })
 export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;

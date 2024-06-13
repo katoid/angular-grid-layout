@@ -15,6 +15,7 @@ import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
 import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
 
 @Component({
+    standalone: true,
     selector: 'ktd-grid-item',
     templateUrl: './grid-item.component.html',
     styleUrls: ['./grid-item.component.scss'],

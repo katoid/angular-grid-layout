@@ -113,6 +113,7 @@ const defaultBackgroundConfig: Required<Omit<KtdGridBackgroundCfg, 'show'>> = {
 };
 
 @Component({
+    standalone: true,
     selector: 'ktd-grid',
     templateUrl: './grid.component.html',
     styleUrls: ['./grid.component.scss'],

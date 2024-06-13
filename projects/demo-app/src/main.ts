@@ -1,12 +1,13 @@
 import { enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-import { KtdAppModule } from './app/app.module';
+import { appConfig } from './app/app.config';
 import { environment } from './environments/environment';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { KtdAppComponent } from './app/app.component';
 
 if (environment.production) {
   enableProdMode();
 }
 
-platformBrowserDynamic().bootstrapModule(KtdAppModule)
+bootstrapApplication(KtdAppComponent, appConfig)
   .catch(err => console.error(err));

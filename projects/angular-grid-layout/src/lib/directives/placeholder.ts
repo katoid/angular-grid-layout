@@ -9,6 +9,7 @@ export const KTD_GRID_ITEM_PLACEHOLDER = new InjectionToken<KtdGridItemPlacehold
 
 /** Directive that can be used to create a custom placeholder for a KtdGridItem instance. */
 @Directive({
+    standalone: true,
     selector: 'ng-template[ktdGridItemPlaceholder]',
     // eslint-disable-next-line @angular-eslint/no-host-metadata-property
     host: {
