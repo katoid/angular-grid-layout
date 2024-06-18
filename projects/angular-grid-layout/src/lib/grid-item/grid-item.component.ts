@@ -2,17 +2,17 @@ import {
     AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
     QueryList, Renderer2, ViewChild
 } from '@angular/core';
-import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
+import { BehaviorSubject, NEVER, Observable, Subject, Subscription, fromEvent, merge } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdPointerDown, ktdPointerUp, ktdPointerClient } from '../utils/pointer.utils';
-import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
+import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
+import { NumberInput, coerceNumberProperty } from '../coercion/number-property';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
+import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
+import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
-import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
-import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
-import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
+import { ktdPointerClient, ktdPointerDown, ktdPointerUp } from '../utils/pointer.utils';
 
 @Component({
     standalone: true,
@@ -145,6 +145,10 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
         if (height != null) {this.renderer.setStyle(this.elementRef.nativeElement, 'height', height); }
     }
 
+    private preventDrag(event: Event) {
+        event.preventDefault();
+   }
+
     private _dragStart$(): Observable<MouseEvent | TouchEvent> {
         return merge(
             this._manualDragEvents$,
@@ -156,11 +160,15 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                     return this._dragHandles.changes.pipe(
                         startWith(this._dragHandles),
                         switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
-                            return iif(
-                                () => dragHandles.length > 0,
-                                merge(...dragHandles.toArray().map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement))),
-                                ktdPointerDown(this.elementRef.nativeElement)
-                            )
+                            if(dragHandles.length > 0) {
+                                // prevent parent dragStart event to avoid fail if user drags it away quickly
+                                const preventDragStartEvent$ = fromEvent(this.elementRef.nativeElement, 'dragstart').subscribe(this.preventDrag);
+                                this.subscriptions.push(preventDragStartEvent$);
+                                return merge(...dragHandles.toArray().map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement)));
+                            }
+                            else {
+                               return ktdPointerDown(this.elementRef.nativeElement)
+                            }
                         })
                     );
                 })
