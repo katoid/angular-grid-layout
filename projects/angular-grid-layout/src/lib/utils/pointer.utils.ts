@@ -50,6 +50,11 @@ export function ktdPointerClient(event: MouseEvent | TouchEvent): { clientX: num
     };
 }
 
+export function ktdIsMouseEventOrMousePointerEvent(event: MouseEvent | TouchEvent | PointerEvent): boolean {
+    return event.type === 'mousedown'
+        || (event.type === 'pointerdown' && (event as PointerEvent).pointerType === 'mouse');
+}
+
 /** Returns true if browser supports pointer events */
 export function ktdSupportsPointerEvents(): boolean {
     return !!window.PointerEvent;
@@ -127,7 +132,7 @@ export function ktdPointerDown(element): Observable<MouseEvent | TouchEvent | Po
     if (!ktdSupportsPointerEvents()) {
         return ktdMouseOrTouchDown(element);
     }
-    
+
     return fromEvent<PointerEvent>(element, 'pointerdown', activeEventListenerOptions as AddEventListenerOptions).pipe(
         filter((pointerEvent) => pointerEvent.isPrimary)
     )
