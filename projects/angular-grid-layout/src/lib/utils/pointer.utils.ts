@@ -84,7 +84,7 @@ function ktdMouseOrTouchDown(element, touchNumber = 1): Observable<MouseEvent | 
  * @param element, html element where to  listen the events.
  * @param touchNumber number of the touch to track the event, default to the first one.
  */
-function ktdMouserOrTouchMove(element: HTMLElement, touchNumber = 1): Observable<MouseEvent | TouchEvent> {
+function ktdMouseOrTouchMove(element: HTMLElement, touchNumber = 1): Observable<MouseEvent | TouchEvent> {
     return iif(
         () => ktdIsMobileOrTablet(),
         fromEvent<TouchEvent>(element, 'touchmove', activeEventListenerOptions as AddEventListenerOptions).pipe(
@@ -127,8 +127,8 @@ export function ktdPointerDown(element): Observable<MouseEvent | TouchEvent | Po
     if (!ktdSupportsPointerEvents()) {
         return ktdMouseOrTouchDown(element);
     }
-
-    return fromEvent<PointerEvent>(element, 'pointerdown', passiveEventListenerOptions as AddEventListenerOptions).pipe(
+    
+    return fromEvent<PointerEvent>(element, 'pointerdown', activeEventListenerOptions as AddEventListenerOptions).pipe(
         filter((pointerEvent) => pointerEvent.isPrimary)
     )
 }
@@ -139,7 +139,7 @@ export function ktdPointerDown(element): Observable<MouseEvent | TouchEvent | Po
  */
 export function ktdPointerMove(element): Observable<MouseEvent | TouchEvent | PointerEvent> {
     if (!ktdSupportsPointerEvents()) {
-        return ktdMouserOrTouchMove(element);
+        return ktdMouseOrTouchMove(element);
     }
     return fromEvent<PointerEvent>(element, 'pointermove', activeEventListenerOptions as AddEventListenerOptions).pipe(
         filter((pointerEvent) => pointerEvent.isPrimary),

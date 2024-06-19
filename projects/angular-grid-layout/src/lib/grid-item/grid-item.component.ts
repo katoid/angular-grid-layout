@@ -2,7 +2,7 @@ import {
     AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
     QueryList, Renderer2, ViewChild
 } from '@angular/core';
-import { BehaviorSubject, NEVER, Observable, Subject, Subscription, fromEvent, merge } from 'rxjs';
+import { BehaviorSubject, NEVER, Observable, Subject, Subscription, iif, merge } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
 import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
 import { NumberInput, coerceNumberProperty } from '../coercion/number-property';
@@ -145,10 +145,6 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
         if (height != null) {this.renderer.setStyle(this.elementRef.nativeElement, 'height', height); }
     }
 
-    private preventDrag(event: Event) {
-        event.preventDefault();
-   }
-
     private _dragStart$(): Observable<MouseEvent | TouchEvent> {
         return merge(
             this._manualDragEvents$,
@@ -160,15 +156,11 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                     return this._dragHandles.changes.pipe(
                         startWith(this._dragHandles),
                         switchMap((dragHandles: QueryList<KtdGridDragHandle>) => {
-                            if(dragHandles.length > 0) {
-                                // prevent parent dragStart event to avoid fail if user drags it away quickly
-                                const preventDragStartEvent$ = fromEvent(this.elementRef.nativeElement, 'dragstart').subscribe(this.preventDrag);
-                                this.subscriptions.push(preventDragStartEvent$);
-                                return merge(...dragHandles.toArray().map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement)));
-                            }
-                            else {
-                               return ktdPointerDown(this.elementRef.nativeElement)
-                            }
+                            return iif(
+                                () => dragHandles.length > 0,
+                                merge(...dragHandles.toArray().map(dragHandle => ktdPointerDown(dragHandle.element.nativeElement))),
+                                ktdPointerDown(this.elementRef.nativeElement)
+                            )
                         })
                     );
                 })
@@ -182,6 +174,11 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                 // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
                 // events from firing on touch devices.
                 if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
+                    startEvent.preventDefault();
+                }
+
+                if(startEvent.target && startEvent instanceof PointerEvent && startEvent.pointerType === 'mouse')
+                {
                     startEvent.preventDefault();
                 }
 
