@@ -36,6 +36,29 @@
         }
     }
 
+    ktd-grid-item {
+        .table-drag-handle {
+            position: absolute;
+            padding: 2px;
+            top: 0;
+            left: 16px;
+            right: 16px;
+            border: 1px solid #484747;
+            border-radius: 2px;
+            color: #eaeaea;
+            background-color: #888888;
+            cursor: grab;
+        }
+
+        &.ktd-grid-item-dragging {
+            .table-drag-handle {
+                cursor: grabbing;
+            }
+        }
+    }
+
+
+
     .ktd-grid-img-container {
         width: 100%;
         height: 100%;
