@@ -26,7 +26,8 @@ Both cover the same necessities.
 ## Compatibility
 | Version              | Compatibility       |
 |----------------------|---------------------|
-| \>= 2.0.0            | Angular 14 & 15     |
+| \>= 3.0.0            | Angular 16, 17 & 18 |
+| \>= 2.0.0            | Angular 14, 15      |
 | \>= 1.1.0 && < 2.0.0 | Angular 12, 13 & 14 |
 | \>= 0.1.1 && < 1.1.0 | Angular 9, 10 & 11  |
 

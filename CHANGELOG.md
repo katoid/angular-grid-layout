@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.0.0](https://github.com/katoid/angular-grid-layout/compare/v2.2.0...v3.0.0) (2024-08-19)
+
+
+### Features
+
+* **demo-app:** added a drag handle in the real-life-example table ([850f5df](https://github.com/katoid/angular-grid-layout/commit/850f5df7dd519a0c5e99dc0e11150297a62af616))
+* update to angular v15 ([#117](https://github.com/katoid/angular-grid-layout/issues/117)) ([e7c0ae1](https://github.com/katoid/angular-grid-layout/commit/e7c0ae14b81e439c04f4e586c91160cd4dfcbc62))
+* update to angular v16 ([#118](https://github.com/katoid/angular-grid-layout/issues/118)) ([bce1287](https://github.com/katoid/angular-grid-layout/commit/bce128794c3853e3f88e2bcf7b0acf117e321287))
+* added support for hybrid devices (touch and mouse) ([a1a40a5](https://github.com/katoid/angular-grid-layout/commit/a1a40a5150691aa9ddff5d7422217e57ba2d16a0))
+
+### Bug Fixes
+
+* **grid-component:** improve end of drag events of the grid elements, animate over other elements ([251c1bb](https://github.com/katoid/angular-grid-layout/commit/251c1bbebb96f3482e4eba6ca2eeeebe3c8ca5fb))
+* **grid:** fix edge case crash in ngOnDestroy when subscriptions array is undefined ([f74824f](https://github.com/katoid/angular-grid-layout/commit/f74824fdf5672cfca413cdcadf5b16244da4cd8f)), closes [#79](https://github.com/katoid/angular-grid-layout/issues/79)
+* prevent browser drag event in custom handles example ([7f6426e](https://github.com/katoid/angular-grid-layout/commit/7f6426e3dfd48d8115771f0ab1876ac26a71f04d))
+
 ## [2.2.0](https://github.com/katoid/angular-grid-layout/compare/v2.1.0...v2.2.0) (2023-07-03)
 
 
