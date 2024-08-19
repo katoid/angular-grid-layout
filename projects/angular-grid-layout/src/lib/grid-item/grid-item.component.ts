@@ -2,17 +2,17 @@ import {
     AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
     QueryList, Renderer2, ViewChild
 } from '@angular/core';
-import { BehaviorSubject, iif, merge, NEVER, Observable, Subject, Subscription } from 'rxjs';
-import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil } from 'rxjs/operators';
-import { ktdPointerDown, ktdPointerUp, ktdPointerClient } from '../utils/pointer.utils';
-import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
+import { BehaviorSubject, NEVER, Observable, Subject, Subscription, iif, merge } from 'rxjs';
+import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
+import { NumberInput, coerceNumberProperty } from '../coercion/number-property';
 import { KTD_GRID_DRAG_HANDLE, KtdGridDragHandle } from '../directives/drag-handle';
+import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
 import { KTD_GRID_RESIZE_HANDLE, KtdGridResizeHandle } from '../directives/resize-handle';
+import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from '../grid.definitions';
 import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
-import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
-import { coerceNumberProperty, NumberInput } from '../coercion/number-property';
-import { KTD_GRID_ITEM_PLACEHOLDER, KtdGridItemPlaceholder } from '../directives/placeholder';
+import { ktdIsMouseEventOrMousePointerEvent, ktdPointerClient, ktdPointerDown, ktdPointerUp } from '../utils/pointer.utils';
 
 @Component({
     standalone: true,
@@ -171,9 +171,9 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                 // with our own dragging (e.g. `img` tags do it by default). Prevent the default action
                 // to stop it from happening. Note that preventing on `dragstart` also seems to work, but
                 // it's flaky and it fails if the user drags it away quickly. Also note that we only want
-                // to do this for `mousedown` since doing the same for `touchstart` will stop any `click`
-                // events from firing on touch devices.
-                if (startEvent.target && (startEvent.target as HTMLElement).draggable && startEvent.type === 'mousedown') {
+                // to do this for `mousedown` and `pointerdown` since doing the same for `touchstart` will
+                // stop any `click` events from firing on touch devices.
+                if (ktdIsMouseEventOrMousePointerEvent(startEvent)) {
                     startEvent.preventDefault();
                 }
 
@@ -215,6 +215,11 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                             } else {
                                 this.renderer.setStyle(this.resizeElem.nativeElement, 'display', 'block');
                                 return ktdPointerDown(this.resizeElem.nativeElement);
+                            }
+                        }),
+                        tap((startEvent) => {
+                            if (ktdIsMouseEventOrMousePointerEvent(startEvent)) {
+                                startEvent.preventDefault();
                             }
                         })
                     );
