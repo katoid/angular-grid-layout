@@ -30,43 +30,7 @@
         gtag('config', 'G-82RMKQGDJH');
     </script>
     <script>
-        (()=>{
-                (function(o, s) {
-                        let e = o.katoid || {
-                            _q: []
-                        };
-                        if (e.invoked) {
-                            o.console && console.error && console.error("Katoid snippet has already been loaded.");
-                            return
-                        }
-                        e.invoked = !0;
-                        let t = s.createElement("script");
-                        t.type = "text/javascript",
-                            t.async = !0,
-                            t.src = "https://cdn.katoid.com/libs/browser-sdk-1.0.1.min.js",
-                            t.onload = function() {
-                                o.katoid.getConfig || console.log("[Katoid] Error: could not load SDK")
-                            }
-                        ;
-                        let r = s.getElementsByTagName("script")[0];
-                        r.parentNode.insertBefore(t, r);
-                        let c = function(d, a) {
-                            d[a] = function(...l) {
-                                return this._q.push({
-                                    name: a,
-                                    args: l.slice(0)
-                                }),
-                                    this
-                            }
-                        }
-                            , i = ["init", "recordEvent", "setCustomizeEvent"];
-                        for (let n = 0; n < i.length; n++)
-                            c(e, i[n]);
-                        o.katoid = e
-                    }
-                )(window, document);
-            }
-        )();
+        (()=>{(function(o,s){let e=o.katoid||{_q:[]};if(e.invoked){o.console&&console.error&&console.error("Katoid snippet has already been loaded.");return}e.invoked=!0;let t=s.createElement("script");t.type="text/javascript",t.async=!0,t.src="https://cdn.katoid.com/libs/browser-sdk-1.1.0.min.js",t.onload=function(){o.katoid.getConfig||console.log("[Katoid] Error: could not load SDK")};let r=s.getElementsByTagName("script")[0];r.parentNode.insertBefore(t,r);let c=function(d,a){d[a]=function(...l){return this._q.push({name:a,args:l.slice(0)}),this}},i=["init","recordEvent","setCustomizeEvent"];for(let n=0;n<i.length;n++)c(e,i[n]);o.katoid=e})(window,document);})();
 
         window.katoid.init({
             appKey: '22222222-2222-2222-2222-222222222222',
