@@ -8,7 +8,7 @@ import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, empty, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing } from './utils/grid.utils';
-import { compact } from './utils/react-grid-layout.utils';
+import { cloneLayoutItem, compact } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridBackgroundCfg, KtdGridCfg, KtdGridCompactType, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
 } from './grid.definitions';
@@ -541,9 +541,11 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                          * Set the new layout to be the layout in which the calcNewStateFunc would be executed.
                          * NOTE: using the mutated layout is the way to go by 'react-grid-layout' utils. If we don't use the previous layout,
                          * some utilities from 'react-grid-layout' would not work as expected.
+                         *
+                         * In non-compact mode it is best to use copy of original layout, to prevent items from spreading on the grid
                          */
-                        const currentLayout: KtdGridLayout = newLayout || this.layout;
-
+                        const isCompactLayout = (['horizontal', 'vertical'] as KtdGridCompactType[]).includes(this.compactType)
+                        const currentLayout: KtdGridLayout = isCompactLayout ? (newLayout || this.layout) : this.layout.map((l) => cloneLayoutItem(l));
                         // Get the correct newStateFunc depending on if we are dragging or resizing
                         const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
 

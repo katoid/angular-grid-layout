@@ -225,9 +225,20 @@ export function ktdGridItemResizing(gridItem: KtdGridItemComponent, config: KtdG
 
     }
 
-    const newLayoutItems: LayoutItem[] = config.layout.map((item) => {
-        return item.id === gridItemId ? layoutItem : item;
-    });
+    const layoutItems: LayoutItem[] = config.layout;
+    const resizedLayoutItem: LayoutItem = layoutItems.find(item => item.id === gridItemId)!;
+    let newLayoutItems: LayoutItem[] = moveElement(
+        layoutItems,
+        resizedLayoutItem,
+        undefined,
+        undefined,
+        true,
+        config.preventCollision,
+        compactionType,
+        config.cols,
+        layoutItem.w,
+        layoutItem.h,
+    );
 
     return {
         layout: compact(newLayoutItems, compactionType, config.cols),
