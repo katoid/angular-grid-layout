@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.1](https://github.com/katoid/angular-grid-layout/compare/v3.0.0...v3.0.1) (2025-04-25)
+
+
+### Bug Fixes
+
+* **grid-item:** touch-action should be set to auto when grid item isn't draggable ([#131](https://github.com/katoid/angular-grid-layout/issues/131)) ([3e4d6b0](https://github.com/katoid/angular-grid-layout/commit/3e4d6b056d16cf1af5fa8f177ea82cfeb8304c62))
+
 ## [3.0.0](https://github.com/katoid/angular-grid-layout/compare/v2.2.0...v3.0.0) (2024-08-19)
 
 

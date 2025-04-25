@@ -10,7 +10,7 @@
         "url": "git+https://github.com/katoid/angular-grid-layout.git"
     },
     "license": "MIT",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "keywords": [
         "angular",
         "grid",
