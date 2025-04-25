@@ -1,5 +1,5 @@
 import {
-    AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, Inject, Input, NgZone, OnDestroy, OnInit,
+    AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, HostBinding, Inject, Input, NgZone, OnDestroy, OnInit,
     QueryList, Renderer2, ViewChild
 } from '@angular/core';
 import { BehaviorSubject, NEVER, Observable, Subject, Subscription, iif, merge } from 'rxjs';
@@ -38,6 +38,11 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
 
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
     @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
+
+    /** Dynamically apply `touch-action` to the host element based on draggable */
+    @HostBinding('style.touch-action') get touchAction(): string {
+        return this._draggable ? 'none' : 'auto';
+    }
 
     dragStart$: Observable<MouseEvent | TouchEvent>;
     resizeStart$: Observable<MouseEvent | TouchEvent>;
