@@ -24,12 +24,12 @@ Both cover the same necessities.
 - Auto-scrolling while dragging
 
 ## Compatibility
-| Version              | Compatibility       |
-|----------------------|---------------------|
-| \>= 3.0.0            | Angular 16, 17 & 18 |
-| \>= 2.0.0            | Angular 14, 15      |
-| \>= 1.1.0 && < 2.0.0 | Angular 12, 13 & 14 |
-| \>= 0.1.1 && < 1.1.0 | Angular 9, 10 & 11  |
+| Version              | Compatibility           |
+|----------------------|-------------------------|
+| \>= 3.0.0            | Angular 16, 17, 18 & 19 |
+| \>= 2.0.0            | Angular 14, 15          |
+| \>= 1.1.0 && < 2.0.0 | Angular 12, 13 & 14     |
+| \>= 0.1.1 && < 1.1.0 | Angular 9, 10 & 11      |
 
 ## Demos
 [Playground](https://katoid.github.io/angular-grid-layout/playground) - [Stackblitz](https://stackblitz.com/edit/angular-grid-layout-playground?file=src%2Fapp%2Fplayground%2Fplayground.component.ts)
