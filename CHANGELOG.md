@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [3.0.2](https://github.com/katoid/angular-grid-layout/compare/v3.0.1...v3.0.2) (2025-04-28)
+
+
+### Features
+
+* **grid:** use Angular injected document to allow Server Side Rendering ([a4fdee8](https://github.com/katoid/angular-grid-layout/commit/a4fdee84e189d73435bb55486b7dd1de36072f93)), closes [#124](https://github.com/katoid/angular-grid-layout/issues/124)
+
+
+### Bug Fixes
+
+* **grid:** correctly calculate x coordinate when dragging in a one colum grid ([26626fb](https://github.com/katoid/angular-grid-layout/commit/26626fb52765aefcc776febb65a802f554f8716e)), closes [#128](https://github.com/katoid/angular-grid-layout/issues/128)
+
 ### [3.0.1](https://github.com/katoid/angular-grid-layout/compare/v3.0.0...v3.0.1) (2025-04-25)
 
 
