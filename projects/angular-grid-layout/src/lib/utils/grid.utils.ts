@@ -32,11 +32,14 @@ export function ktdGridCompact(layout: KtdGridLayout, compactType: KtdGridCompac
 }
 
 function screenXToGridX(screenXPos: number, cols: number, width: number, gap: number): number {
-    const widthMinusGaps = width - (gap * (cols - 1));
-    const itemWidth = widthMinusGaps / cols;
-    const widthMinusOneItem = width - itemWidth;
-    const colWidthWithGap = widthMinusOneItem / (cols - 1);
-    return Math.round(screenXPos / colWidthWithGap);
+    if (cols <= 1) {
+        return 0;
+    }
+
+    const totalGapsWidth = gap * (cols - 1);
+    const totalItemsWidth = width - totalGapsWidth;
+    const itemPlusGapWidth = totalItemsWidth / cols + gap;
+    return Math.round(screenXPos / itemPlusGapWidth);
 }
 
 function screenYToGridY(screenYPos: number, rowHeight: number, height: number, gap: number): number {
