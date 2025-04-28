@@ -1,6 +1,5 @@
 import {
-    AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EmbeddedViewRef, EventEmitter,
-    HostBinding, Input,
+    AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EmbeddedViewRef, EventEmitter, Inject, Input,
     NgZone, OnChanges, OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewContainerRef, ViewEncapsulation
 } from '@angular/core';
 import { coerceNumberProperty, NumberInput } from './coercion/number-property';
@@ -20,6 +19,7 @@ import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$
 import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 import { KtdGridItemPlaceholder } from './directives/placeholder';
 import { getTransformTransitionDurationInMs } from './utils/transition-duration';
+import { DOCUMENT } from '@angular/common';
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -315,7 +315,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 private elementRef: ElementRef,
                 private viewContainerRef: ViewContainerRef,
                 private renderer: Renderer2,
-                private ngZone: NgZone) {
+                private ngZone: NgZone,
+                @Inject(DOCUMENT) private document: Document) {
 
     }
 
@@ -491,7 +492,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             const gridElemClientRect: KtdClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
             const dragElemClientRect: KtdClientRect = getMutableClientRect(gridItem.elementRef.nativeElement as HTMLElement);
 
-            const scrollableParent = typeof this.scrollableParent === 'string' ? document.getElementById(this.scrollableParent) : this.scrollableParent;
+            const scrollableParent = typeof this.scrollableParent === 'string' ? this.document.getElementById(this.scrollableParent) : this.scrollableParent;
 
             this.renderer.addClass(gridItem.elementRef.nativeElement, 'no-transitions');
             this.renderer.addClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-dragging');
@@ -509,14 +510,14 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             //  - Pros are that we would not repeat subscriptions and takeUntil would shut down observables at the same time.
             //  - Cons are that moving this functionality as a side effect inside the main drag loop would be confusing.
             const scrollSubscription = this.ngZone.runOutsideAngular(() =>
-                (!scrollableParent ? NEVER : this.gridService.mouseOrTouchMove$(document).pipe(
+                (!scrollableParent ? NEVER : this.gridService.mouseOrTouchMove$(this.document).pipe(
                     map((event) => ({
                         pointerX: ktdPointerClientX(event),
                         pointerY: ktdPointerClientY(event)
                     })),
                     ktdScrollIfNearElementClientRect$(scrollableParent, {scrollStep: this.scrollSpeed})
                 )).pipe(
-                    takeUntil(ktdPointerUp(document))
+                    takeUntil(ktdPointerUp(this.document))
                 ).subscribe());
 
             /**
@@ -525,7 +526,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             const subscription = this.ngZone.runOutsideAngular(() =>
                 merge(
                     combineLatest([
-                        this.gridService.mouseOrTouchMove$(document),
+                        this.gridService.mouseOrTouchMove$(this.document),
                         ...(!scrollableParent ? [of({top: 0, left: 0})] : [
                             ktdGetScrollTotalRelativeDifference$(scrollableParent).pipe(
                                 startWith({top: 0, left: 0}) // Force first emission to allow CombineLatest to emit even no scroll event has occurred
@@ -533,7 +534,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         ])
                     ])
                 ).pipe(
-                    takeUntil(ktdPointerUp(document)),
+                    takeUntil(ktdPointerUp(this.document)),
                 ).subscribe(([pointerDragEvent, scrollDifference]: [MouseEvent | TouchEvent | PointerEvent, { top: number, left: number }]) => {
                         pointerDragEvent.preventDefault();
 

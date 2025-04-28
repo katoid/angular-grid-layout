@@ -13,6 +13,7 @@ import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from 
 import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
 import { ktdIsMouseEventOrMousePointerEvent, ktdPointerClient, ktdPointerDown, ktdPointerUp } from '../utils/pointer.utils';
+import { DOCUMENT } from '@angular/common';
 
 @Component({
     standalone: true,
@@ -109,6 +110,7 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                 private gridService: KtdGridService,
                 private renderer: Renderer2,
                 private ngZone: NgZone,
+                @Inject(DOCUMENT) private document: Document,
                 @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
         this.dragStart$ = this.dragStartSubject.asObservable();
         this.resizeStart$ = this.resizeStartSubject.asObservable();
@@ -183,8 +185,8 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
                 }
 
                 const startPointer = ktdPointerClient(startEvent);
-                return this.gridService.mouseOrTouchMove$(document).pipe(
-                    takeUntil(ktdPointerUp(document)),
+                return this.gridService.mouseOrTouchMove$(this.document).pipe(
+                    takeUntil(ktdPointerUp(this.document)),
                     ktdOutsideZone(this.ngZone),
                     filter((moveEvent) => {
                         moveEvent.preventDefault();

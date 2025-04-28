@@ -1,8 +1,9 @@
-import { Injectable, NgZone, OnDestroy } from '@angular/core';
+import { Inject, Injectable, NgZone, OnDestroy } from '@angular/core';
 import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
 import { fromEvent, iif, Observable, Subject, Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ktdIsMobileOrTablet, ktdSupportsPointerEvents } from './utils/pointer.utils';
+import { DOCUMENT } from '@angular/common';
 
 /** Event options that can be used to bind an active, capturing event. */
 const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({
@@ -17,7 +18,7 @@ export class KtdGridService implements OnDestroy {
     private touchMoveSubject: Subject<TouchEvent> = new Subject<TouchEvent>();
     private touchMoveSubscription: Subscription;
 
-    constructor(private ngZone: NgZone) {
+    constructor(private ngZone: NgZone, @Inject(DOCUMENT) private document: Document) {
         this.touchMove$ = this.touchMoveSubject.asObservable();
         this.registerTouchMoveSubscription();
     }
@@ -45,7 +46,7 @@ export class KtdGridService implements OnDestroy {
         this.touchMoveSubscription = this.ngZone.runOutsideAngular(() =>
             // The event handler has to be explicitly active,
             // because newer browsers make it passive by default.
-            fromEvent(document, 'touchmove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
+            fromEvent(this.document, 'touchmove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
                 .pipe(filter((touchEvent: TouchEvent) => touchEvent.touches.length === 1))
                 .subscribe((touchEvent: TouchEvent) => this.touchMoveSubject.next(touchEvent))
         );
