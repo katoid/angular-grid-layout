@@ -383,6 +383,8 @@ export function getStatics(layout: Layout): Array<LayoutItem> {
  * @param  {LayoutItem} l                 element to move.
  * @param  {Number}     [x]               X position in grid units.
  * @param  {Number}     [y]               Y position in grid units.
+ * @param  {Number}     [w]               width in grid units.
+ * @param  {Number}     [h]               height in grid units.
  */
 export function moveElement(
     layout: Layout,
@@ -393,6 +395,8 @@ export function moveElement(
     preventCollision: boolean | null | undefined,
     compactType: CompactType,
     cols: number,
+    w: number | null | undefined = undefined,
+    h: number | null | undefined = undefined,
 ): Layout {
     // If this is static and not explicitly enabled as draggable,
     // no move is possible, so we can short-circuit this immediately.
@@ -401,17 +405,24 @@ export function moveElement(
     }
 
     // Short-circuit if nothing to do.
-    if (l.y === y && l.x === x) {
+    if ((l.y === y || y === undefined) && (l.x === x || x === undefined) && (l.w === w || w === undefined) && (l.h === h || h === undefined)) {
         return layout;
     }
 
-    log(
-        `Moving element ${l.id} to [${String(x)},${String(y)}] from [${l.x},${
-            l.y
-        }]`,
-    );
+    if ((l.y !== y && y !== undefined) || (l.x !== x && x !== undefined)) {
+        log(
+            `Moving element ${l.id} to [${String(x)},${String(y)}] from [${l.x},${l.y}]`,
+        );
+    }
+    if ((l.w !== w && w !== undefined) || (l.h !== h && h !== undefined)) {
+        log(
+            `Resizing element ${l.id} to ${String(w)} x ${String(h)} from ${l.w} x ${l.h}`,
+        );
+    }
     const oldX = l.x;
     const oldY = l.y;
+    const oldW = l.w;
+    const oldH = l.h;
 
     // This is quite a bit faster than extending the object
     if (typeof x === 'number') {
@@ -419,6 +430,12 @@ export function moveElement(
     }
     if (typeof y === 'number') {
         l.y = y;
+    }
+    if (typeof w === 'number') {
+        l.w = w;
+    }
+    if (typeof h === 'number') {
+        l.h = h;
     }
     l.moved = true;
 
@@ -443,6 +460,8 @@ export function moveElement(
         log(`Collision prevented on ${l.id}, reverting.`);
         l.x = oldX;
         l.y = oldY;
+        l.w = oldW;
+        l.h = oldH;
         l.moved = false;
         return layout;
     }
@@ -503,8 +522,8 @@ export function moveElementAwayFromCollision(
     cols: number,
 ): Layout {
     const compactH = compactType === 'horizontal';
-    // Compact vertically if not set to horizontal
-    const compactV = compactType !== 'horizontal';
+    const compactV = compactType === 'vertical';
+    const noCompact = !compactH && !compactV;
     const preventCollision = collidesWith.static; // we're already colliding (not for static items)
 
     // If there is enough space above the collision to put this element, move it there.
@@ -519,12 +538,12 @@ export function moveElementAwayFromCollision(
             x: compactH
                 ? Math.max(collidesWith.x - itemToMove.w, 0)
                 : itemToMove.x,
-            y: compactV
+            y: (compactV || (noCompact && collidesWith.y + collidesWith.h / 2 >= itemToMove.y + itemToMove.h / 2))
                 ? Math.max(collidesWith.y - itemToMove.h, 0)
                 : itemToMove.y,
             w: itemToMove.w,
             h: itemToMove.h,
-            id: '-1',
+            id: itemToMove.id, // do not compare with itself
         };
 
         // No collision? If so, we can go up there; otherwise, we'll end up moving down as normal
@@ -538,7 +557,7 @@ export function moveElementAwayFromCollision(
                 layout,
                 itemToMove,
                 compactH ? fakeItem.x : undefined,
-                compactV ? fakeItem.y : undefined,
+                (compactV || noCompact) ? fakeItem.y : undefined,
                 isUserAction,
                 preventCollision,
                 compactType,
@@ -551,7 +570,7 @@ export function moveElementAwayFromCollision(
         layout,
         itemToMove,
         compactH ? itemToMove.x + 1 : undefined,
-        compactV ? itemToMove.y + 1 : undefined,
+        compactV ? itemToMove.y + 1 : (noCompact ? Math.max(itemToMove.y + 1, collidesWith.y + 1) : undefined),
         isUserAction,
         preventCollision,
         compactType,
