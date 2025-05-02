@@ -81,11 +81,13 @@ function getGridHeight(layout: KtdGridLayout, rowHeight: number, gap: number): n
 }
 
 // eslint-disable-next-line @katoid/prefix-exported-code
-export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number>): KtdGridItemRenderData<string> {
+export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number>, snapToPixels = false): KtdGridItemRenderData<string> {
+    const top = snapToPixels ? Math.round(renderItem.top) : renderItem.top;
+    const left = snapToPixels ? Math.round(renderItem.left) : renderItem.left;
     return {
         id: renderItem.id,
-        top: `${renderItem.top}px`,
-        left: `${renderItem.left}px`,
+        top: `${top}px`,
+        left: `${left}px`,
         width: `${renderItem.width}px`,
         height: `${renderItem.height}px`
     };
@@ -291,6 +293,17 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private gridCurrentHeight: number;
 
+    /**
+     * By default, the grid items are positioned based on a computation that may result in
+     * sub-pixels. The result is in some cases that the content inside the grid items is rendered a bit blurry.
+     * By setting this parameter to `true` we make sure grid items are positioned on whole pixels.
+     * Defaults to `false`
+     */
+    @Input() set snapToPixels(val: boolean) {
+        this._snapToPixels = val;
+    }
+    private _snapToPixels:boolean = false;
+
     get config(): KtdGridCfg {
         return {
             cols: this.cols,
@@ -428,7 +441,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             if (gridItemRenderData == null) {
                 console.error(`Couldn\'t find the specified grid item for the id: ${item.id}`);
             } else {
-                item.setStyles(parseRenderItemToPixels(gridItemRenderData));
+                item.setStyles(parseRenderItemToPixels(gridItemRenderData, this._snapToPixels));
             }
         });
     }
@@ -576,7 +589,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         }, gridElemClientRect.width, gridElemClientRect.height);
 
                         const newGridItemRenderData = {...this._gridItemsRenderData[gridItem.id]}
-                        const placeholderStyles = parseRenderItemToPixels(newGridItemRenderData);
+                        const placeholderStyles = parseRenderItemToPixels(newGridItemRenderData, this._snapToPixels);
 
                         // Put the real final position to the placeholder element
                         this.placeholder!.style.width = placeholderStyles.width;
