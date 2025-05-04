@@ -53,9 +53,15 @@
         }
     }
 
+    .grid-item-static {
+        .grid-item-content {
+            background-color: #fdc3ba;
+        }
+    }
+
     .grid-item-content {
         box-sizing: border-box;
-        background: #ccc;
+        background-color: #ccc;
         border: 1px solid;
         width: 100%;
         height: 100%;
@@ -87,6 +93,10 @@
     // Add custom drag mouse styles
     ktd-grid-item {
         cursor: grab;
+
+        &.grid-item-static {
+            cursor: not-allowed;
+        }
 
         &.ktd-grid-item-dragging {
             cursor: grabbing;
