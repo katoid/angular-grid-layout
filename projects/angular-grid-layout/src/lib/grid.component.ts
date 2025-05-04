@@ -153,7 +153,36 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
      * If no data provided or null autoscroll is not performed.
      */
-    @Input() scrollableParent: HTMLElement | Document | string | null = null;
+    @Input() set scrollableParent(val: HTMLElement | Document | string | null) {
+        this.scrollParentIntersectionObserver?.unobserve(this.elementRef.nativeElement);
+        this.scrollParentIntersectionObserver?.disconnect();
+
+        if (val) {
+            this._scrollableParent = val;
+            const scrollParent = typeof this.scrollableParent === 'string' ? document.getElementById(this.scrollableParent) : this.scrollableParent;
+
+            // we trigger only if the whole grid becomes visible of not
+            let options = {
+                root: scrollParent ,
+                rootMargin: "0px",
+                threshold: 1,
+            };
+
+            // if the grid changes from completely visible to not completely visible in the scroll container we do a resize.
+            // this makes sure the grid stays positioned correctly
+            this.scrollParentIntersectionObserver = new IntersectionObserver(() => {
+                this.resize();
+            }, options);
+
+            this.scrollParentIntersectionObserver.observe(this.elementRef.nativeElement);
+        }
+    };
+
+    get scrollableParent(): HTMLElement | Document | string | null {
+        return this._scrollableParent;
+    }
+
+    private _scrollableParent: HTMLElement | Document | string | null = null;
 
     /** Whether or not to update the internal layout when some dependent property change. */
     @Input()
@@ -311,6 +340,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
     private subscriptions: Subscription[] = [];
 
+    private scrollParentIntersectionObserver:IntersectionObserver;
+
     constructor(private gridService: KtdGridService,
                 private elementRef: ElementRef,
                 private viewContainerRef: ViewContainerRef,
@@ -367,6 +398,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     ngOnDestroy() {
         this.subscriptions.forEach(sub => sub.unsubscribe());
+        this.scrollParentIntersectionObserver?.unobserve(this.elementRef.nativeElement);
+        this.scrollParentIntersectionObserver?.disconnect();
     }
 
     compactLayout() {
