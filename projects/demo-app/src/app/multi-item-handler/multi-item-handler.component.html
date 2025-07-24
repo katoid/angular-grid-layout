@@ -1,0 +1,89 @@
+<div class="container">
+    <div class="header-container">
+
+        <div class="header-container__usage-guide">
+            <p>USAGE GUIDE</p>
+            <ul>
+                <li>Click on a grid item to select it</li>
+                <li>Ctrl (or ⌘ on Mac) + Click to add or remove an item from the group</li>
+                <li>Drag/resize any item in the group to apply the action to all selected items</li>
+                <li>Drag/resize an item outside the group to move it individually without clearing the current selection</li>
+                <li>While a group of elements is selected, you can paste it below the last element with Ctrl(or ⌘ on Mac) + V.</li>
+                <li>Click on an item outside the group to start a new selection</li>
+            </ul>
+        </div>
+
+        <div class="header-container__controls">
+            <p>GRID CONTROLS</p>
+            <div class="controls-content">
+                <button mat-raised-button (click)="generateLayout()">
+                    Generate layout
+                </button>
+                <button mat-raised-button (click)="addItemToLayout()">Add item</button>
+                <mat-form-field color="accent" style="width: 150px">
+                    <mat-label>Compact type</mat-label>
+                    <mat-select
+                        [value]="compactType"
+                        (selectionChange)="onCompactTypeChange($event)">
+                        <mat-option [value]="'vertical'">vertical</mat-option>
+                        <mat-option [value]="'horizontal'">horizontal</mat-option>
+                        <mat-option [value]="'none'">-</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-checkbox
+                    color="accent"
+                    [checked]="preventCollision"
+                    (change)="onPreventCollisionChange($event.checked)">
+                    Prevent Collision
+                </mat-checkbox>
+            </div>
+        </div>
+    </div>
+
+
+    <p>GRID</p>
+    <div class="grid-container">
+        <ktd-grid
+            [cols]="cols"
+            [backgroundConfig]="{
+                show: 'always',
+                borderColor: 'rgba(255, 128, 0, 0.25)',
+                gapColor: 'transparent',
+                borderWidth: 1,
+                rowColor: 'rgba(128, 128, 128, 0.10)',
+                columnColor: 'rgba(128, 128, 128, 0.10)'
+            }"
+            [rowHeight]="rowHeight"
+            [layout]="layout"
+            [compactType]="compactType"
+            [preventCollision]="preventCollision"
+            [gap]="10"
+            [scrollableParent]="document"
+            [scrollSpeed]="4"
+            [selectedItemsIds]="selectedItems"
+            (dragStarted)="onDragStarted($event)"
+            (resizeStarted)="onResizeStarted($event)"
+            (dragEnded)="onDragEnded($event)"
+            (resizeEnded)="onResizeEnded($event)"
+            (layoutUpdated)="onLayoutUpdated($event)">
+            <ktd-grid-item
+                *ngFor="let item of layout; trackBy: trackById"
+                [id]="item.id"
+                (pointerdown)="pointerDownItemSelection($event, item)"
+                (pointerup)="pointerUpItemSelection($event, item)">
+                <div
+                    class="grid-item-content"
+                    [ngClass]="{
+                        'grid-item-content--selected': isItemSelected(item)
+                    }">
+                    {{ item.id }}
+                </div>
+                <div
+                    class="grid-item-remove-handle"
+                    (mousedown)="stopEventPropagation($event)"
+                    (click)="removeItem(item.id)"></div>
+            </ktd-grid-item>
+        </ktd-grid>
+    </div>
+</div>
+<ktd-footer></ktd-footer>

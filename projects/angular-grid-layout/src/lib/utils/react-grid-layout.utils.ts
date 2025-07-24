@@ -157,21 +157,25 @@ export function collides(l1: LayoutItem, l2: LayoutItem): boolean {
 export function compact(
     layout: Layout,
     compactType: CompactType,
-    cols: number,
+    cols: number
 ): Layout {
-    // Statics go in the compareWith array right away so items flow around them.
+    // Statics go in the compareWith array right away so items flow around them
     const compareWith = getStatics(layout);
+    const multipleStaticItems = compareWith.length>1;
+    // We sort the elements to avoid collisions being skipped due to flow around static items
+    if(multipleStaticItems){
+        compareWith.sort((a, b) => (a.y + a.h) - (b.y + b.h));
+    }
     // We go through the items by row and column.
     const sorted = sortLayoutItems(layout, compactType);
     // Holding for new items.
     const out = Array(layout.length);
-
     for (let i = 0, len = sorted.length; i < len; i++) {
         let l = cloneLayoutItem(sorted[i]);
 
         // Don't move static elements
         if (!l.static) {
-            l = compactItem(compareWith, l, compactType, cols, sorted);
+            l = compactItem(compareWith, l, compactType, cols, sorted, multipleStaticItems);
 
             // Add to comparison array. We only collide with items before this one.
             // Statics are already in this array.
@@ -198,7 +202,8 @@ function resolveCompactionCollision(
     item: LayoutItem,
     moveToCoord: number,
     axis: 'x' | 'y',
-) {
+    maxMoveToCoord?: number
+): number | undefined {
     const sizeProp = heightWidth[axis];
     item[axis] += 1;
     const itemIndex = layout
@@ -217,21 +222,25 @@ function resolveCompactionCollision(
 
         // Optimization: we can break early if we know we're past this el
         // We can do this b/c it's a sorted layout
-        if (otherItem.y > item.y + item.h) {
-            break;
+        // Since previous elements may have moved without reordering the layout, this movement must be taken into account
+        // (maxMoveToCoord for multiple static items, moveToCoord for 0 or 1 static item).
+        if (otherItem[axis] > (maxMoveToCoord ?? moveToCoord)+item[sizeProp]) {
+           break;
         }
-
         if (collides(item, otherItem)) {
-            resolveCompactionCollision(
+            // Update maxMoveToCoord when moving multiple items moving, to avoid overly aggressive pruning in the "break" line
+            maxMoveToCoord = resolveCompactionCollision(
                 layout,
                 otherItem,
                 moveToCoord + item[sizeProp],
                 axis,
+                maxMoveToCoord ? maxMoveToCoord + item[sizeProp] : undefined
             );
         }
     }
 
     item[axis] = moveToCoord;
+    return maxMoveToCoord;
 }
 
 /**
@@ -243,6 +252,7 @@ export function compactItem(
     compactType: CompactType,
     cols: number,
     fullLayout: Layout,
+    multipleStaticItems?: boolean
 ): LayoutItem {
     const compactV = compactType === 'vertical';
     const compactH = compactType === 'horizontal';
@@ -264,11 +274,21 @@ export function compactItem(
 
     // Move it down, and keep moving it down if it's colliding.
     let collides;
+    // In the case of having multiple static items, when performing the break comparison we must take into account
+    // that the first item may have been moved his position + maxMoveToCoord
+    let maxMoveToCoord: number | undefined = undefined;
+    if(multipleStaticItems){
+        compareWith.forEach(item=>{
+            if(!maxMoveToCoord || item.y+item.h>maxMoveToCoord){
+                maxMoveToCoord = item.y+item.h;
+            }
+        })
+    }
     while ((collides = getFirstCollision(compareWith, l))) {
         if (compactH) {
-            resolveCompactionCollision(fullLayout, l, collides.x + collides.w, 'x');
+            resolveCompactionCollision(fullLayout, l, collides.x + collides.w, 'x', maxMoveToCoord);
         } else {
-            resolveCompactionCollision(fullLayout, l, collides.y + collides.h, 'y',);
+            resolveCompactionCollision(fullLayout, l, collides.y + collides.h, 'y', maxMoveToCoord);
         }
         // Since we can't grow without bounds horizontally, if we've overflown, let's move it down and try again.
         if (compactH && l.x + l.w > cols) {
@@ -281,7 +301,6 @@ export function compactItem(
             }
         }
     }
-
     // Ensure that there are no negative positions
     l.y = Math.max(l.y, 0);
     l.x = Math.max(l.x, 0);
