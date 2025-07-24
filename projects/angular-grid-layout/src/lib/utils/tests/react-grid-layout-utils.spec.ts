@@ -404,3 +404,62 @@ describe('compact horizontal', () => {
         ]);
     });
 });
+
+describe('moveElementAffectingOtherItems', () => {
+    function compactAndMove(
+        layout,
+        layoutItem,
+        x,
+        y,
+        isUserAction,
+        preventCollision,
+        compactType,
+        cols
+    ) {
+        return compact(
+            moveElement(
+                layout,
+                layoutItem,
+                x,
+                y,
+                isUserAction,
+                preventCollision,
+                compactType,
+                cols
+            ),
+            compactType,
+            cols
+        );
+    }
+
+    it('Move element up, pushing the rest of the grid down', () => {
+        const layout = [
+            {id: '0', x: 1, y: 0, w: 24, h: 1},
+            {id: '1', x: 1, y: 1, w: 8, h: 1},
+            {id: '2', x: 1, y: 2, w: 8, h: 3},
+            {id: '3', x: 9, y: 2, w: 8, h: 8},
+            {id: '4', x: 17, y: 1, w: 8, h: 2},
+            {id: '5', x: 17, y: 3, w: 8, h: 3},
+        ];
+        const layoutItem = layout[3];
+        expect(
+            compactAndMove(
+                layout,
+                layoutItem,
+                9,
+                0, // x, y
+                true,
+                false, // isUserAction, preventCollision
+                'vertical',
+                30 // compactType, cols
+            )
+        ).toEqual([
+            {id: '0', x: 1, y: 0+8, w: 24, h: 1, moved: false, static: false},
+            {id: '1', x: 1, y: 1+8, w: 8, h: 1, moved: false, static: false},
+            {id: '2', x: 1, y: 2+8, w: 8, h: 3, moved: false, static: false},
+            {id: '3', x: 9, y: 0, w: 8, h: 8, moved: false, static: false},
+            {id: '4', x: 17, y: 1+8, w: 8, h: 2, moved: false, static: false},
+            {id: '5', x: 17, y: 3+8, w: 8, h: 3, moved: false, static: false},
+        ]);
+    });
+});
