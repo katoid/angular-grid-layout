@@ -6,16 +6,36 @@
 
     .container {
         width: 100%;
+        p {
+            margin-top: 0px;
+        }
     }
 
-    .controls-container {
+    .header-container {
+        width: 100%;
         display: flex;
-        align-items: center;
+        flex-direction: row;
         flex-wrap: wrap;
-        margin-bottom: 16px;
+        gap: 40px;
+        margin-bottom: 40px;
+        &__usage-guide {
+            li {
+                font-size: 14px;
+                margin-bottom: 4px;
+            }
+        }
+        &__controls {
+            display:block;
+            .controls-content {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
 
-        & > * {
-            margin: 8px 24px 8px 0;
+                & > * {
+                    margin: 8px 24px 8px 0;
+                }
+            }
+
         }
     }
 

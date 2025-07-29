@@ -30,7 +30,7 @@ export const APP_ROUTES: Routes = [
     {
         path: 'multi-item-handler',
         loadComponent: () => import('./multi-item-handler/multi-item-handler.component').then(m => m.KtdMultiItemHandlerComponent),
-        data: {title: 'Angular Grid Layout - Multiple item handler'}
+        data: {title: 'Angular Grid Layout - Multi-Item Drag & Resize'}
     },
     {
         path: '**',

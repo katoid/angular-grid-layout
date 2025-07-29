@@ -1,28 +1,46 @@
 <div class="container">
-    <div class="layout-json"></div>
-    <div class="controls-container">
-        <button mat-raised-button (click)="generateLayout()">
-            Generate layout
-        </button>
-        <button mat-raised-button (click)="addItemToLayout()">Add item</button>
-        <mat-form-field color="accent" style="width: 150px">
-            <mat-label>Compact type</mat-label>
-            <mat-select
-                [value]="compactType"
-                (selectionChange)="onCompactTypeChange($event)">
-                <mat-option [value]="'vertical'">vertical</mat-option>
-                <mat-option [value]="'horizontal'">horizontal</mat-option>
-                <mat-option [value]="'none'">-</mat-option>
-            </mat-select>
-        </mat-form-field>
-        <mat-checkbox
-            color="accent"
-            [checked]="preventCollision"
-            (change)="onPreventCollisionChange($event.checked)">
-            Prevent Collision
-        </mat-checkbox>
+    <div class="header-container">
+
+        <div class="header-container__usage-guide">
+            <p>USAGE GUIDE</p>
+            <ul>
+                <li>Click on a grid item to select it</li>
+                <li>Ctrl (or ⌘ on Mac) + Click to add or remove an item from the group</li>
+                <li>Drag/resize any item in the group to apply the action to all selected items</li>
+                <li>Drag/resize an item outside the group to move it individually without clearing the current selection</li>
+                <li>Click on an item outside the group to start a new selection</li>
+            </ul>
+        </div>
+
+        <div class="header-container__controls">
+            <p>GRID CONTROLS</p>
+            <div class="controls-content">
+                <button mat-raised-button (click)="generateLayout()">
+                    Generate layout
+                </button>
+                <button mat-raised-button (click)="addItemToLayout()">Add item</button>
+                <mat-form-field color="accent" style="width: 150px">
+                    <mat-label>Compact type</mat-label>
+                    <mat-select
+                        [value]="compactType"
+                        (selectionChange)="onCompactTypeChange($event)">
+                        <mat-option [value]="'vertical'">vertical</mat-option>
+                        <mat-option [value]="'horizontal'">horizontal</mat-option>
+                        <mat-option [value]="'none'">-</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-checkbox
+                    color="accent"
+                    [checked]="preventCollision"
+                    (change)="onPreventCollisionChange($event.checked)">
+                    Prevent Collision
+                </mat-checkbox>
+            </div>
+        </div>
     </div>
 
+
+    <p>GRID</p>
     <div class="grid-container">
         <ktd-grid
             [cols]="cols"
