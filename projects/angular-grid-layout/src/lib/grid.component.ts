@@ -6,7 +6,7 @@ import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
-import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing } from './utils/grid.utils';
+import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing, ktdGridItemsDragging } from './utils/grid.utils';
 import { compact } from './utils/react-grid-layout.utils';
 import {
     GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridBackgroundCfg, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
@@ -535,7 +535,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
             const dragElemClientRect: KtdDictionary<KtdClientRect>={};
             const newGridItemRenderData: KtdDictionary<KtdGridItemRenderData<number>>={};
-            const draggedItemsPos: KtdDictionary<KtdGridItemRect>={};
+            let draggedItemsPos: KtdDictionary<KtdGridItemRect>={};
+            const originalLayout: KtdGridLayout = structuredClone(this.layout);
 
             gridItems.forEach((gridItem)=>{
                 // Retrieve gridItem (draggedElem) client rect.
@@ -593,38 +594,59 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         newLayout=currentLayout;
 
                         // Get the correct newStateFunc depending on if we are dragging or resizing
-                        const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
+                        if(type === 'drag' && gridItems.length>1){
+                                const {layout, draggedItemPos} = ktdGridItemsDragging(gridItems, {
+                                    layout: originalLayout,
+                                    rowHeight: this.rowHeight,
+                                    height: this.height,
+                                    cols: this.cols,
+                                    preventCollision: this.preventCollision,
+                                    gap: this.gap,
+                                }, this.compactType, {
+                                    pointerDownEvent,
+                                    pointerDragEvent,
+                                    gridElemClientRect,
+                                    dragElementsClientRect: dragElemClientRect,
+                                    scrollDifference
+                                });
 
-                        gridItems.forEach((gridItem)=>{
-                            const {layout, draggedItemPos} = calcNewStateFunc(gridItem, {
-                                layout: newLayout,
-                                rowHeight: this.rowHeight,
-                                height: this.height,
-                                cols: this.cols,
-                                preventCollision: this.preventCollision,
-                                gap: this.gap,
-                            }, this.compactType, {
-                                pointerDownEvent,
-                                pointerDragEvent,
-                                gridElemClientRect,
-                                dragElemClientRect: dragElemClientRect[gridItem.id],
-                                scrollDifference
+                                newLayout = layout;
+                                draggedItemsPos=draggedItemPos;
+                        } else {
+                            const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
+                            gridItems.forEach((gridItem)=>{
+                                const {layout, draggedItemPos} = calcNewStateFunc(gridItem, {
+                                    layout: newLayout,
+                                    rowHeight: this.rowHeight,
+                                    height: this.height,
+                                    cols: this.cols,
+                                    preventCollision: this.preventCollision,
+                                    gap: this.gap,
+                                }, this.compactType, {
+                                    pointerDownEvent,
+                                    pointerDragEvent,
+                                    gridElemClientRect,
+                                    dragElemClientRect: dragElemClientRect[gridItem.id],
+                                    scrollDifference
+                                });
+
+                                newLayout = layout;
+                                draggedItemsPos[gridItem.id]=draggedItemPos;
                             });
+                        }
 
-                            newLayout = layout;
-                            draggedItemsPos[gridItem.id]=draggedItemPos;
+                        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(newLayout, this.rowHeight, this.gap))
+                        this._gridItemsRenderData = layoutToRenderItems({
+                            cols: this.cols,
+                            rowHeight: this.rowHeight,
+                            height: this.height,
+                            layout: newLayout,
+                            preventCollision: this.preventCollision,
+                            gap: this.gap,
+                        }, gridElemClientRect.width, gridElemClientRect.height);
 
-                            this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(newLayout, this.rowHeight, this.gap))
-
-                            this._gridItemsRenderData = layoutToRenderItems({
-                                cols: this.cols,
-                                rowHeight: this.rowHeight,
-                                height: this.height,
-                                layout: newLayout,
-                                preventCollision: this.preventCollision,
-                                gap: this.gap,
-                            }, gridElemClientRect.width, gridElemClientRect.height);
-
+                        // Modify the position of the dragged item to be the once we want (for example the mouse position or whatever)
+                        gridItems.forEach((gridItem)=>{
                             newGridItemRenderData[gridItem.id] = {...this._gridItemsRenderData[gridItem.id]}
                             const placeholderStyles = parseRenderItemToPixels(newGridItemRenderData[gridItem.id]);
 
@@ -632,10 +654,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             this.placeholder[gridItem.id]!.style.width = placeholderStyles.width;
                             this.placeholder[gridItem.id]!.style.height = placeholderStyles.height;
                             this.placeholder[gridItem.id]!.style.transform = `translateX(${placeholderStyles.left}) translateY(${placeholderStyles.top})`;
-                        });
 
-                        // Modify the position of the dragged item to be the once we want (for example the mouse position or whatever)
-                        gridItems.forEach((gridItem)=>{
                             this._gridItemsRenderData[gridItem.id] = {
                                 ...draggedItemsPos[gridItem.id],
                                 id: this._gridItemsRenderData[gridItem.id].id
