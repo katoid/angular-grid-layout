@@ -279,6 +279,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     private _height: number | null = null;
 
+    @Input() multiItemAlgorithm: 'default' | 'static' = 'default';
+
     /**
      * Multiple items drag/resize
      * A list of selected items to move (drag or resize) together as a group.
@@ -595,9 +597,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
                         // Get the correct newStateFunc depending on if we are dragging or resizing
                         if (type === 'drag' && gridItems.length > 1) {
-                            const MULTI_SELECTION_DRAG_METHOD: 'default' | 'static' = 'default' as any
 
-                            if (MULTI_SELECTION_DRAG_METHOD === 'static') {
+                            if (this.multiItemAlgorithm === 'static') {
                                 const {layout, draggedItemPos} = ktdGridItemsDragging(gridItems, {
                                     layout: originalLayout,
                                     rowHeight: this.rowHeight,
@@ -619,8 +620,6 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                 // TODO: cloning the full layout can be expensive! We should investigate workarounds, maybe by using a ktdGridItemDragging function that does not mutate the layout
 
                                 newLayout = structuredClone(originalLayout);
-                                console.log('----------');
-
                                 // Sort grid items from top-left to bottom-right
                                 const gridItemsSorted = gridItems.sort((a, b) => {
                                     const rectA = dragElemClientRect[a.id];

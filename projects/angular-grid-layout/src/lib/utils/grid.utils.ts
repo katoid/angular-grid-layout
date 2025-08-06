@@ -165,9 +165,9 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
 export function ktdGridItemsDragging(gridItems: KtdGridItemComponent[], config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingMultipleData): { layout: KtdGridLayoutItem[]; draggedItemPos:  KtdDictionary<KtdGridItemRect> } {
     const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElementsClientRect, scrollDifference} = draggingData;
 
-    const draggingElemPrevItem = {}
-    gridItems.forEach(gridItems=> {
-        draggingElemPrevItem[gridItems.id] = config.layout.find(item => item.id === gridItems.id)!
+    const draggingElemPrevItem: KtdDictionary<KtdGridLayoutItem> = {}
+    gridItems.forEach(gridItem=> {
+        draggingElemPrevItem[gridItem.id] = config.layout.find(item => item.id === gridItem.id)!
     });
 
     const clientStartX = ktdPointerClientX(pointerDownEvent);
@@ -217,9 +217,10 @@ export function ktdGridItemsDragging(gridItems: KtdGridItemComponent[], config: 
         x: number | null | undefined,
         y: number | null | undefined
     }[] = gridItems.map((gridItem:KtdGridItemComponent)=>{
-        draggingElemPrevItem[gridItem.id].static = true;
+        const draggedLayoutItem: LayoutItem = layoutItems.find(item => item.id === gridItem.id)!;
+        draggedLayoutItem.static = true;
         return {
-            l: draggingElemPrevItem[gridItem.id],
+            l: draggedLayoutItem,
             x: layoutItemsToMove[gridItem.id].x,
             y: layoutItemsToMove[gridItem.id].y
         }
@@ -229,7 +230,6 @@ export function ktdGridItemsDragging(gridItems: KtdGridItemComponent[], config: 
         layoutItems,
         draggedLayoutItem,
         true,
-        config.preventCollision,
         compactionType,
         config.cols,
     );

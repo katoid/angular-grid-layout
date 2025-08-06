@@ -4,7 +4,7 @@
  * The code should be as less modified as possible for easy maintenance.
  */
 
-import { CompactType, getAllCollisions, Layout, LayoutItem, sortLayoutItems } from "./react-grid-layout.utils";
+import { CompactType, getAllCollisions, getFirstCollision, Layout, LayoutItem, sortLayoutItems } from "./react-grid-layout.utils";
 
 const DEBUG = false;
 
@@ -27,13 +27,20 @@ export function moveElements(
         y: number | null | undefined
     }[],
     isUserAction: boolean | null | undefined,
-    preventCollision: boolean | null | undefined,
     compactType: CompactType,
     cols: number,
+    movingUpUser?:boolean
 ): Layout {
     const oldX = items[0].l.x;
     const oldY = items[0].l.y;
+    const oldCoord = {}
+
+    items.forEach
     items.forEach((item)=>{
+        oldCoord[item.l.id]={
+            x: item.l.x,
+            y: item.l.y
+        }
         if (typeof item.x === 'number') {
             item.l.x = item.x;
         }
@@ -41,6 +48,7 @@ export function moveElements(
            item.l.y = item.y;
         }
         item.l.moved = true;
+
     })
 
     let sorted = sortLayoutItems(layout, compactType);
@@ -56,12 +64,13 @@ export function moveElements(
                 : false;
     if (movingUp) {
         sorted = sorted.reverse();
-        items = items.reverse()
+    }
+    if(isUserAction){
+        movingUpUser = movingUp;
     }
 
     items.forEach((item)=>{
         const collisions: LayoutItem[] = getAllCollisions(sorted, item.l);
-
         // Move each item that collides away from this element.
         for (let i = 0, len = collisions.length; i < len; i++) {
             const collision = collisions[i];
@@ -82,7 +91,8 @@ export function moveElements(
                     item.l,
                     isUserAction,
                     compactType,
-                    cols
+                    cols,
+                    movingUpUser
                 );
             } else {
                 layout = moveElementsAwayFromCollision(
@@ -91,7 +101,8 @@ export function moveElements(
                     collision,
                     isUserAction,
                     compactType,
-                    cols
+                    cols,
+                    movingUpUser
                 );
             }
         }
@@ -106,7 +117,8 @@ export function moveElementsAwayFromCollision(
     itemToMove: LayoutItem,
     isUserAction: boolean | null | undefined,
     compactType: CompactType,
-    cols: number
+    cols: number,
+    movingUp: boolean | undefined
 ): Layout {
     const compactH = compactType === 'horizontal';
     // Compact vertically if not set to horizontal
@@ -119,19 +131,53 @@ export function moveElementsAwayFromCollision(
     if (isUserAction) {
         // Reset isUserAction flag because we're not in the main collision anymore.
         isUserAction = false;
+
+        // Make a mock item so we don't modify the item here, only modify in moveElement.
+        const fakeItem: LayoutItem = {
+            x: compactH
+                ? Math.max(collidesWith.x - itemToMove.w, 0)
+                : itemToMove.x,
+            y: compactV
+                ? Math.max(collidesWith.y - itemToMove.h, 0)
+                : itemToMove.y,
+            w: itemToMove.w,
+            h: itemToMove.h,
+            id: '-1',
+        };
+
+        // No collision? If so, we can go up there; otherwise, we'll end up moving down as normal
+        if (!getFirstCollision(layout, fakeItem)) {
+            logMulti(
+                `Doing reverse collision on ${itemToMove.id} up to [${
+                    fakeItem.x
+                },${fakeItem.y}].`,
+            );
+            return moveElements(
+                layout,
+                [{
+                    l: itemToMove,
+                    x: compactH ? fakeItem.x : undefined,
+                    y: compactV ? fakeItem.y : undefined,
+                }],
+                isUserAction,
+                compactType,
+                cols,
+                movingUp
+            );
+        }
     }
 
     return moveElements(
         layout,
         [{
             l: itemToMove,
-            x: compactH ? collidesWith.x+1 : undefined,
-            y: compactV ? collidesWith.y+1 : undefined,
+            x: compactH ? itemToMove.x+1 : undefined,
+            y: compactV ? itemToMove.y+1 : undefined,
         }],
         isUserAction,
-        preventCollision,
         compactType,
-        cols
+        cols,
+        movingUp
     );
 }
 
