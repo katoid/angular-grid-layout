@@ -268,6 +268,18 @@ const realLifeLayoutSmall: KtdGridLayout = [
     {id: '39', x: 54, y: 6, w: 7, h: 3}
 ];
 
+// Reproduce bug using default grid layout algorithm executed N times per selected item.
+const multipleDragBugMutation = [
+    {w: 8, h: 3, x: 2, y: 0, id: 'DRAG ME 1'},
+    {w: 8, h: 3, x: 8, y: 3, id: 'DRAG ME 2'},
+    {w: 15, h: 3, x: 16, y: 0, id: '6'},
+    {w: 15, h: 1, x: 16, y: 3, id: '18'},
+    {w: 8, h: 3, x: 16, y: 4, id: '19'},
+    {w: 7, h: 3, x: 24, y: 4, id: '20'},
+    {w: 60, h: 1, x: 1, y: 7, id: '32'}
+];
+
+
 @Component({
     standalone: true,
     selector: 'ktd-playground',

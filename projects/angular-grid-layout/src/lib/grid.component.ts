@@ -594,7 +594,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         newLayout=currentLayout;
 
                         // Get the correct newStateFunc depending on if we are dragging or resizing
-                        if(type === 'drag' && gridItems.length>1){
+                        if (type === 'drag' && gridItems.length > 1) {
+                            const MULTI_SELECTION_DRAG_METHOD: 'default' | 'static' = 'default' as any
+
+                            if (MULTI_SELECTION_DRAG_METHOD === 'static') {
                                 const {layout, draggedItemPos} = ktdGridItemsDragging(gridItems, {
                                     layout: originalLayout,
                                     rowHeight: this.rowHeight,
@@ -611,8 +614,61 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                                 });
 
                                 newLayout = layout;
-                                draggedItemsPos=draggedItemPos;
-                        } else {
+                                draggedItemsPos = draggedItemPos;
+                            } else {
+                                // TODO: cloning the full layout can be expensive! We should investigate workarounds, maybe by using a ktdGridItemDragging function that does not mutate the layout
+
+                                newLayout = structuredClone(originalLayout);
+                                console.log('----------');
+
+                                // Sort grid items from top-left to bottom-right
+                                const gridItemsSorted = gridItems.sort((a, b) => {
+                                    const rectA = dragElemClientRect[a.id];
+                                    const rectB = dragElemClientRect[b.id];
+
+                                    // First sort by top, then by left
+                                    if (rectA.top !== rectB.top) {
+                                        return rectA.top - rectB.top;
+                                    }
+                                    return rectA.left - rectB.left;
+                                });
+
+                                // Virtually put aLL elements at the infinity bottom if compact vertical and infinity right if compact horizontal!
+                                newLayout.forEach(layoutItem => {
+                                    // If it is a dragged item, move to infinity!! We cleanup the space for the drag
+                                    if (dragElemClientRect[layoutItem.id]) {
+                                        if (this.compactType !== 'horizontal') { layoutItem.y = Infinity; }
+                                        if (this.compactType !== 'vertical') { layoutItem.x = Infinity; }
+                                    }
+                                });
+                                newLayout = compact(newLayout, this.compactType, this.cols)
+
+                                gridItemsSorted.forEach((gridItem) => {
+                                    const {layout, draggedItemPos} = ktdGridItemDragging(gridItem, {
+                                        layout: newLayout,
+                                        rowHeight: this.rowHeight,
+                                        height: this.height,
+                                        cols: this.cols,
+                                        preventCollision: this.preventCollision,
+                                        gap: this.gap,
+                                    }, this.compactType, {
+                                        pointerDownEvent,
+                                        pointerDragEvent,
+                                        gridElemClientRect,
+                                        dragElemClientRect: dragElemClientRect[gridItem.id],
+                                        scrollDifference
+                                    });
+                                    // const pre = newLayout.find(item => item.id === gridItem.id);
+                                    // const act = layout.find(item => item.id === gridItem.id);
+                                    // const orig = originalLayout.find(item => item.id === gridItem.id);
+                                    // console.log(`Calc dragging ${gridItem.id}`, `pre: (${pre?.x}, ${pre?.y})`, `orig: (${orig?.x}, ${orig?.y})`, `act: (${act?.x}, ${act?.y})`);
+
+                                    newLayout = layout;
+                                    draggedItemsPos[gridItem.id] = draggedItemPos;
+                                });
+                            }
+
+                        }  else {
                             const calcNewStateFunc = type === 'drag' ? ktdGridItemDragging : ktdGridItemResizing;
                             gridItems.forEach((gridItem)=>{
                                 const {layout, draggedItemPos} = calcNewStateFunc(gridItem, {
