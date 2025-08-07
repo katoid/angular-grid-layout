@@ -1,10 +1,11 @@
 import { compact, CompactType, getFirstCollision, Layout, LayoutItem, moveElement } from './react-grid-layout.utils';
 import {
-    KtdDraggingData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
+    KtdDraggingData, KtdDraggingMultipleData, KtdGridCfg, KtdGridCompactType, KtdGridItemRect, KtdGridItemRenderData, KtdGridLayout, KtdGridLayoutItem
 } from '../grid.definitions';
 import { ktdPointerClientX, ktdPointerClientY } from './pointer.utils';
 import { KtdDictionary } from '../../types';
 import { KtdGridItemComponent } from '../grid-item/grid-item.component';
+import { moveElements } from './react-grid-layout-multiple.utils';
 
 /** Tracks items by id. This function is mean to be used in conjunction with the ngFor that renders the 'ktd-grid-items' */
 export function ktdTrackById(index: number, item: {id: string}) {
@@ -149,6 +150,107 @@ export function ktdGridItemDragging(gridItem: KtdGridItemComponent, config: KtdG
             width: dragElemClientRect.width,
             height: dragElemClientRect.height,
         }
+    };
+}
+
+
+
+/**
+ * Given the grid config & layout data and the current drag position & information, returns the corresponding layout and drag item position
+ * @param gridItem grid item that is been dragged
+ * @param config current grid configuration
+ * @param compactionType type of compaction that will be performed
+ * @param draggingData contains all the information about the drag
+ */
+export function ktdGridItemsDragging(gridItems: KtdGridItemComponent[], config: KtdGridCfg, compactionType: CompactType, draggingData: KtdDraggingMultipleData): { layout: KtdGridLayoutItem[]; draggedItemPos:  KtdDictionary<KtdGridItemRect> } {
+    const {pointerDownEvent, pointerDragEvent, gridElemClientRect, dragElementsClientRect, scrollDifference} = draggingData;
+
+    const draggingElemPrevItem: KtdDictionary<KtdGridLayoutItem> = {}
+    gridItems.forEach(gridItem=> {
+        draggingElemPrevItem[gridItem.id] = config.layout.find(item => item.id === gridItem.id)!
+    });
+
+    const clientStartX = ktdPointerClientX(pointerDownEvent);
+    const clientStartY = ktdPointerClientY(pointerDownEvent);
+    const clientX = ktdPointerClientX(pointerDragEvent);
+    const clientY = ktdPointerClientY(pointerDragEvent);
+
+    // Grid element positions taking into account the possible scroll total difference from the beginning.
+    const gridElementLeftPosition = gridElemClientRect.left + scrollDifference.left;
+    const gridElementTopPosition = gridElemClientRect.top + scrollDifference.top;
+
+    const rowHeightInPixels = config.rowHeight === 'fit'
+        ? ktdGetGridItemRowHeight(config.layout, config.height ?? gridElemClientRect.height, config.gap)
+        : config.rowHeight;
+
+    const layoutItemsToMove:  KtdDictionary<KtdGridLayoutItem>={};
+    const gridRelPos: KtdDictionary<{x:number,y:number}>={}
+    gridItems.forEach((gridItem: KtdGridItemComponent)=>{
+        const offsetX = clientStartX - dragElementsClientRect[gridItem.id].left;
+        const offsetY = clientStartY - dragElementsClientRect[gridItem.id].top;
+        // Calculate position relative to the grid element.
+        gridRelPos[gridItem.id]={
+            x: clientX - gridElementLeftPosition - offsetX,
+            y:clientY - gridElementTopPosition - offsetY
+        };
+
+        // Get layout item position
+        layoutItemsToMove[gridItem.id] = {
+            ...draggingElemPrevItem[gridItem.id],
+            x: screenXToGridX(gridRelPos[gridItem.id].x , config.cols, gridElemClientRect.width, config.gap),
+            y: screenYToGridY(gridRelPos[gridItem.id].y, rowHeightInPixels, gridElemClientRect.height, config.gap)
+        };
+        // Correct the values if they overflow, since 'moveElement' function doesn't do it
+        layoutItemsToMove[gridItem.id].x = Math.max(0, layoutItemsToMove[gridItem.id].x);
+        layoutItemsToMove[gridItem.id].y = Math.max(0, layoutItemsToMove[gridItem.id].y);
+        if (layoutItemsToMove[gridItem.id].x + layoutItemsToMove[gridItem.id].w > config.cols) {
+            layoutItemsToMove[gridItem.id].x = Math.max(0, config.cols - layoutItemsToMove[gridItem.id].w);
+        }
+    })
+
+
+
+    // Parse to LayoutItem array data in order to use 'react.grid-layout' utils
+    const layoutItems: LayoutItem[] = config.layout;
+    const draggedLayoutItem: {
+        l: LayoutItem,
+        x: number | null | undefined,
+        y: number | null | undefined
+    }[] = gridItems.map((gridItem:KtdGridItemComponent)=>{
+        const draggedLayoutItem: LayoutItem = layoutItems.find(item => item.id === gridItem.id)!;
+        draggedLayoutItem.static = true;
+        return {
+            l: draggedLayoutItem,
+            x: layoutItemsToMove[gridItem.id].x,
+            y: layoutItemsToMove[gridItem.id].y
+        }
+    });
+
+    let newLayoutItems: LayoutItem[] = moveElements(
+        layoutItems,
+        draggedLayoutItem,
+        true,
+        compactionType,
+        config.cols,
+    );
+
+    newLayoutItems = compact(newLayoutItems, compactionType, config.cols);
+    gridItems.forEach(gridItem=>newLayoutItems.find(layoutItem=>layoutItem.id === gridItem.id)!.static = false);
+    newLayoutItems = compact(newLayoutItems, compactionType, config.cols);
+
+    const draggedItemPos: KtdDictionary<KtdGridItemRect>={};
+    gridItems.forEach(gridItem=>
+        draggedItemPos[gridItem.id]={
+            left: gridRelPos[gridItem.id].x,
+            top: gridRelPos[gridItem.id].y,
+            width: dragElementsClientRect[gridItem.id].width,
+            height: dragElementsClientRect[gridItem.id].height,
+        }
+    );
+
+    return {
+        layout: newLayoutItems,
+        draggedItemPos
     };
 }
 
