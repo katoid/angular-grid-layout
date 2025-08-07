@@ -125,7 +125,7 @@ function ktdMouserOrTouchEnd(element: HTMLElement, touchNumber = 1): Observable<
 
 
 /**
- * Emits when a 'pointerdown' event occurs (only for the primary pointer). Fallbacks to 'mousemove' or a 'touchmove' if pointer events are not supported.
+ * Emits when a 'pointerdown' event occurs (only for the primary pointer and mousePrimaryButton/touch). Fallbacks to 'mousemove' or a 'touchmove' if pointer events are not supported.
  * @param element, html element where to listen the events.
  */
 export function ktdPointerDown(element): Observable<MouseEvent | TouchEvent | PointerEvent> {
@@ -134,12 +134,12 @@ export function ktdPointerDown(element): Observable<MouseEvent | TouchEvent | Po
     }
 
     return fromEvent<PointerEvent>(element, 'pointerdown', activeEventListenerOptions as AddEventListenerOptions).pipe(
-        filter((pointerEvent) => pointerEvent.isPrimary)
+        filter((pointerEvent) => pointerEvent.isPrimary && pointerEvent.button === 0)
     )
 }
 
 /**
- * Emits when a 'pointermove' event occurs (only for the primary pointer). Fallbacks to 'mousemove' or a 'touchmove' if pointer events are not supported.
+ * Emits when a 'pointermove' event occurs (only for the primary pointer and mousePrimaryButton/touch). Fallbacks to 'mousemove' or a 'touchmove' if pointer events are not supported.
  * @param element, html element where to listen the events.
  */
 export function ktdPointerMove(element): Observable<MouseEvent | TouchEvent | PointerEvent> {
@@ -147,17 +147,17 @@ export function ktdPointerMove(element): Observable<MouseEvent | TouchEvent | Po
         return ktdMouseOrTouchMove(element);
     }
     return fromEvent<PointerEvent>(element, 'pointermove', activeEventListenerOptions as AddEventListenerOptions).pipe(
-        filter((pointerEvent) => pointerEvent.isPrimary),
+        filter((pointerEvent) => pointerEvent.isPrimary && pointerEvent.button === 0),
     );
 }
 
 /**
- * Emits when a 'pointerup' event occurs (only for the primary pointer). Fallbacks to 'mousemove' or a 'touchmove' if pointer events are not supported.
+ * Emits when a 'pointerup' event occurs (only for the primary pointer and mousePrimaryButton/touch). Fallbacks to 'mousemove' or a 'touchmove' if pointer events are not supported.
  * @param element, html element where to listen the events.
  */
 export function ktdPointerUp(element): Observable<MouseEvent | TouchEvent | PointerEvent> {
     if (!ktdSupportsPointerEvents()) {
         return ktdMouserOrTouchEnd(element);
     }
-    return fromEvent<PointerEvent>(element, 'pointerup').pipe(filter(pointerEvent => pointerEvent.isPrimary));
+    return fromEvent<PointerEvent>(element, 'pointerup').pipe(filter(pointerEvent => pointerEvent.isPrimary && pointerEvent.button === 0));
 }
