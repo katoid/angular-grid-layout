@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [3.1.0](https://github.com/katoid/angular-grid-layout/compare/v3.0.2...v3.1.0) (2025-09-02)
+
+
+### Features
+
+* allow only drag/resize with primary (left) button ([#132](https://github.com/katoid/angular-grid-layout/issues/132)) ([3293c2b](https://github.com/katoid/angular-grid-layout/commit/3293c2bfa2e0e6b0bde3b51eb1a2587c88aab10a))
+* multiple items drag/resize ([7d847d3](https://github.com/katoid/angular-grid-layout/commit/7d847d354addd582478bff619e1d6cb41aa6de39)), closes [#134](https://github.com/katoid/angular-grid-layout/issues/134)
+
 ### [3.0.2](https://github.com/katoid/angular-grid-layout/compare/v3.0.1...v3.0.2) (2025-04-28)
 
 
