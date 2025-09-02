@@ -238,33 +238,78 @@ const realLifeLayout: KtdGridLayout = [
     {id: '217', x: 0, y: 204, w: 6, h: 4},
     {id: '218', x: 6, y: 204, w: 6, h: 4}
 ];
+
 const realLifeLayoutSmall: KtdGridLayout = [
-    {id: '2', x: 1, y: 0, w: 61, h: 1},
-    {id: '3', x: 1, y: 1, w: 15, h: 1},
-    {id: '4', x: 1, y: 2, w: 8, h: 3},
-    {id: '5', x: 9, y: 2, w: 7, h: 3},
-    {id: '6', x: 16, y: 1, w: 15, h: 1},
-    {id: '7', x: 16, y: 2, w: 8, h: 3},
-    {id: '8', x: 24, y: 2, w: 7, h: 3},
-    {id: '9', x: 31, y: 1, w: 15, h: 1},
+    {id: '1', x: 1, y: 0, w: 61, h: 1},
+    {id: '2', x: 1, y: 1, w: 15, h: 1},
+    {id: '3', x: 16, y: 1, w: 15, h: 1},
+    {id: '4', x: 31, y: 1, w: 15, h: 1},
+    {id: '5', x: 46, y: 1, w: 15, h: 1},
+
+    {id: '6', x: 1, y: 2, w: 8, h: 3},
+    {id: '7', x: 9, y: 2, w: 7, h: 3},
+    {id: '8', x: 16, y: 2, w: 8, h: 3},
+    {id: '9', x: 24, y: 2, w: 7, h: 3},
     {id: '10', x: 31, y: 2, w: 8, h: 3},
     {id: '11', x: 39, y: 2, w: 7, h: 3},
-    {id: '12', x: 46, y: 1, w: 15, h: 1},
-    {id: '13', x: 46, y: 6, w: 8, h: 3},
-    {id: '14', x: 54, y: 2, w: 7, h: 3},
-    {id: '15', x: 1, y: 5, w: 15, h: 1},
-    {id: '16', x: 1, y: 6, w: 8, h: 3},
-    {id: '17', x: 9, y: 6, w: 7, h: 3},
-    {id: '18', x: 16, y: 5, w: 15, h: 1},
-    {id: '19', x: 16, y: 6, w: 8, h: 3},
-    {id: '20', x: 24, y: 6, w: 7, h: 3},
-    {id: '21', x: 31, y: 5, w: 15, h: 1},
+    {id: '12', x: 46, y: 2, w: 8, h: 3},
+    {id: '13', x: 54, y: 2, w: 7, h: 3},
+
+    {id: '14', x: 1, y: 5, w: 15, h: 1},
+    {id: '15', x: 16, y: 5, w: 15, h: 1},
+    {id: '16', x: 31, y: 5, w: 15, h: 1},
+    {id: '17', x: 46, y: 5, w: 15, h: 1},
+
+    {id: '18', x: 1, y: 6, w: 8, h: 3},
+    {id: '19', x: 9, y: 6, w: 7, h: 3},
+    {id: '20', x: 16, y: 6, w: 8, h: 3},
+    {id: '21', x: 24, y: 6, w: 7, h: 3},
     {id: '22', x: 31, y: 6, w: 8, h: 3},
     {id: '23', x: 39, y: 6, w: 7, h: 3},
-    {id: '24', x: 46, y: 5, w: 15, h: 1},
-    {id: '25', x: 46, y: 2, w: 8, h: 3},
-    {id: '32', x: 1, y: 9, w: 60, h: 1},
-    {id: '39', x: 54, y: 6, w: 7, h: 3}
+    {id: '24', x: 46, y: 6, w: 8, h: 3},
+    {id: '25', x: 54, y: 6, w: 7, h: 3},
+
+    {id: '26', x: 1, y: 9, w: 60, h: 1},
+
+    {id: '27', x: 1, y: 10, w: 15, h: 1},
+    {id: '28', x: 16, y: 10, w: 15, h: 1},
+    {id: '29', x: 31, y: 10, w: 15, h: 1},
+    {id: '30', x: 46, y: 10, w: 15, h: 1},
+
+    {id: '31', x: 1, y: 11, w: 8, h: 3},
+    {id: '32', x: 9, y: 11, w: 7, h: 3},
+    {id: '33', x: 16, y: 11, w: 8, h: 3},
+    {id: '34', x: 24, y: 11, w: 7, h: 3},
+    {id: '35', x: 31, y: 11, w: 8, h: 3},
+    {id: '36', x: 39, y: 11, w: 7, h: 3},
+    {id: '37', x: 46, y: 11, w: 8, h: 3},
+    {id: '38', x: 54, y: 11, w: 7, h: 3},
+
+    {id: '39', x: 1, y: 14, w: 15, h: 1},
+    {id: '40', x: 16, y: 14, w: 15, h: 1},
+    {id: '41', x: 31, y: 14, w: 15, h: 1},
+    {id: '42', x: 46, y: 14, w: 15, h: 1},
+
+    {id: '43', x: 1, y: 15, w: 8, h: 3},
+    {id: '44', x: 9, y: 15, w: 7, h: 3},
+    {id: '45', x: 16, y: 15, w: 8, h: 3},
+    {id: '46', x: 24, y: 15, w: 7, h: 3},
+    {id: '47', x: 31, y: 15, w: 8, h: 3},
+    {id: '48', x: 39, y: 15, w: 7, h: 3},
+    {id: '49', x: 46, y: 15, w: 8, h: 3},
+    {id: '50', x: 54, y: 15, w: 7, h: 3},
+
+    {id: '51', x: 0, y: 18, w: 62, h: 1},
+
+    {id: '52', x: 0, y: 19, w: 12, h: 1},
+    {id: '53', x: 12, y: 19, w: 50, h: 9},
+
+    {id: '54', x: 0, y: 20, w: 12, h: 2},
+
+    {id: '55', x: 0, y: 22, w: 6, h: 4},
+    {id: '56', x: 6, y: 22, w: 6, h: 4},
+
+    {id: '57', x: 0, y: 26, w: 12, h: 2}
 ];
 
 // Reproduce bug using default grid layout algorithm executed N times per selected item.
@@ -340,7 +385,7 @@ export class KtdMultiItemHandlerComponent implements OnInit, OnDestroy {
     preventCollision = false;
     selectedItems: string[] = [];
     copiedItems: number
-    layout: KtdGridLayout = realLifeLayout;
+    layout: KtdGridLayout = realLifeLayoutSmall;
 
     resizeSubscription: Subscription;
 
