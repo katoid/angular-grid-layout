@@ -496,7 +496,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         this.setGridBackgroundVisible(this._backgroundConfig?.show === 'whenDragging' || this._backgroundConfig?.show === 'always');
                         // Perform drag sequence
                         let gridItemsSelected: KtdGridItemComponent[] = [gridItem];
-                        if(multipleSelection && multipleSelection.some((currItem)=>currItem.id===gridItem.id)) {
+                        if (multipleSelection && multipleSelection.some((currItem) => currItem.id === gridItem.id)) {
                             gridItemsSelected = multipleSelection
                         }
                         return this.performDragSequence$(gridItemsSelected, event, type).pipe(
@@ -533,9 +533,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             // Retrieve grid (parent) client rect.
             const gridElemClientRect: KtdClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
 
-            const dragElemClientRect: KtdDictionary<KtdClientRect>={};
-            const newGridItemRenderData: KtdDictionary<KtdGridItemRenderData<number>>={};
-            let draggedItemsPos: KtdDictionary<KtdGridItemRect>={};
+            const dragElemClientRect: KtdDictionary<KtdClientRect> = {};
+            const newGridItemRenderData: KtdDictionary<KtdGridItemRenderData<number>> = {};
+            let draggedItemsPos: KtdDictionary<KtdGridItemRect> = {};
 
             gridItems.forEach((gridItem)=>{
                 // Retrieve gridItem (draggedElem) client rect.

@@ -122,10 +122,12 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     }
 
     onDragEnded(event: KtdDragEnd) {
+        console.log('dragEnded', event);
         this.isDragging = false;
     }
 
     onResizeEnded(event: KtdResizeEnd) {
+        console.log('resizeEnded', event);
         this.isResizing = false;
     }
 

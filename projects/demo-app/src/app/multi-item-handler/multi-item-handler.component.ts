@@ -8,8 +8,6 @@ import { ktdArrayRemoveItem } from '../utils';
 import { DOCUMENT, NgClass, NgFor } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { KtdFooterComponent } from '../components/footer/footer.component';
-import { ColorPickerModule } from 'ngx-color-picker';
-import { MatChipsModule } from '@angular/material/chips';
 import { MatInputModule } from '@angular/material/input';
 import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { ktdGetOS } from './multi-item-handler.utils';
 import { fromEvent, merge, Subscription } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
+import { ReactiveFormsModule } from '@angular/forms';
 
 const realLifeLayout: KtdGridLayout = [
     {id: '0', x: 0, y: 0, w: 62, h: 3},
@@ -313,23 +312,21 @@ const multiItemSeparatedDragBug = [
 
 @Component({
     standalone: true,
-    selector: 'ktd-playground',
+    selector: 'ktd-multi-item-handler',
     templateUrl: './multi-item-handler.component.html',
     styleUrls: ['./multi-item-handler.component.scss'],
     imports: [
         MatButtonModule,
         MatFormFieldModule,
+        ReactiveFormsModule,
         MatSelectModule,
         MatOptionModule,
         MatInputModule,
         MatCheckboxModule,
         NgFor,
         NgClass,
-        MatChipsModule,
-        ColorPickerModule,
         KtdGridComponent,
         KtdGridItemComponent,
-        KtdGridItemPlaceholder,
         KtdFooterComponent
     ]
 })

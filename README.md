@@ -16,12 +16,13 @@ Both cover the same necessities.
 - Draggable items
 - Resizable items
 - REDUX friendly (akita, ngrx, ngxs...)
-- Customizable Drag & Resize handles.
+- Customizable Drag & Resize handles. [Custom Handles Example](https://katoid.github.io/angular-grid-layout/custom-handles)
 - 3 modes of grid compaction: vertical, horizontal and free (exact same algorithm as [React-Grid-Layout](https://github.com/STRML/react-grid-layout))
 - Add/Remove items
 - High performance
 - Supports touch devices
-- Auto-scrolling while dragging
+- Auto-scrolling while dragging. [Scroll Example](https://katoid.github.io/angular-grid-layout/scroll-test)
+- Multi Item mode, drag and resize more than 1 item at a time. [Multi Item Drag & Resize Example](https://katoid.github.io/angular-grid-layout/multi-item-drag-and-resize)
 
 ## Compatibility
 | Version              | Compatibility           |
@@ -34,9 +35,15 @@ Both cover the same necessities.
 ## Demos
 [Playground](https://katoid.github.io/angular-grid-layout/playground) - [Stackblitz](https://stackblitz.com/edit/angular-grid-layout-playground?file=src%2Fapp%2Fplayground%2Fplayground.component.ts)
 
-[Custom handles](https://katoid.github.io/angular-grid-layout/custom-handles)
+[Custom Handles](https://katoid.github.io/angular-grid-layout/custom-handles)
 
-[Real life example](https://katoid.github.io/angular-grid-layout/real-life-example)
+[Real Life Example](https://katoid.github.io/angular-grid-layout/real-life-example)
+
+[Scroll Test](https://katoid.github.io/angular-grid-layout/scroll-test)
+
+[Row Height Fit](https://katoid.github.io/angular-grid-layout/row-height-fit)
+
+[Multi Item Drag & Resize](https://katoid.github.io/angular-grid-layout/multi-item-drag-and-resize)
 
 ## Installation
 
@@ -121,6 +128,13 @@ Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. 
  * */
 @Input() height: number | null = null;
 
+/**
+ * Multiple items drag/resize
+ * A list of selected items to move (drag or resize) together as a group.
+ * The multi-selection of items is managed externally. By default, the library manages a single item, but if a set of item IDs is provided, the specified group will be handled as a unit."
+ */
+@Input()
+selectedItemsIds(): string[] | null;
 
 /**
  * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.

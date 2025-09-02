@@ -28,7 +28,7 @@ export const APP_ROUTES: Routes = [
         data: {title: 'Angular Grid Layout - Row Height Fit'}
     },
     {
-        path: 'multi-item-handler',
+        path: 'multi-item-drag-and-resize',
         loadComponent: () => import('./multi-item-handler/multi-item-handler.component').then(m => m.KtdMultiItemHandlerComponent),
         data: {title: 'Angular Grid Layout - Multi-Item Drag & Resize'}
     },
