@@ -382,7 +382,6 @@ export class KtdMultiItemHandlerComponent implements OnInit, OnDestroy {
     cols = 62;
     rowHeight = 32;
     compactType: 'vertical' | 'horizontal' | null = 'vertical';
-    preventCollision = false;
     selectedItems: string[] = [];
     copiedItems: number
     layout: KtdGridLayout = realLifeLayoutSmall;
@@ -445,11 +444,6 @@ export class KtdMultiItemHandlerComponent implements OnInit, OnDestroy {
     onCompactTypeChange(change: MatSelectChange) {
         console.log('onCompactTypeChange', change);
         this.compactType = change.value;
-    }
-
-    onPreventCollisionChange(checked: boolean) {
-        console.log('onPreventCollisionChange', checked);
-        this.preventCollision = checked;
     }
 
     onLayoutUpdated(layout: KtdGridLayout) {

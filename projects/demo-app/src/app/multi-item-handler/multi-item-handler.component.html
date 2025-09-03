@@ -30,12 +30,6 @@
                         <mat-option [value]="null">-</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <mat-checkbox
-                    color="accent"
-                    [checked]="preventCollision"
-                    (change)="onPreventCollisionChange($event.checked)">
-                    Prevent Collision
-                </mat-checkbox>
             </div>
         </div>
     </div>
@@ -56,7 +50,6 @@
             [rowHeight]="rowHeight"
             [layout]="layout"
             [compactType]="compactType"
-            [preventCollision]="preventCollision"
             [gap]="10"
             [scrollableParent]="document"
             [scrollSpeed]="4"
