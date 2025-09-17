@@ -429,6 +429,8 @@ export function moveElement(
             l.y
         }]`,
     );
+
+    const axis = compactType === 'vertical' ? 'y' : 'x';
     const oldX = l.x;
     const oldY = l.y;
 
@@ -475,6 +477,11 @@ export function moveElement(
             } at [${collision.x},${collision.y}]`,
         );
 
+        const minCollisionAxis: number | undefined =
+            collisions.length
+                ? Math.min(collisions[0][axis], collisions[collisions.length - 1][axis]) // Take collision closest to 0; sorted but direction unknown
+                : undefined;
+
         // Short circuit so we can't infinite loop
         if (collision.moved) {
             continue;
@@ -486,7 +493,7 @@ export function moveElement(
                 layout,
                 collision,
                 l,
-                isUserAction,
+                minCollisionAxis===collision[axis] && isUserAction, // Reposition "l" only if "collision" is in the first row/col of collisions list
                 compactType,
                 cols,
             );
@@ -495,7 +502,7 @@ export function moveElement(
                 layout,
                 l,
                 collision,
-                isUserAction,
+                minCollisionAxis===collision[axis] && isUserAction, // Reposition "collision" only if is in the first row/col of collisions list
                 compactType,
                 cols,
             );

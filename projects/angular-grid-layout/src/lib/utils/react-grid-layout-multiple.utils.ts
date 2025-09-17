@@ -36,7 +36,7 @@ export function KtdMoveMultipleElements(
     compactType: CompactType,
     cols: number
 ): Layout {
-    let axes = compactType === 'vertical' ? 'y' : 'x';
+    const axis = compactType === 'vertical' ? 'y' : 'x';
     // Short-circuit if nothing to do.
     if (items.every((item) => item.l.y === item.y && item.l.x === item.x)) {
         return layout;
@@ -83,11 +83,16 @@ export function KtdMoveMultipleElements(
     // can apply a repositioning if the collide item its on the first row/col
     let minAxe: number | undefined;
     if (itemsSorted && itemsSorted.length) {
-        minAxe = itemsSorted[0][axes];
+        minAxe = itemsSorted[0][axis];
     }
     // For each element, detect collisions and move the collided element by +1
     itemsSorted.forEach((item) => {
+
         const collisions: LayoutItem[] = getAllCollisions(sorted, item);
+        const minCollisionAxis: number | undefined =  collisions.length
+            ? Math.min(collisions[0][axis], collisions[collisions.length - 1][axis]) // Take collision closest to 0; sorted but direction unknown
+            : undefined;
+
         // Move each item that collides away from this element.
         for (let i = 0, len = collisions.length; i < len; i++) {
             const collision = collisions[i];
@@ -100,13 +105,14 @@ export function KtdMoveMultipleElements(
             if (collision.moved) {
                 continue;
             }
+            const firstAxis: boolean = minAxe === item[axis] && minCollisionAxis===collision[axis];
             // Don't move static items - we have to move *this* element away
             if (collision.static && !item.static) {
                 layout = KtdMoveElementsAwayFromCollision(
                     layout,
                     collision,
                     item,
-                    minAxe === item[axes] ? isUserAction : false, // We only allow repositioning the "item" element if "collision" is in the first row of the moved block
+                    firstAxis && isUserAction, // Allow repositioning "item" only if "collision" and "item" are in the first collision row/col
                     compactType,
                     cols
                 );
@@ -115,7 +121,7 @@ export function KtdMoveMultipleElements(
                     layout,
                     item,
                     collision,
-                    minAxe === item[axes] ? isUserAction : false, // We only allow repositioning the "collision" element if "item" is in the first row of the moved block
+                    firstAxis && isUserAction, // Allow repositioning "collision" only if "collision" and "item" are in the first collision row/col
                     compactType,
                     cols
                 );

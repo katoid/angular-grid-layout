@@ -405,7 +405,7 @@ describe('compact horizontal', () => {
     });
 });
 
-describe('moveElementAffectingOtherItems', () => {
+describe('Test to move one element affecting other items', () => {
     function compactAndMove(
         layout,
         layoutItem,
@@ -432,7 +432,7 @@ describe('moveElementAffectingOtherItems', () => {
         );
     }
 
-    it('Move element up, pushing the rest of the grid down', () => {
+    it('Test that moving an element into the top push the rest of the grid down', () => {
         const layout = [
             {id: '0', x: 1, y: 0, w: 24, h: 1},
             {id: '1', x: 1, y: 1, w: 8, h: 1},
@@ -460,6 +460,35 @@ describe('moveElementAffectingOtherItems', () => {
             {id: '3', x: 9, y: 0, w: 8, h: 8, moved: false, static: false},
             {id: '4', x: 17, y: 1+8, w: 8, h: 2, moved: false, static: false},
             {id: '5', x: 17, y: 3+8, w: 8, h: 3, moved: false, static: false},
+        ]);
+    });
+
+    it('keeps the original order when moving an element horizontally between two elements', () => {
+        const layout = [
+            {id:"0", x:0, y:0, w:6, h:2},
+            {id:"1", x:12, y:0, w:12, h:2},
+            {id:"2", x:0, y:2, w:6, h:2},
+            {id:"3", x:6, y:2, w:12, h:1},
+            {id:"4", x:6, y:3, w:6, h:2}
+        ];
+        const layoutItem = layout[2];
+        expect(
+            compactAndMove(
+                layout,
+                layoutItem,
+                6, // x
+                2, // y
+                true, //isUserAction
+                false, // preventCollision
+                'vertical', // compactType,
+                30 // cols
+            )
+        ).toEqual([
+            {id:"0", x:0, y:0, w:6, h:2, moved: false, static: false},
+            {id:"1", x:12, y:0, w:12, h:2, moved: false, static: false},
+            {id:"2", x:0+6, y:0, w:6, h:2, moved: false, static: false},
+            {id:"3", x:6, y:2, w:12, h:1, moved: false, static: false},
+            {id:"4", x:6, y:3, w:6, h:2, moved: false, static: false},
         ]);
     });
 });
