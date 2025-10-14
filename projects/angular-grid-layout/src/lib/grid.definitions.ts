@@ -13,6 +13,7 @@ export interface KtdGridLayoutItem {
     minH?: number;
     maxW?: number;
     maxH?: number;
+    static?: boolean;
 }
 
 export type KtdGridCompactType = CompactType;

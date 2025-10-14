@@ -356,6 +356,134 @@ describe('compact vertical', () => {
         ]);
     });
 
+    it('Move element with static items', () => {
+        const layout = [
+            {id: '1', x: 0, y: 6, w: 3, h: 3, moved: false},
+            {id: '2', x: 0, y: 3, w: 3, h: 3, moved: false, static: true}
+        ];
+        const layoutItem = {...layout[0]};
+        expect(
+            moveElement(
+                layout,
+                layoutItem,
+                0,
+                1, // x, y
+                true, // isUserAction,
+                false, // preventCollision
+                'vertical',
+                2 // compactType, cols
+            )
+        ).toEqual([
+            {id: '1', x: 0, y: 6, w: 3, h: 3, moved: false},
+            {id: '2', x: 0, y: 3, w: 3, h: 3, moved: false, static: true}
+        ]);
+    });
+
+    it('Move element with static items, example 2', () => {
+        const layout = [
+            {
+                'w': 2,
+                'h': 3,
+                'x': 5,
+                'y': 6,
+                'id': '0',
+                'moved': false,
+                'static': false
+            },
+            {
+                'w': 2,
+                'h': 3,
+                'x': 5,
+                'y': 3,
+                'id': '4',
+                'moved': false,
+                'static': true
+            }
+
+        ];
+        const layoutItem = {...layout[0]};
+        expect(
+            moveElement(
+                layout,
+                layoutItem,
+                5, // x
+                3, // y
+                true, // isUserAction,
+                false, // preventCollision
+                'vertical',
+                2 // compactType, cols
+            )
+        ).toEqual([
+            {id: '0', x: 5, y: 6, w: 2, h: 3, moved: false, static: false},
+            {id: '4', x: 5, y: 3, w: 2, h: 3, moved: false, static: true}
+        ]);
+    });
+
+    it('Should not move the layout item to the bottom of the static one\'s', () => {
+        const layout = [
+            {w: 2, h: 3, x: 5, y: 0, id: '0', moved: false, static: false},
+            {w: 2, h: 8, x: 3, y: 0, id: '2', moved: false, static: false},
+            {w: 2, h: 3, x: 5, y: 3, id: '4', moved: false, static: true}
+        ]
+        const layoutItem = {...layout[0]};
+
+        expect(
+            moveElement(
+                layout,
+                layoutItem,
+                5, // x
+                1, // y
+                true, // isUserAction,
+                false, // preventCollision
+                'vertical',
+                12 // compactType, cols
+            )
+        ).toEqual([
+            {id: '0', x: 5, y: 0, w: 2, h: 3, moved: false, static: false},
+            {id: '2', x: 3, y: 0, w: 2, h: 8, moved: false, static: false},
+            {id: '4', x: 5, y: 3, w: 2, h: 3, moved: false, static: true}
+        ]);
+    });
+
+    it('Should move the element on the bottom of the static element without changing the position of the element that is on top', () => {
+        const layout = [
+            {w: 2, h: 3, x: 5, y: 0, id: '0', moved: false, static: false},
+            {w: 2, h: 8, x: 3, y: 0, id: '2', moved: false, static: false},
+            {w: 2, h: 3, x: 5, y: 3, id: '4', moved: false, static: true}
+        ]
+        const layoutItem = layout[0];
+
+        expect(
+            moveElement(
+                layout,
+                layoutItem,
+                4, // x
+                0, // y
+                true, // isUserAction,
+                false, // preventCollision
+                'vertical',
+                12 // compactType, cols
+            )
+        ).toEqual([
+            {id: '0', x: 5, y: 0, w: 2, h: 3, moved: false, static: false},
+            {id: '2', x: 3, y: 0, w: 2, h: 8, moved: false, static: false},
+            {id: '4', x: 5, y: 3, w: 2, h: 3, moved: false, static: true}
+        ]);
+    });
+
+    it('Should compact correctly if there is a static item', () => {
+        const layout = [
+            {x: 0, y: 0, w: 3, h: 3, id: '1'},
+            {x: 0, y: 3, w: 3, h: 3, id: '2', static: true},
+        ];
+
+        expect(compact(layout, 'vertical', 10)).toEqual([
+            {x: 0, y: 0, w: 3, h: 3, id: '1', moved: false, static: false},
+            {x: 0, y: 3, w: 3, h: 3, id: '2', moved: false, static: true},
+        ]);
+    });
+
+
     it('Clones layout items (does not modify input)', () => {
         const layout = [
             {x: 0, y: 0, w: 2, h: 5, id: '1'},
