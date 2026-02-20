@@ -27,6 +27,33 @@
         border-radius: 2px;
     }
 
+    .metadata-indicator {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 2px solid var(--indicator-color);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:before {
+            content: "";
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            background-color: var(--indicator-color);
+            border-radius: 50%;
+            opacity: 0.2;
+            z-index: -1;
+        }
+    }
+
     ktd-grid-item {
         color: #121212;
     }

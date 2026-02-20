@@ -16,6 +16,13 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 
+function randomRgbColor(): string {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 @Component({
     standalone: true,
     selector: 'ktd-playground',
@@ -33,19 +40,20 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
     gridHeight: null | number = null;
     compactType: 'vertical' | 'horizontal' | null = 'vertical';
     layout: KtdGridLayout = [
-        {id: '0', x: 5, y: 0, w: 2, h: 3},
-        {id: '1', x: 2, y: 2, w: 1, h: 2},
-        {id: '2', x: 3, y: 7, w: 1, h: 2},
-        {id: '3', x: 2, y: 0, w: 3, h: 2},
-        {id: '4', x: 5, y: 3, w: 2, h: 3},
-        {id: '5', x: 0, y: 4, w: 1, h: 3},
-        {id: '6', x: 9, y: 0, w: 2, h: 4},
-        {id: '7', x: 9, y: 4, w: 2, h: 2},
-        {id: '8', x: 3, y: 2, w: 2, h: 5},
-        {id: '9', x: 7, y: 0, w: 1, h: 3},
-        {id: '10', x: 2, y: 4, w: 1, h: 4},
-        {id: '11', x: 0, y: 0, w: 2, h: 4}
+        {id: '0', x: 5, y: 0, w: 2, h: 3, metadata: {color: randomRgbColor()}},
+        {id: '1', x: 2, y: 2, w: 1, h: 2, metadata: {color: randomRgbColor()}},
+        {id: '2', x: 3, y: 7, w: 1, h: 2, metadata: {color: randomRgbColor()}},
+        {id: '3', x: 2, y: 0, w: 3, h: 2, metadata: {color: randomRgbColor()}},
+        {id: '4', x: 5, y: 3, w: 2, h: 3, metadata: {color: randomRgbColor()}},
+        {id: '5', x: 0, y: 4, w: 1, h: 3, metadata: {color: randomRgbColor()}},
+        {id: '6', x: 9, y: 0, w: 2, h: 4, metadata: {color: randomRgbColor()}},
+        {id: '7', x: 9, y: 4, w: 2, h: 2, metadata: {color: randomRgbColor()}},
+        {id: '8', x: 3, y: 2, w: 2, h: 5, metadata: {color: randomRgbColor()}},
+        {id: '9', x: 7, y: 0, w: 1, h: 3, metadata: {color: randomRgbColor()}},
+        {id: '10', x: 2, y: 4, w: 1, h: 4, metadata: {color: randomRgbColor()}},
+        {id: '11', x: 0, y: 0, w: 2, h: 4, metadata: {color: randomRgbColor()}}
     ];
+
     transitions: { name: string, value: string }[] = [
         {name: 'ease', value: 'transform 500ms ease, width 500ms ease, height 500ms ease'},
         {name: 'ease-out', value: 'transform 500ms ease-out, width 500ms ease-out, height 500ms ease-out'},
@@ -211,7 +219,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
                 y: Math.floor(i / 6) * y,
                 w: 2,
                 h: y,
-                id: i.toString()
+                id: i.toString(),
+                metadata: {color: randomRgbColor()}
                 // static: Math.random() < 0.05
             });
         }
@@ -229,7 +238,8 @@ export class KtdPlaygroundComponent implements OnInit, OnDestroy {
             x: -1,
             y: -1,
             w: 2,
-            h: 2
+            h: 2,
+            metadata: {color: randomRgbColor()}
         };
 
         // Important: Don't mutate the array, create new instance. This way notifies the Grid component that the layout has changed.

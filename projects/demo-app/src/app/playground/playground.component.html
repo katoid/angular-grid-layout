@@ -177,7 +177,11 @@
                            [dragStartThreshold]="dragStartThreshold"
                            [draggable]="!disableDrag"
                            [resizable]="!disableResize">
-                <div class="grid-item-content">{{item.id}}</div>
+                <div class="grid-item-content">
+                    <div class="content-wrapper" [style.--indicator-color]="item.metadata?.color">
+                        <div class="metadata-indicator">{{item.id}}</div>
+                    </div>
+                </div>
                 <div class="grid-item-remove-handle"
                      *ngIf="!disableRemove"
                      (mousedown)="stopEventPropagation($event)"
