@@ -1,8 +1,9 @@
-import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { KtdGridComponent, KtdGridLayout, ktdTrackById, KtdGridItemComponent } from '@katoid/angular-grid-layout';
-import { fromEvent, merge, Subscription } from 'rxjs';
+import { fromEvent, merge } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-import { DOCUMENT, NgFor } from '@angular/common';
+
 import { coerceNumberProperty } from '@angular/cdk/coercion';
 import { KtdFooterComponent } from '../components/footer/footer.component';
 import { MatInputModule } from '@angular/material/input';
@@ -29,15 +30,15 @@ function generateLayout2(cols: number, size: number) {
 }
 
 @Component({
-    standalone: true,
     selector: 'ktd-scroll-test',
     templateUrl: './scroll-test.component.html',
     styleUrls: ['./scroll-test.component.scss'],
-    imports: [MatFormFieldModule, MatInputModule, KtdGridComponent, NgFor, KtdGridItemComponent, KtdFooterComponent]
+    imports: [MatFormFieldModule, MatInputModule, KtdGridComponent, KtdGridItemComponent, KtdFooterComponent]
 })
-export class KtdScrollTestComponent implements OnInit, OnDestroy {
+export class KtdScrollTestComponent implements OnInit {
     @ViewChild('grid1', {static: true, read: KtdGridComponent}) grid1: KtdGridComponent;
     @ViewChild('grid2', {static: true, read: KtdGridComponent}) grid2: KtdGridComponent;
+    private readonly destroyRef = inject(DestroyRef);
 
     trackById = ktdTrackById;
     cols = 12;
@@ -64,27 +65,28 @@ export class KtdScrollTestComponent implements OnInit, OnDestroy {
     cols2 = 36;
     layout2: KtdGridLayout = generateLayout2(this.cols2, 3);
 
-    private resizeSubscription: Subscription;
-
-    constructor(@Inject(DOCUMENT) public document) { }
-
     ngOnInit() {
-        this.resizeSubscription = merge(
+        merge(
             fromEvent(window, 'resize'),
             fromEvent(window, 'orientationchange')
         ).pipe(
-            debounceTime(50)
+            debounceTime(50),
+            takeUntilDestroyed(this.destroyRef)
         ).subscribe(() => {
             this.grid1.resize();
             this.grid2.resize();
         });
     }
 
-    ngOnDestroy() {
-        this.resizeSubscription.unsubscribe();
-    }
-
     onScrollSpeedChange(event: Event) {
         this.scrollSpeed = coerceNumberProperty((event.target as HTMLInputElement).value);
+    }
+
+    onLayout1Updated(layout: KtdGridLayout) {
+        this.layout1 = layout;
+    }
+
+    onLayout2Updated(layout: KtdGridLayout) {
+        this.layout2 = layout;
     }
 }

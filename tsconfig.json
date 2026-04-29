@@ -1,30 +1,31 @@
 {
     "compileOnSave": false,
     "compilerOptions": {
-        "baseUrl": "./",
-        "outDir": "./dist/out-tsc",
-        "forceConsistentCasingInFileNames": true,
-        "noImplicitReturns": true,
-        "noFallthroughCasesInSwitch": true,
-        "sourceMap": true,
-        "declaration": false,
-        "downlevelIteration": true,
-        "experimentalDecorators": true,
-        "moduleResolution": "node",
-        "importHelpers": true,
-        "target": "ES2022",
-        "module": "es2020",
-        "strictNullChecks": true,
-        "useDefineForClassFields": false,
-        "lib": [
-            "es2019",
-            "dom"
-        ],
-        "paths": {
-            "@katoid/angular-grid-layout": [
-                "dist/angular-grid-layout"
-            ]
-        }
+      "baseUrl": "./",
+      "outDir": "./dist/out-tsc",
+      "forceConsistentCasingInFileNames": true,
+      "esModuleInterop": true,
+      "noImplicitReturns": true,
+      "noFallthroughCasesInSwitch": true,
+      "sourceMap": true,
+      "declaration": false,
+      "experimentalDecorators": true,
+      "moduleResolution": "bundler",
+      "importHelpers": true,
+      "target": "ES2022",
+      "module": "es2020",
+      "strictNullChecks": true,
+      "useDefineForClassFields": false,
+      "lib": [
+        "es2019",
+        "dom"
+      ],
+      "paths": {
+        "@katoid/angular-grid-layout": [
+          "projects/angular-grid-layout/src/public-api.ts",
+          "dist/angular-grid-layout"
+        ]
+      }
     },
     "angularCompilerOptions": {
         "strictInjectionParameters": true,

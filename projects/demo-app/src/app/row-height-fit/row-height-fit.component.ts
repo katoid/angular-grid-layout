@@ -1,7 +1,8 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { KtdGridModule, KtdGridComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
-import { fromEvent, merge, Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, DestroyRef, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+import { KtdGridComponent, KtdGridItemComponent, KtdGridLayout, ktdTrackById } from '@katoid/angular-grid-layout';
+import { fromEvent, merge } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { ktdArrayRemoveItem } from '../utils';
 import { RouterModule } from '@angular/router';
@@ -9,8 +10,7 @@ import { KtdFooterComponent } from '../components/footer/footer.component';
 
 @Component({
     selector: 'ktd-row-height-fit',
-    standalone: true,
-    imports: [CommonModule, KtdGridModule, RouterModule, KtdFooterComponent],
+    imports: [KtdGridComponent, KtdGridItemComponent, RouterModule, KtdFooterComponent],
     templateUrl: './row-height-fit.component.html',
     styleUrls: ['./row-height-fit.component.scss']
 })
@@ -18,6 +18,8 @@ export class KtdRowHeightFitComponent implements OnInit {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;
     @ViewChild('gridContainer', {static: true}) gridContainerElementRef: ElementRef<HTMLDivElement>;
     trackById = ktdTrackById;
+    private readonly changeDetectorRef = inject(ChangeDetectorRef);
+    private readonly destroyRef = inject(DestroyRef);
 
     cols = 12;
     gridHeight: null | number = 500;
@@ -45,22 +47,20 @@ export class KtdRowHeightFitComponent implements OnInit {
     disableResize = false;
     disableRemove = false;
     preventCollision = false;
-    resizeSubscription: Subscription;
-
-    constructor() { }
-
     ngOnInit() {
         this.gridHeight = this.gridContainerElementRef.nativeElement.getBoundingClientRect().height;
 
-        this.resizeSubscription = merge(
+        merge(
             fromEvent(window, 'resize'),
             fromEvent(window, 'orientationchange')
         ).pipe(
             debounceTime(50),
+            takeUntilDestroyed(this.destroyRef)
         ).subscribe(() => {
             const newHeight = this.gridContainerElementRef.nativeElement.getBoundingClientRect().height;
             if (this.gridHeight !== newHeight) {
                 this.gridHeight = this.gridContainerElementRef.nativeElement.getBoundingClientRect().height;
+                this.changeDetectorRef.markForCheck();
             } else { // If grid height is the same, resize ii in case only the width has changed.
                 this.grid.resize();
             }

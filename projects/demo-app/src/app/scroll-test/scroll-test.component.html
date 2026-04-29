@@ -1,42 +1,47 @@
 <mat-form-field color="accent">
-    <mat-label>Scroll Speed</mat-label>
-    <input matInput type="number" [value]="scrollSpeed + ''" (input)="onScrollSpeedChange($event)">
+  <mat-label>Scroll Speed</mat-label>
+  <input matInput type="number" [value]="scrollSpeed + ''" (input)="onScrollSpeedChange($event)">
 </mat-form-field>
 <div class="grids-container">
-    <div>
-        <h2>Scroll Vertical</h2>
-        <div class="grid-container-1" #gridContainer1>
-            <ktd-grid #grid1
-                      [cols]="cols"
-                      [rowHeight]="50"
-                      [layout]="layout1"
-                      [scrollableParent]="gridContainer1"
-                      [scrollSpeed]="scrollSpeed"
-                      [compactType]="compactType">
-                <ktd-grid-item *ngFor="let item of layout1; trackBy:trackById"
-                               [id]="item.id">
-                    <div class="grid-item-content">{{item.id}}</div>
-                </ktd-grid-item>
-            </ktd-grid>
-        </div>
+  <div>
+    <h2>Scroll Vertical</h2>
+    <div class="grid-container-1" #gridContainer1>
+      <ktd-grid #grid1
+        [cols]="cols"
+        [rowHeight]="50"
+        [layout]="layout1"
+        [scrollableParent]="gridContainer1"
+        [scrollSpeed]="scrollSpeed"
+        [compactType]="compactType"
+        (layoutUpdated)="onLayout1Updated($event)">
+        @for (item of layout1; track trackById($index, item)) {
+          <ktd-grid-item
+            [id]="item.id">
+            <div class="grid-item-content">{{item.id}}</div>
+          </ktd-grid-item>
+        }
+      </ktd-grid>
     </div>
-    <div style="margin-left: 32px;">
-        <h2>Scroll Vertical and horizontal</h2>
-        <div class="grid-container-2" #gridContainer2>
-            <ktd-grid #grid2
-                      [cols]="cols2"
-                      [rowHeight]="50"
-                      [layout]="layout2"
-                      [scrollableParent]="gridContainer2"
-                      [scrollSpeed]="scrollSpeed"
-                      [compactType]="compactType">
-                <ktd-grid-item *ngFor="let item of layout2; trackBy:trackById"
-                               [id]="item.id">
-                    <div class="grid-item-content">{{item.id}}</div>
-                </ktd-grid-item>
-            </ktd-grid>
-        </div>
+  </div>
+  <div style="margin-left: 32px;">
+    <h2>Scroll Vertical and horizontal</h2>
+    <div class="grid-container-2" #gridContainer2>
+      <ktd-grid #grid2
+        [cols]="cols2"
+        [rowHeight]="50"
+        [layout]="layout2"
+        [scrollableParent]="gridContainer2"
+        [scrollSpeed]="scrollSpeed"
+        [compactType]="compactType"
+        (layoutUpdated)="onLayout2Updated($event)">
+        @for (item of layout2; track trackById($index, item)) {
+          <ktd-grid-item
+            [id]="item.id">
+            <div class="grid-item-content">{{item.id}}</div>
+          </ktd-grid-item>
+        }
+      </ktd-grid>
     </div>
+  </div>
 </div>
 <ktd-footer></ktd-footer>
-

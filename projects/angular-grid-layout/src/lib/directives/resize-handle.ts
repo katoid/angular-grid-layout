@@ -1,4 +1,4 @@
-import { Directive, ElementRef, InjectionToken, } from '@angular/core';
+import { Directive, ElementRef, InjectionToken, inject } from '@angular/core';
 
 
 /**
@@ -20,8 +20,5 @@ export const KTD_GRID_RESIZE_HANDLE = new InjectionToken<KtdGridResizeHandle>('K
 })
 // eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class KtdGridResizeHandle {
-
-    constructor(
-        public element: ElementRef<HTMLElement>) {
-    }
+    readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 }

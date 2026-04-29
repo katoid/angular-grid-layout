@@ -3,8 +3,8 @@ import { KtdGridComponent } from './grid.component';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
 import { KtdGridDragHandle } from './directives/drag-handle';
 import { KtdGridResizeHandle } from './directives/resize-handle';
+import { KtdGridItemPlaceholder } from './directives/placeholder';
 import { KtdGridService } from './grid.service';
-import { KtdGridItemPlaceholder } from '../public-api';
 
 @NgModule({
     imports: [
@@ -26,6 +26,9 @@ import { KtdGridItemPlaceholder } from '../public-api';
     ]
 })
 /**
- * @deprecated Use `KtdGridComponent` instead.
+ * Legacy compatibility wrapper for NgModule-based applications.
+ *
+ * @deprecated Use the standalone components and directives directly.
+ * This NgModule is kept only for legacy compatibility and will be removed in the next major version.
  */
 export class KtdGridModule {}

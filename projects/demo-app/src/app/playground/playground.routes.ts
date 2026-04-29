@@ -5,6 +5,6 @@ export const PLAYGROUND_ROUTES: Routes = [
     {
         path: '',
         component: KtdPlaygroundComponent,
-        data: {title: 'Angular Grid Layout - Playground'}
+        title: 'Angular Grid Layout - Playground'
     },
 ];

@@ -1,4 +1,4 @@
-import { Directive, ElementRef, InjectionToken } from '@angular/core';
+import { Directive, ElementRef, InjectionToken, inject } from '@angular/core';
 
 /**
  * Injection token that can be used to reference instances of `KtdGridDragHandle`. It serves as
@@ -19,7 +19,5 @@ export const KTD_GRID_DRAG_HANDLE = new InjectionToken<KtdGridDragHandle>('KtdGr
 })
 // eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class KtdGridDragHandle {
-    constructor(
-        public element: ElementRef<HTMLElement>) {
-    }
+    readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 }

@@ -1,23 +1,25 @@
 <div class="grid-container">
-    <ktd-grid cols="12"
-              rowHeight="50"
-              compactType="vertical"
-              compactOnPropsChange="true"
-              preventCollision="false"
-              [layout]="layout"
-              [scrollableParent]="document"
-              (layoutUpdated)="onLayoutUpdated($event)">
-        <ktd-grid-item *ngFor="let item of layout; trackBy:trackById"
-                       draggable="true"
-                       resizable="true"
-                       dragStartThreshold="0"
-                       [id]="item.id">
-            <div ktdGridDragHandle class="handle-1">Handle 1</div>
-            <div class="grid-item-content">
-                <div ktdGridDragHandle class="handle-2">Handle 2</div>
-            </div>
-            <mat-icon ktdGridResizeHandle class="resize-handle-1">open_in_full</mat-icon>
-        </ktd-grid-item>
-    </ktd-grid>
+  <ktd-grid cols="12"
+    rowHeight="50"
+    compactType="vertical"
+    compactOnPropsChange="true"
+    preventCollision="false"
+    [layout]="layout"
+    [scrollableParent]="document"
+    (layoutUpdated)="onLayoutUpdated($event)">
+    @for (item of layout; track trackById($index, item)) {
+      <ktd-grid-item
+        draggable="true"
+        resizable="true"
+        dragStartThreshold="0"
+        [id]="item.id">
+        <div ktdGridDragHandle class="handle-1">Handle 1</div>
+        <div class="grid-item-content">
+          <div ktdGridDragHandle class="handle-2">Handle 2</div>
+        </div>
+        <mat-icon ktdGridResizeHandle class="resize-handle-1">open_in_full</mat-icon>
+      </ktd-grid-item>
+    }
+  </ktd-grid>
 </div>
 <ktd-footer></ktd-footer>

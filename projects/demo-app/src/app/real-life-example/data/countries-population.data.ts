@@ -8,12 +8,12 @@ export const countriesPopulation = [
         value: 5000000
     },
     {
-        name: 'France',
-        value: 7200000
-    },
-    {
         name: 'Italy',
         value: 4500000
+    },
+    {
+        name: 'France',
+        value: 7200000
     },
     {
         name: 'Spain',
@@ -92,5 +92,3 @@ export const countriesPopulationByYear = [
         ]
     }
 ];
-
-

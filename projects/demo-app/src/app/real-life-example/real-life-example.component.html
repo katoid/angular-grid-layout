@@ -4,111 +4,108 @@
               [layout]="layout"
               [scrollableParent]="document"
               [compactType]="compactType"
-              (layoutUpdated)="onLayoutUpdated($event)"
-              (gridItemResize)="onGridItemResize($event)">
+              (layoutUpdated)="onLayoutUpdated($event)">
         <ktd-grid-item id="0" minW="4">
-            <ngx-charts-bar-vertical-stacked
-                [view]="layoutSizes['0']"
-                [scheme]="colorScheme2"
-                [results]="countriesPopulationByYear"
-                [gradient]="false"
-                [xAxis]="xAxis"
-                [yAxis]="yAxis"
-                [legend]="true"
-                [showXAxisLabel]="showXAxisLabel"
-                [showYAxisLabel]="showYAxisLabel"
-                [xAxisLabel]="xAxisLabel"
-                [yAxisLabel]="yAxisLabel"
-                [animations]="animations"
-                (select)="onSelect('0', $event)">
-            </ngx-charts-bar-vertical-stacked>
+            <div class="chart-card">
+                <h2>Population by year</h2>
+                <div echarts class="chart-view" [options]="populationByYearChart"></div>
+            </div>
             <ng-template ktdGridItemPlaceholder>
                 <div class="custom-placeholder-container">
-                    <ngx-charts-bar-vertical-stacked
-                        [view]="layoutSizes['0']"
-                        [scheme]="colorScheme2"
-                        [results]="countriesPopulationByYear"
-                        [gradient]="false"
-                        [xAxis]="xAxis"
-                        [yAxis]="yAxis"
-                        [legend]="true"
-                        [showXAxisLabel]="showXAxisLabel"
-                        [showYAxisLabel]="showYAxisLabel"
-                        [xAxisLabel]="xAxisLabel"
-                        [yAxisLabel]="yAxisLabel"
-                        [animations]="false"
-                        (select)="onSelect('0', $event)">
-                    </ngx-charts-bar-vertical-stacked>
+                    <div class="chart-card placeholder">
+                        <h2>Population by year</h2>
+                        <div echarts class="chart-view" [options]="populationByYearPlaceholderChart"></div>
+                    </div>
                 </div>
             </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="1">
-            <ngx-charts-bar-horizontal-2d
-                [view]="layoutSizes['1']"
-                [scheme]="colorSchemeGradientLinear"
-                [schemeType]="schemeType"
-                [results]="countriesPopulationByYear"
-                [gradient]="false"
-                [xAxis]="xAxis"
-                [yAxis]="yAxis"
-                [legend]="false"
-                [legendPosition]="legendBelow"
-                [showXAxisLabel]="showXAxisLabel"
-                [showYAxisLabel]="showYAxisLabel"
-                [xAxisLabel]="yAxisLabel"
-                [yAxisLabel]="xAxisLabel"
-                (select)="onSelect('1', $event)"
-                (activate)="onActivate('1', $event)"
-                (deactivate)="onDeactivate('1', $event)">
-            </ngx-charts-bar-horizontal-2d>
+            <div class="chart-card">
+                <h2>Population ranking</h2>
+                <div echarts class="chart-view" [options]="populationHorizontalChart"></div>
+            </div>
             <ng-template ktdGridItemPlaceholder>
                 <div class="custom-placeholder-container">
-                    <ngx-charts-bar-horizontal-2d
-                        [view]="layoutSizes['1']"
-                        [scheme]="colorSchemeGradientLinear"
-                        [schemeType]="schemeType"
-                        [results]="countriesPopulationByYear"
-                        [gradient]="false"
-                        [xAxis]="xAxis"
-                        [yAxis]="yAxis"
-                        [legend]="false"
-                        [animations]="false"
-                        [legendPosition]="legendBelow"
-                        [showXAxisLabel]="showXAxisLabel"
-                        [showYAxisLabel]="showYAxisLabel"
-                        [xAxisLabel]="yAxisLabel"
-                        [yAxisLabel]="xAxisLabel">
-                    </ngx-charts-bar-horizontal-2d>
+                    <div class="chart-card placeholder">
+                        <h2>Population ranking</h2>
+                        <div echarts class="chart-view" [options]="populationHorizontalPlaceholderChart"></div>
+                    </div>
                 </div>
             </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="2">
-            <ngx-charts-tree-map
-                [view]="layoutSizes['2']"
-                [scheme]="colorScheme"
-                [results]="countriesPopulation"
-                [gradient]="false"
-                [animations]="true"
-                [labelFormatting]="labelFormatting"
-                (select)="onSelect('2', $event)">
-            </ngx-charts-tree-map>
+            <div class="chart-card">
+                <h2>Treemap</h2>
+                <div class="treemap-layout">
+                    <div class="treemap-column treemap-column-left">
+                        <div *ngFor="let tile of treemapColumns[0]"
+                             class="treemap-tile"
+                             [class.treemap-tile-dark]="tile.darkText"
+                             [style.background]="tile.color">
+                            <span>{{ tile.name }} Population</span>
+                            <strong>{{ formatPopulation(tile.value) }}</strong>
+                        </div>
+                    </div>
+                    <div class="treemap-column treemap-column-middle">
+                        <div *ngFor="let tile of treemapColumns[1]"
+                             class="treemap-tile"
+                             [class.treemap-tile-dark]="tile.darkText"
+                             [style.background]="tile.color">
+                            <span>{{ tile.name }} Population</span>
+                            <strong>{{ formatPopulation(tile.value) }}</strong>
+                        </div>
+                    </div>
+                    <div class="treemap-column treemap-column-right">
+                        <div *ngFor="let tile of treemapColumns[2]"
+                             class="treemap-tile"
+                             [class.treemap-tile-dark]="tile.darkText"
+                             [style.background]="tile.color">
+                            <span>{{ tile.name }} Population</span>
+                            <strong>{{ formatPopulation(tile.value) }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <ng-template ktdGridItemPlaceholder>
                 <div class="custom-placeholder-container">
-                    <ngx-charts-tree-map
-                        #chart
-                        [view]="layoutSizes['2']"
-                        [scheme]="colorScheme"
-                        [results]="countriesPopulation"
-                        [gradient]="false"
-                        [animations]="false"
-                        [labelFormatting]="labelFormatting">
-                    </ngx-charts-tree-map>
+                    <div class="chart-card placeholder">
+                        <h2>Treemap</h2>
+                        <div class="treemap-layout">
+                            <div class="treemap-column treemap-column-left">
+                                <div *ngFor="let tile of treemapColumns[0]"
+                                     class="treemap-tile"
+                                     [class.treemap-tile-dark]="tile.darkText"
+                                     [style.background]="tile.color">
+                                    <span>{{ tile.name }} Population</span>
+                                    <strong>{{ formatPopulation(tile.value) }}</strong>
+                                </div>
+                            </div>
+                            <div class="treemap-column treemap-column-middle">
+                                <div *ngFor="let tile of treemapColumns[1]"
+                                     class="treemap-tile"
+                                     [class.treemap-tile-dark]="tile.darkText"
+                                     [style.background]="tile.color">
+                                    <span>{{ tile.name }} Population</span>
+                                    <strong>{{ formatPopulation(tile.value) }}</strong>
+                                </div>
+                            </div>
+                            <div class="treemap-column treemap-column-right">
+                                <div *ngFor="let tile of treemapColumns[2]"
+                                     class="treemap-tile"
+                                     [class.treemap-tile-dark]="tile.darkText"
+                                     [style.background]="tile.color">
+                                    <span>{{ tile.name }} Population</span>
+                                    <strong>{{ formatPopulation(tile.value) }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="3">
-            <div class="ktd-grid-img-container">
-                <img src="assets/icons/katoid-icon-192x192.png">
+            <div class="logo-tile">
+                <span>K</span>
             </div>
         </ktd-grid-item>
         <ktd-grid-item class="ktd-grid-item-table" id="4">
@@ -121,34 +118,19 @@
             </ng-template>
         </ktd-grid-item>
         <ktd-grid-item id="5">
-            <ngx-charts-pie-chart
-                [view]="layoutSizes['5']"
-                [scheme]="colorScheme"
-                [results]="countriesPopulation"
-                [gradient]="false"
-                [legend]="false"
-                [labels]="showLabels"
-                [doughnut]="false"
-                (select)="onSelect('5', $event)"
-                (activate)="onActivate('5', $event)"
-                (deactivate)="onDeactivate('5', $event)">
-            </ngx-charts-pie-chart>
+            <div class="chart-card">
+                <h2>Population share</h2>
+                <div echarts class="chart-view" [options]="populationPieChart"></div>
+            </div>
             <ng-template ktdGridItemPlaceholder>
                 <div class="custom-placeholder-container">
-                    <ngx-charts-pie-chart
-                        [view]="layoutSizes['5']"
-                        [scheme]="colorScheme"
-                        [results]="countriesPopulation"
-                        [gradient]="false"
-                        [legend]="false"
-                        [labels]="showLabels"
-                        [animations]="false"
-                        [doughnut]="false">
-                    </ngx-charts-pie-chart>
+                    <div class="chart-card placeholder">
+                        <h2>Population share</h2>
+                        <div echarts class="chart-view" [options]="populationPiePlaceholderChart"></div>
+                    </div>
                 </div>
             </ng-template>
         </ktd-grid-item>
     </ktd-grid>
 </div>
 <ktd-footer></ktd-footer>
-

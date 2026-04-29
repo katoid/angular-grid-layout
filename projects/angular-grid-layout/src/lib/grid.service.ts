@@ -1,9 +1,10 @@
-import { Inject, Injectable, NgZone, OnDestroy } from '@angular/core';
+import { DestroyRef, DOCUMENT, Injectable, NgZone, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ktdNormalizePassiveListenerOptions } from './utils/passive-listeners';
-import { fromEvent, iif, Observable, Subject, Subscription } from 'rxjs';
+import { fromEvent, iif, Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ktdIsMobileOrTablet, ktdSupportsPointerEvents } from './utils/pointer.utils';
-import { DOCUMENT } from '@angular/common';
+
 
 /** Event options that can be used to bind an active, capturing event. */
 const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({
@@ -12,19 +13,16 @@ const activeCapturingEventOptions = ktdNormalizePassiveListenerOptions({
 });
 
 @Injectable({providedIn: 'root'})
-export class KtdGridService implements OnDestroy {
+export class KtdGridService {
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly ngZone = inject(NgZone);
+    private readonly document = inject(DOCUMENT);
 
-    touchMove$: Observable<TouchEvent>;
     private touchMoveSubject: Subject<TouchEvent> = new Subject<TouchEvent>();
-    private touchMoveSubscription: Subscription;
+    touchMove$: Observable<TouchEvent> = this.touchMoveSubject.asObservable();
 
-    constructor(private ngZone: NgZone, @Inject(DOCUMENT) private document: Document) {
-        this.touchMove$ = this.touchMoveSubject.asObservable();
+    constructor() {
         this.registerTouchMoveSubscription();
-    }
-
-    ngOnDestroy() {
-        this.touchMoveSubscription.unsubscribe();
     }
 
     mouseOrTouchMove$(element): Observable<MouseEvent | TouchEvent> {
@@ -43,11 +41,14 @@ export class KtdGridService implements OnDestroy {
         // The `touchmove` event gets bound once, ahead of time, because WebKit
         // won't preventDefault on a dynamically-added `touchmove` listener.
         // See https://bugs.webkit.org/show_bug.cgi?id=184250.
-        this.touchMoveSubscription = this.ngZone.runOutsideAngular(() =>
+        this.ngZone.runOutsideAngular(() =>
             // The event handler has to be explicitly active,
             // because newer browsers make it passive by default.
             fromEvent(this.document, 'touchmove', activeCapturingEventOptions as AddEventListenerOptions) // TODO: Fix rxjs typings, boolean should be a good param too.
-                .pipe(filter((touchEvent: TouchEvent) => touchEvent.touches.length === 1))
+                .pipe(
+                    filter((touchEvent: TouchEvent) => touchEvent.touches.length === 1),
+                    takeUntilDestroyed(this.destroyRef)
+                )
                 .subscribe((touchEvent: TouchEvent) => this.touchMoveSubject.next(touchEvent))
         );
     }

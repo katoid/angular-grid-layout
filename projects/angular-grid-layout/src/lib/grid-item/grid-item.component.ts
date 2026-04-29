@@ -1,8 +1,9 @@
 import {
-    AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, ElementRef, HostBinding, Inject, Input, NgZone, OnDestroy, OnInit,
-    QueryList, Renderer2, ViewChild
+  AfterContentInit, ChangeDetectionStrategy, Component, ContentChild, ContentChildren, DestroyRef, DOCUMENT, effect, ElementRef, HostBinding, inject, input, NgZone, OnInit,
+  QueryList, Renderer2, ViewChild,
 } from '@angular/core';
-import { BehaviorSubject, NEVER, Observable, Subject, Subscription, iif, merge } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { BehaviorSubject, NEVER, Observable, Subject, iif, merge } from 'rxjs';
 import { exhaustMap, filter, map, startWith, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { BooleanInput, coerceBooleanProperty } from '../coercion/boolean-property';
 import { NumberInput, coerceNumberProperty } from '../coercion/number-property';
@@ -13,7 +14,7 @@ import { GRID_ITEM_GET_RENDER_DATA_TOKEN, KtdGridItemRenderDataTokenType } from 
 import { KtdGridService } from '../grid.service';
 import { ktdOutsideZone } from '../utils/operators';
 import { ktdIsMouseEventOrMousePointerEvent, ktdPointerClient, ktdPointerDown, ktdPointerUp } from '../utils/pointer.utils';
-import { DOCUMENT } from '@angular/common';
+
 
 @Component({
     standalone: true,
@@ -22,7 +23,7 @@ import { DOCUMENT } from '@angular/common';
     styleUrls: ['./grid-item.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit {
+export class KtdGridItemComponent implements OnInit, AfterContentInit {
     /** Elements that can be used to drag the grid item. */
     @ContentChildren(KTD_GRID_DRAG_HANDLE, {descendants: true}) _dragHandles: QueryList<KtdGridDragHandle>;
     @ContentChildren(KTD_GRID_RESIZE_HANDLE, {descendants: true}) _resizeHandles: QueryList<KtdGridResizeHandle>;
@@ -32,104 +33,103 @@ export class KtdGridItemComponent implements OnInit, OnDestroy, AfterContentInit
     @ContentChild(KTD_GRID_ITEM_PLACEHOLDER) placeholder: KtdGridItemPlaceholder;
 
     /** Min and max size input properties. Any of these would 'override' the min/max values specified in the layout. */
-    @Input() minW?: number;
-    @Input() minH?: number;
-    @Input() maxW?: number;
-    @Input() maxH?: number;
+    readonly _minWInput = input<number | undefined, NumberInput>(undefined, {
+        alias: 'minW',
+        transform: (value: NumberInput) => value == null ? undefined : coerceNumberProperty(value)
+    });
+    readonly _minHInput = input<number | undefined, NumberInput>(undefined, {
+        alias: 'minH',
+        transform: (value: NumberInput) => value == null ? undefined : coerceNumberProperty(value)
+    });
+    readonly _maxWInput = input<number | undefined, NumberInput>(undefined, {
+        alias: 'maxW',
+        transform: (value: NumberInput) => value == null ? undefined : coerceNumberProperty(value)
+    });
+    readonly _maxHInput = input<number | undefined, NumberInput>(undefined, {
+        alias: 'maxH',
+        transform: (value: NumberInput) => value == null ? undefined : coerceNumberProperty(value)
+    });
 
     /** CSS transition style. Note that for more performance is preferable only make transition on transform property. */
-    @Input() transition: string = 'transform 500ms ease, width 500ms ease, height 500ms ease';
+    readonly _transitionInput = input('transform 500ms ease, width 500ms ease, height 500ms ease', {alias: 'transition'});
 
     /** Dynamically apply `touch-action` to the host element based on draggable */
     @HostBinding('style.touch-action') get touchAction(): string {
-        return this._draggable ? 'none' : 'auto';
+        return this.draggable ? 'none' : 'auto';
     }
-
-    dragStart$: Observable<MouseEvent | TouchEvent>;
-    resizeStart$: Observable<MouseEvent | TouchEvent>;
 
     /** Id of the grid item. This property is strictly compulsory. */
-    @Input()
-    get id(): string {
-        return this._id;
-    }
-
-    set id(val: string) {
-        this._id = val;
-    }
-
-    private _id: string;
+    readonly _idInput = input.required<string>({alias: 'id'});
 
     /** Minimum amount of pixels that the user should move before it starts the drag sequence. */
-    @Input()
-    get dragStartThreshold(): number { return this._dragStartThreshold; }
-
-    set dragStartThreshold(val: number) {
-        this._dragStartThreshold = coerceNumberProperty(val);
-    }
-
-    private _dragStartThreshold: number = 0;
+    readonly _dragStartThresholdInput = input(0, {
+        alias: 'dragStartThreshold',
+        transform: (value: NumberInput) => coerceNumberProperty(value)
+    });
 
 
     /** Whether the item is draggable or not. Defaults to true. Does not affect manual dragging using the startDragManually method. */
-    @Input()
-    get draggable(): boolean {
-        return this._draggable;
-    }
-
-    set draggable(val: boolean) {
-        this._draggable = coerceBooleanProperty(val);
-        this._draggable$.next(this._draggable);
-    }
-
-    private _draggable: boolean = true;
-    private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._draggable);
+    readonly _draggableInput = input(true, {
+        alias: 'draggable',
+        transform: (value: BooleanInput) => coerceBooleanProperty(value)
+    });
+    private _draggable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this.draggable);
 
     private _manualDragEvents$: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
     /** Whether the item is resizable or not. Defaults to true. */
-    @Input()
-    get resizable(): boolean {
-        return this._resizable;
-    }
-
-    set resizable(val: boolean) {
-        this._resizable = coerceBooleanProperty(val);
-        this._resizable$.next(this._resizable);
-    }
-
-    private _resizable: boolean = true;
-    private _resizable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this._resizable);
+    readonly _resizableInput = input(true, {
+        alias: 'resizable',
+        transform: (value: BooleanInput) => coerceBooleanProperty(value)
+    });
+    private _resizable$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(this.resizable);
 
     private dragStartSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
     private resizeStartSubject: Subject<MouseEvent | TouchEvent> = new Subject<MouseEvent | TouchEvent>();
 
-    private subscriptions: Subscription[] = [];
+    readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly gridService = inject(KtdGridService);
+    private readonly renderer = inject(Renderer2);
+    private readonly ngZone = inject(NgZone);
+    private readonly document = inject<Document>(DOCUMENT);
+    private readonly getItemRenderData = inject<KtdGridItemRenderDataTokenType>(GRID_ITEM_GET_RENDER_DATA_TOKEN);
 
-    constructor(public elementRef: ElementRef,
-                private gridService: KtdGridService,
-                private renderer: Renderer2,
-                private ngZone: NgZone,
-                @Inject(DOCUMENT) private document: Document,
-                @Inject(GRID_ITEM_GET_RENDER_DATA_TOKEN) private getItemRenderData: KtdGridItemRenderDataTokenType) {
-        this.dragStart$ = this.dragStartSubject.asObservable();
-        this.resizeStart$ = this.resizeStartSubject.asObservable();
-    }
+    dragStart$ = this.dragStartSubject.asObservable();
+    resizeStart$ = this.resizeStartSubject.asObservable();
+
+    get minW(): number | undefined { return this._minWInput(); }
+    get minH(): number | undefined { return this._minHInput(); }
+    get maxW(): number | undefined { return this._maxWInput(); }
+    get maxH(): number | undefined { return this._maxHInput(); }
+    get transition(): string { return this._transitionInput(); }
+    get id(): string { return this._idInput(); }
+    get dragStartThreshold(): number { return this._dragStartThresholdInput(); }
+    get draggable(): boolean { return this._draggableInput(); }
+    get resizable(): boolean { return this._resizableInput(); }
+
+    private readonly _draggableEffect = effect(() => {
+        this._draggable$.next(this.draggable);
+    });
+
+    private readonly _resizableEffect = effect(() => {
+        this._resizable$.next(this.resizable);
+    });
 
     ngOnInit() {
-        const gridItemRenderData = this.getItemRenderData(this.id)!;
-        this.setStyles(gridItemRenderData);
+        const gridItemRenderData = this.getItemRenderData(this.id);
+        if (gridItemRenderData) {
+            this.setStyles(gridItemRenderData);
+        }
     }
 
     ngAfterContentInit() {
-        this.subscriptions.push(
-            this._dragStart$().subscribe(this.dragStartSubject),
-            this._resizeStart$().subscribe(this.resizeStartSubject),
-        );
-    }
-
-    ngOnDestroy() {
-        this.subscriptions.forEach(sub => sub.unsubscribe());
+        this._dragStart$()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(this.dragStartSubject);
+        this._resizeStart$()
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(this.resizeStartSubject);
     }
 
     /**

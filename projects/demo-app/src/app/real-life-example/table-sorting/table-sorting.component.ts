@@ -26,11 +26,10 @@ const ELEMENT_DATA: PeriodicElement[] = [
  * @title Table with sorting
  */
 @Component({
-    standalone: true,
     selector: 'ktd-table-sorting',
     styleUrls: ['table-sorting.component.scss'],
     templateUrl: 'table-sorting.component.html',
-    imports: [MatTableModule, MatSortModule],
+    imports: [MatTableModule, MatSortModule]
 })
 export class KtdTableSortingComponent implements AfterViewInit {
     displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];

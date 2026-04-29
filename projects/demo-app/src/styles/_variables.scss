@@ -1,4 +1,5 @@
 @use '@angular/material' as mat;
+@use 'sass:color';
 @use 'sass:map';
 
 @mixin cssVariables($theme) {
@@ -8,15 +9,17 @@
     $warn: map.get($theme, warn);
     $background: map.get($theme, background);
     $foreground: map.get($theme, foreground);
+    $primary-color: mat.m2-get-color-from-palette($primary, default);
+    $accent-color: mat.m2-get-color-from-palette($accent, default);
 
 
-    --ktd-color-primary: #{mat.get-color-from-palette($primary, default)};
-    --ktd-color-primary-rgb: #{red(mat.get-color-from-palette($primary, default)), green(mat.get-color-from-palette($primary, default)), blue(mat.get-color-from-palette($primary, default))};
-    --ktd-color-primary-contrast:  #{mat.get-color-from-palette($primary, default-contrast)};
+    --ktd-color-primary: #{$primary-color};
+    --ktd-color-primary-rgb: #{color.channel($primary-color, "red", $space: rgb)}, #{color.channel($primary-color, "green", $space: rgb)}, #{color.channel($primary-color, "blue", $space: rgb)};
+    --ktd-color-primary-contrast:  #{mat.m2-get-color-from-palette($primary, default-contrast)};
 
-    --ktd-color-accent: #{mat.get-color-from-palette($accent, default)};
-    --ktd-color-accent-rgb: #{red(mat.get-color-from-palette($accent, default)), green(mat.get-color-from-palette($accent, default)), blue(mat.get-color-from-palette($accent, default))};
-    --ktd-color-accent-contrast: #{mat.get-color-from-palette($accent, default-contrast)};
+    --ktd-color-accent: #{$accent-color};
+    --ktd-color-accent-rgb: #{color.channel($accent-color, "red", $space: rgb)}, #{color.channel($accent-color, "green", $space: rgb)}, #{color.channel($accent-color, "blue", $space: rgb)};
+    --ktd-color-accent-contrast: #{mat.m2-get-color-from-palette($accent, default-contrast)};
 
     // Background & foreground (as background contrast)
     --ktd-background-color: #121212;

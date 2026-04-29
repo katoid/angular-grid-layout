@@ -5,6 +5,6 @@ export const SCROLL_TEST_ROUTES: Routes = [
     {
         path: '',
         component: KtdScrollTestComponent,
-        data: {title: 'Angular Grid Layout - Scroll test'}
+        title: 'Angular Grid Layout - Scroll test'
     },
 ];

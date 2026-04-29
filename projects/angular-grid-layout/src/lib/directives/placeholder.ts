@@ -1,4 +1,4 @@
-import { Directive, InjectionToken, Input, TemplateRef } from '@angular/core';
+import { Directive, InjectionToken, input, TemplateRef, inject } from '@angular/core';
 
 /**
  * Injection token that can be used to reference instances of `KtdGridItemPlaceholder`. It serves as
@@ -20,6 +20,10 @@ export const KTD_GRID_ITEM_PLACEHOLDER = new InjectionToken<KtdGridItemPlacehold
 // eslint-disable-next-line @angular-eslint/directive-class-suffix
 export class KtdGridItemPlaceholder<T = any> {
     /** Context data to be added to the placeholder template instance. */
-    @Input() data: T;
-    constructor(public templateRef: TemplateRef<T>) {}
+    readonly _data = input<T | undefined>(undefined, {alias: 'data'});
+    readonly templateRef = inject<TemplateRef<T>>(TemplateRef);
+
+    get data(): T | undefined {
+        return this._data();
+    }
 }

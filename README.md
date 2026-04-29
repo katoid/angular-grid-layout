@@ -27,7 +27,8 @@ Both cover the same necessities.
 ## Compatibility
 | Version              | Compatibility           |
 |----------------------|-------------------------|
-| \>= 3.0.0            | Angular 16, 17, 18 & 19 |
+| \>= 3.1.0            | Angular 18, 19, 20 & 21 |
+| \>= 3.0.0 && < 3.1.0 | Angular 16, 17, 18 & 19 |
 | \>= 2.0.0            | Angular 14, 15          |
 | \>= 1.1.0 && < 2.0.0 | Angular 12, 13 & 14     |
 | \>= 0.1.1 && < 1.1.0 | Angular 9, 10 & 11      |
@@ -54,14 +55,51 @@ npm install @katoid/angular-grid-layout --save
 ```
 
 ## Usage
-Import KtdGridModule to the module where you want to use the grid:
+Import the standalone building blocks in the component where you want to use the grid:
 
 ```ts
+import { Component } from '@angular/core';
+import {
+  KtdGridComponent,
+  KtdGridItemComponent,
+  KtdGridItemPlaceholder,
+  ktdTrackById,
+  type KtdGridLayout,
+} from '@katoid/angular-grid-layout';
+
+@Component({
+  selector: 'app-dashboard',
+  imports: [KtdGridComponent, KtdGridItemComponent, KtdGridItemPlaceholder],
+  templateUrl: './dashboard.component.html'
+})
+export class DashboardComponent {
+  cols = 6;
+  rowHeight = 100;
+  layout: KtdGridLayout = [
+    {id: '0', x: 0, y: 0, w: 3, h: 3},
+    {id: '1', x: 3, y: 0, w: 3, h: 3},
+  ];
+  trackById = ktdTrackById;
+}
+```
+
+If your application still uses NgModules, `KtdGridModule` is still available as a legacy compatibility wrapper.
+It is deprecated, it is no longer used by the main examples, and it will be removed in the next major version.
+The recommended API is standalone-first.
+
+Legacy compatibility example:
+
+```ts
+import { NgModule } from '@angular/core';
 import { KtdGridModule } from '@katoid/angular-grid-layout';
 
+/**
+ * @deprecated Prefer standalone imports from `@katoid/angular-grid-layout`.
+ */
 @NgModule({
   imports: [KtdGridModule]
 })
+export class DashboardModule {}
 ```
 
 Use it in your template:
@@ -70,7 +108,8 @@ Use it in your template:
           [rowHeight]="rowHeight"
           [layout]="layout"
           (layoutUpdated)="onLayoutUpdated($event)">
-    <ktd-grid-item *ngFor="let item of layout; trackBy:trackById" [id]="item.id">
+    @for (item of layout; track trackById($index, item)) {
+    <ktd-grid-item [id]="item.id">
         <!-- Your grid item content goes here -->
 
         <!-- Optional Custom placeholder template -->
@@ -78,6 +117,7 @@ Use it in your template:
             <!-- Custom placeholder content goes here -->
         </ng-template>
     </ktd-grid-item>
+    }
 </ktd-grid>
 ```
 
@@ -98,7 +138,9 @@ trackById = ktdTrackById
 
 ## API
 
-Here is listed the basic API of both KtdGridComponent and KtdGridItemComponent. See source code for full knowledge of the API.
+Here is listed the basic template API of both `KtdGridComponent` and `KtdGridItemComponent`.
+Internally the library uses Angular signal inputs/outputs, but template binding remains the same for consumers.
+See source code for full knowledge of the API.
 
 #### KtdGridComponent
 ```ts

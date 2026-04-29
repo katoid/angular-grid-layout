@@ -1,11 +1,12 @@
-import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, DOCUMENT, inject, OnInit, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSelectChange, MatSelectModule } from '@angular/material/select';
 import {
     KtdDragEnd, KtdDragStart, ktdGridCompact, KtdGridComponent, KtdGridItemComponent, KtdGridItemPlaceholder, KtdGridLayout, KtdGridLayoutItem,
     ktdGridSortLayoutItems, KtdResizeEnd, KtdResizeStart, ktdTrackById
 } from '@katoid/angular-grid-layout';
 import { ktdArrayRemoveItem } from '../utils';
-import { DOCUMENT, NgClass, NgFor } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { KtdFooterComponent } from '../components/footer/footer.component';
 import { MatInputModule } from '@angular/material/input';
@@ -13,7 +14,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
 import { ktdGetOS } from './multi-item-handler.utils';
-import { fromEvent, merge, Subscription } from 'rxjs';
+import { fromEvent, merge } from 'rxjs';
 import { debounceTime, filter } from 'rxjs/operators';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -356,28 +357,29 @@ const multiItemSeparatedDragBug = [
 ]
 
 @Component({
-    standalone: true,
     selector: 'ktd-multi-item-handler',
     templateUrl: './multi-item-handler.component.html',
     styleUrls: ['./multi-item-handler.component.scss'],
     imports: [
-        MatButtonModule,
-        MatFormFieldModule,
-        ReactiveFormsModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatInputModule,
-        MatCheckboxModule,
-        NgFor,
-        NgClass,
-        KtdGridComponent,
-        KtdGridItemComponent,
-        KtdFooterComponent
-    ]
+    MatButtonModule,
+    MatFormFieldModule,
+    ReactiveFormsModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatInputModule,
+    MatCheckboxModule,
+    NgClass,
+    KtdGridComponent,
+    KtdGridItemComponent,
+    KtdFooterComponent
+]
 })
-export class KtdMultiItemHandlerComponent implements OnInit, OnDestroy {
+export class KtdMultiItemHandlerComponent implements OnInit {
     @ViewChild(KtdGridComponent, {static: true}) grid: KtdGridComponent;
     trackById = ktdTrackById;
+    private readonly changeDetectorRef = inject(ChangeDetectorRef);
+    private readonly destroyRef = inject(DestroyRef);
+    readonly document = inject<Document>(DOCUMENT);
 
     cols = 62;
     rowHeight = 32;
@@ -386,39 +388,30 @@ export class KtdMultiItemHandlerComponent implements OnInit, OnDestroy {
     copiedItems: number
     layout: KtdGridLayout = realLifeLayoutSmall;
 
-    resizeSubscription: Subscription;
-
     private _isDraggingResizing: boolean = false;
 
-    constructor(
-        private ngZone: NgZone,
-        public elementRef: ElementRef,
-        @Inject(DOCUMENT) public document: Document
-    ) {
-        fromEvent<KeyboardEvent>(document, 'keydown').pipe(
+    ngOnInit() {
+        fromEvent<KeyboardEvent>(this.document, 'keydown').pipe(
             filter(event => {
                 const isCtrlV = event.ctrlKey && event.key.toLowerCase() === 'v'; // Windows
                 const isCmdV = event.metaKey && event.key.toLowerCase() === 'v'; // Mac
                 return isCtrlV || isCmdV;
-            })
+            }),
+            takeUntilDestroyed(this.destroyRef)
         ).subscribe(() => {
             this.duplicateSelectedElements();
+            this.changeDetectorRef.markForCheck();
         });
-    }
 
-    ngOnInit() {
-        this.resizeSubscription = merge(
+        merge(
             fromEvent(window, 'resize'),
             fromEvent(window, 'orientationchange')
         ).pipe(
             debounceTime(50),
+            takeUntilDestroyed(this.destroyRef)
         ).subscribe(() => {
             this.grid.resize();
         });
-    }
-
-    ngOnDestroy() {
-        this.resizeSubscription.unsubscribe();
     }
 
     onDragStarted(event: KtdDragStart) {

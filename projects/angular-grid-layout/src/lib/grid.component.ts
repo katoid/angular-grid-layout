@@ -1,10 +1,11 @@
 import {
-    AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, ElementRef, EmbeddedViewRef, EventEmitter, Inject, Input,
-    NgZone, OnChanges, OnDestroy, Output, QueryList, Renderer2, SimpleChanges, ViewContainerRef, ViewEncapsulation
+  AfterContentChecked, AfterContentInit, ChangeDetectionStrategy, Component, ContentChildren, DestroyRef, DOCUMENT, effect, ElementRef, EmbeddedViewRef, inject, input,
+  NgZone, output, QueryList, Renderer2, ViewContainerRef, ViewEncapsulation,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { coerceNumberProperty, NumberInput } from './coercion/number-property';
 import { KtdGridItemComponent } from './grid-item/grid-item.component';
-import { combineLatest, merge, NEVER, Observable, Observer, of, Subscription } from 'rxjs';
+import { combineLatest, merge, NEVER, Observable, Observer, of } from 'rxjs';
 import { exhaustMap, map, startWith, switchMap, takeUntil } from 'rxjs/operators';
 import { ktdGetGridItemRowHeight, ktdGridItemDragging, ktdGridItemLayoutItemAreEqual, ktdGridItemResizing, ktdGridItemsDragging } from './utils/grid.utils';
 import { compact } from './utils/react-grid-layout.utils';
@@ -19,7 +20,7 @@ import { ktdGetScrollTotalRelativeDifference$, ktdScrollIfNearElementClientRect$
 import { BooleanInput, coerceBooleanProperty } from './coercion/boolean-property';
 import { KtdGridItemPlaceholder } from './directives/placeholder';
 import { getTransformTransitionDurationInMs } from './utils/transition-duration';
-import { DOCUMENT } from '@angular/common';
+
 
 interface KtdDragResizeEvent {
     layout: KtdGridLayout;
@@ -104,7 +105,8 @@ export function parseRenderItemToPixels(renderItem: KtdGridItemRenderData<number
 // eslint-disable-next-line @katoid/prefix-exported-code
 export function __gridItemGetRenderDataFactoryFunc(gridCmp: KtdGridComponent) {
     return function(id: string) {
-        return parseRenderItemToPixels(gridCmp.getItemRenderData(id));
+        const renderData = gridCmp.getItemRenderData(id);
+        return renderData ? parseRenderItemToPixels(renderData) : undefined;
     };
 }
 
@@ -137,130 +139,78 @@ const defaultBackgroundConfig: Required<Omit<KtdGridBackgroundCfg, 'show'>> = {
         }
     ]
 })
-export class KtdGridComponent implements OnChanges, AfterContentInit, AfterContentChecked, OnDestroy {
+export class KtdGridComponent implements AfterContentInit, AfterContentChecked {
     /** Query list of grid items that are being rendered. */
     @ContentChildren(KtdGridItemComponent, {descendants: true}) _gridItems: QueryList<KtdGridItemComponent>;
 
     /** Emits when layout change */
-    @Output() layoutUpdated: EventEmitter<KtdGridLayout> = new EventEmitter<KtdGridLayout>();
+    layoutUpdated = output<KtdGridLayout>();
 
     /** Emits when drag starts */
-    @Output() dragStarted: EventEmitter<KtdDragStart> = new EventEmitter<KtdDragStart>();
+    dragStarted = output<KtdDragStart>();
 
     /** Emits when resize starts */
-    @Output() resizeStarted: EventEmitter<KtdResizeStart> = new EventEmitter<KtdResizeStart>();
+    resizeStarted = output<KtdResizeStart>();
 
     /** Emits when drag ends */
-    @Output() dragEnded: EventEmitter<KtdDragEnd> = new EventEmitter<KtdDragEnd>();
+    dragEnded = output<KtdDragEnd>();
 
     /** Emits when resize ends */
-    @Output() resizeEnded: EventEmitter<KtdResizeEnd> = new EventEmitter<KtdResizeEnd>();
+    resizeEnded = output<KtdResizeEnd>();
 
     /** Emits when a grid item is being resized and its bounds have changed */
-    @Output() gridItemResize: EventEmitter<KtdGridItemResizeEvent> = new EventEmitter<KtdGridItemResizeEvent>();
+    gridItemResize = output<KtdGridItemResizeEvent>();
 
     /**
      * Parent element that contains the scroll. If an string is provided it would search that element by id on the dom.
      * If no data provided or null autoscroll is not performed.
      */
-    @Input() scrollableParent: HTMLElement | Document | string | null = null;
+    readonly scrollableParent = input<HTMLElement | Document | string | null>(null);
 
     /** Whether or not to update the internal layout when some dependent property change. */
-    @Input()
-    get compactOnPropsChange(): boolean { return this._compactOnPropsChange; }
-
-    set compactOnPropsChange(value: boolean) {
-        this._compactOnPropsChange = coerceBooleanProperty(value);
-    }
-
-    private _compactOnPropsChange: boolean = true;
+    readonly compactOnPropsChange = input(true, {
+        transform: (value: BooleanInput) => coerceBooleanProperty(value)
+    });
 
     /** If true, grid items won't change position when being dragged over. Handy when using no compaction */
-    @Input()
-    get preventCollision(): boolean { return this._preventCollision; }
-
-    set preventCollision(value: boolean) {
-        this._preventCollision = coerceBooleanProperty(value);
-    }
-
-    private _preventCollision: boolean = false;
+    readonly preventCollision = input(false, {
+        transform: (value: BooleanInput) => coerceBooleanProperty(value)
+    });
 
     /** Number of CSS pixels that would be scrolled on each 'tick' when auto scroll is performed. */
-    @Input()
-    get scrollSpeed(): number { return this._scrollSpeed; }
-
-    set scrollSpeed(value: number) {
-        this._scrollSpeed = coerceNumberProperty(value, 2);
-    }
-
-    private _scrollSpeed: number = 2;
+    readonly scrollSpeed = input(2, {
+        transform: (value: NumberInput) => coerceNumberProperty(value, 2)
+    });
 
     /** Type of compaction that will be applied to the layout (vertical, horizontal or free). Defaults to 'vertical' */
-    @Input()
-    get compactType(): KtdGridCompactType {
-        return this._compactType;
-    }
-
-    set compactType(val: KtdGridCompactType) {
-        this._compactType = val;
-    }
-
-    private _compactType: KtdGridCompactType = 'vertical';
+    readonly compactType = input<KtdGridCompactType>('vertical');
 
     /**
      * Row height as number or as 'fit'.
      * If rowHeight is a number value, it means that each row would have those css pixels in height.
      * if rowHeight is 'fit', it means that rows will fit in the height available. If 'fit' value is set, a 'height' should be also provided.
      */
-    @Input()
-    get rowHeight(): number | 'fit' { return this._rowHeight; }
-
-    set rowHeight(val: number | 'fit') {
-        this._rowHeight = val === 'fit' ? val : Math.max(1, Math.round(coerceNumberProperty(val)));
-    }
-
-    private _rowHeight: number | 'fit' = 100;
+    readonly rowHeight = input<number | 'fit', NumberInput | 'fit'>(100, {
+        transform: (value: NumberInput | 'fit') => value === 'fit' ? value : Math.max(1, Math.round(coerceNumberProperty(value)))
+    });
 
     /** Number of columns  */
-    @Input()
-    get cols(): number { return this._cols; }
-
-    set cols(val: number) {
-        this._cols = Math.max(1, Math.round(coerceNumberProperty(val)));
-    }
-
-    private _cols: number = 6;
+    readonly cols = input(6, {
+        transform: (value: NumberInput) => Math.max(1, Math.round(coerceNumberProperty(value)))
+    });
 
     /** Layout of the grid. Array of all the grid items with its 'id' and position on the grid. */
-    @Input()
-    get layout(): KtdGridLayout { return this._layout; }
+    readonly layoutInput = input<KtdGridLayout>([], {alias: 'layout'});
+    private _layout: KtdGridLayout = [];
 
-    set layout(layout: KtdGridLayout) {
-        /**
-         * Enhancement:
-         * Only set layout if it's reference has changed and use a boolean to track whenever recalculate the layout on ngOnChanges.
-         *
-         * Why:
-         * The normal use of this lib is having the variable layout in the outer component or in a store, assigning it whenever it changes and
-         * binded in the component with it's input [layout]. In this scenario, we would always calculate one unnecessary change on the layout when
-         * it is re-binded on the input.
-         */
-        this._layout = layout;
+    get layout(): KtdGridLayout {
+        return this._layout;
     }
-
-    private _layout: KtdGridLayout;
 
     /** Grid gap in css pixels */
-    @Input()
-    get gap(): number {
-        return this._gap;
-    }
-
-    set gap(val: number) {
-        this._gap = Math.max(coerceNumberProperty(val), 0);
-    }
-
-    private _gap: number = 0;
+    readonly gap = input(0, {
+        transform: (value: NumberInput) => Math.max(coerceNumberProperty(value), 0)
+    });
 
 
     /**
@@ -268,75 +218,37 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
      * If height is null, height will be automatically set according to its inner grid items.
      * Defaults to null.
      * */
-    @Input()
-    get height(): number | null {
-        return this._height;
-    }
-
-    set height(val: number | null) {
-        this._height = typeof val === 'number' ? Math.max(val, 0) : null;
-    }
-
-    private _height: number | null = null;
+    readonly height = input<number | null, number | null>(null, {
+        transform: (value: number | null) => typeof value === 'number' ? Math.max(value, 0) : null
+    });
 
     /**
      * Multiple items drag/resize
      * A list of selected items to move (drag or resize) together as a group.
      * The multi-selection of items is managed externally. By default, the library manages a single item, but if a set of item IDs is provided, the specified group will be handled as a unit."
      */
-    @Input()
+    readonly selectedItemsIdsInput = input<string[] | null>(null, {alias: 'selectedItemsIds'});
+
     get selectedItemsIds(): string[] | null {
         return this._selectedItemsIds;
     }
 
-    set selectedItemsIds(val: string[] | null) {
-        this._selectedItemsIds = val;
-        if(val){
-            this.selectedItems = val.map(
-                (layoutItemId: string) =>
-                    this._gridItems.find(
-                        (gridItem: KtdGridItemComponent) =>
-                            gridItem.id === layoutItemId
-                    )!
-            );
-        } else {
-            this.selectedItems = undefined;
-        }
-    }
-
-    private _selectedItemsIds: string[] | null;
+    private _selectedItemsIds: string[] | null = null;
     selectedItems: KtdGridItemComponent[] | undefined;
 
 
-    @Input()
-    get backgroundConfig(): KtdGridBackgroundCfg | null {
-        return this._backgroundConfig;
-    }
-
-    set backgroundConfig(val: KtdGridBackgroundCfg | null) {
-        this._backgroundConfig = val;
-
-        // If there is background configuration, add main grid background class. Grid background class comes with opacity 0.
-        // It is done this way for adding opacity animation and to don't add any styles when grid background is null.
-        const classList = (this.elementRef.nativeElement as HTMLDivElement).classList;
-        this._backgroundConfig !== null ? classList.add('ktd-grid-background') : classList.remove('ktd-grid-background');
-
-        // Set background visibility
-        this.setGridBackgroundVisible(this._backgroundConfig?.show === 'always');
-    }
-
-    private _backgroundConfig: KtdGridBackgroundCfg | null = null;
+    readonly backgroundConfig = input<KtdGridBackgroundCfg | null>(null);
 
     private gridCurrentHeight: number;
 
     get config(): KtdGridCfg {
         return {
-            cols: this.cols,
-            rowHeight: this.rowHeight,
-            height: this.height,
+            cols: this.cols(),
+            rowHeight: this.rowHeight(),
+            height: this.height(),
             layout: this.layout,
-            preventCollision: this.preventCollision,
-            gap: this.gap,
+            preventCollision: this.preventCollision(),
+            gap: this.gap(),
         };
     }
 
@@ -346,51 +258,63 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     /** Elements that are rendered as placeholder when a list of grid items are being dragged */
     private placeholder: KtdDictionary<HTMLElement | null>={};
 
-    private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>>;
-    private subscriptions: Subscription[] = [];
+    private _gridItemsRenderData: KtdDictionary<KtdGridItemRenderData<number>> = {};
+    private readonly destroyRef = inject(DestroyRef);
+    private readonly gridService = inject(KtdGridService);
+    private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+    private readonly viewContainerRef = inject(ViewContainerRef);
+    private readonly renderer = inject(Renderer2);
+    private readonly ngZone = inject(NgZone);
+    private readonly document = inject(DOCUMENT);
+    private previousInputs: {
+        compactType: KtdGridCompactType;
+        cols: number;
+        rowHeight: number | 'fit';
+        height: number | null;
+        gap: number;
+        layout: KtdGridLayout;
+        selectedItemsIds: string[] | null;
+        backgroundConfig: KtdGridBackgroundCfg | null;
+    } | null = null;
+    private readonly syncInputStateEffect = effect(() => {
+        const nextInputs = {
+            compactType: this.compactType(),
+            cols: this.cols(),
+            rowHeight: this.rowHeight(),
+            height: this.height(),
+            gap: this.gap(),
+            layout: this.layoutInput(),
+            selectedItemsIds: this.selectedItemsIdsInput(),
+            backgroundConfig: this.backgroundConfig(),
+        };
 
-    constructor(private gridService: KtdGridService,
-                private elementRef: ElementRef,
-                private viewContainerRef: ViewContainerRef,
-                private renderer: Renderer2,
-                private ngZone: NgZone,
-                @Inject(DOCUMENT) private document: Document) {
+        const previousInputs = this.previousInputs;
+        this.previousInputs = nextInputs;
 
-    }
+        this._layout = nextInputs.layout;
+        this._selectedItemsIds = nextInputs.selectedItemsIds;
+        this.syncSelectedItems();
+        this.applyBackgroundConfig(nextInputs.backgroundConfig);
 
-    ngOnChanges(changes: SimpleChanges) {
-
-        if (this.rowHeight === 'fit' && this.height == null) {
-            console.warn(`KtdGridComponent: The @Input() height should not be null when using rowHeight 'fit'`);
+        if (nextInputs.rowHeight === 'fit' && nextInputs.height == null) {
+            console.warn(`KtdGridComponent: The height input should not be null when using rowHeight 'fit'`);
         }
 
-        let needsCompactLayout = false;
-        let needsRecalculateRenderData = false;
+        const changes = {
+            compactType: !previousInputs || previousInputs.compactType !== nextInputs.compactType,
+            cols: !previousInputs || previousInputs.cols !== nextInputs.cols,
+            layout: !previousInputs || previousInputs.layout !== nextInputs.layout,
+            rowHeight: !previousInputs || previousInputs.rowHeight !== nextInputs.rowHeight,
+            height: !previousInputs || previousInputs.height !== nextInputs.height,
+            gap: !previousInputs || previousInputs.gap !== nextInputs.gap,
+            backgroundConfig: !previousInputs || previousInputs.backgroundConfig !== nextInputs.backgroundConfig,
+        };
 
-        // TODO: Does fist change need to be compacted by default?
-        // Compact layout whenever some dependent prop changes.
-        if (changes.compactType || changes.cols || changes.layout) {
-            needsCompactLayout = true;
-        }
-
-        // Check if wee need to recalculate rendering data.
-        if (needsCompactLayout || changes.rowHeight || changes.height || changes.gap || changes.backgroundConfig) {
-            needsRecalculateRenderData = true;
-        }
-
-        // Only compact layout if lib user has provided it. Lib users that want to save/store always the same layout  as it is represented (compacted)
-        // can use KtdCompactGrid utility and pre-compact the layout. This is the recommended behaviour for always having a the same layout on this component
-        // and the ones that uses it.
-        if (needsCompactLayout && this.compactOnPropsChange) {
-            this.compactLayout();
-        }
-
-        if (needsRecalculateRenderData) {
-            this.calculateRenderData();
-        }
-    }
+        this.handleInputStateChanges(changes);
+    });
 
     ngAfterContentInit() {
+        this.syncSelectedItems();
         this.initSubscriptions();
     }
 
@@ -403,12 +327,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         this.render();
     }
 
-    ngOnDestroy() {
-        this.subscriptions.forEach(sub => sub.unsubscribe());
-    }
-
     compactLayout() {
-        this.layout = compact(this.layout, this.compactType, this.cols);
+        this.setInternalLayout(compact(this.layout, this.compactType(), this.cols()));
     }
 
     getItemsRenderData(): KtdDictionary<KtdGridItemRenderData<number>> {
@@ -421,7 +341,9 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
 
     calculateRenderData() {
         const clientRect = (this.elementRef.nativeElement as HTMLElement).getBoundingClientRect();
-        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? clientRect.height : getGridHeight(this.layout, this.rowHeight, this.gap));
+        const rowHeight = this.rowHeight();
+        const gap = this.gap();
+        this.gridCurrentHeight = this.height() ?? (rowHeight === 'fit' ? clientRect.height : getGridHeight(this.layout, rowHeight, gap));
         this._gridItemsRenderData = layoutToRenderItems(this.config, clientRect.width, this.gridCurrentHeight);
 
         // Set Background CSS variables
@@ -436,18 +358,20 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private setBackgroundCssVariables(rowHeight: number) {
         const style = (this.elementRef.nativeElement as HTMLDivElement).style;
 
-        if (this._backgroundConfig) {
+        const backgroundConfig = this.backgroundConfig();
+
+        if (backgroundConfig) {
             // structure
-            style.setProperty('--gap', this.gap + 'px');
+            style.setProperty('--gap', this.gap() + 'px');
             style.setProperty('--row-height', rowHeight + 'px');
-            style.setProperty('--columns', `${this.cols}`);
-            style.setProperty('--border-width', (this._backgroundConfig.borderWidth ?? defaultBackgroundConfig.borderWidth) + 'px');
+            style.setProperty('--columns', `${this.cols()}`);
+            style.setProperty('--border-width', (backgroundConfig.borderWidth ?? defaultBackgroundConfig.borderWidth) + 'px');
 
             // colors
-            style.setProperty('--border-color', this._backgroundConfig.borderColor ?? defaultBackgroundConfig.borderColor);
-            style.setProperty('--gap-color', this._backgroundConfig.gapColor ?? defaultBackgroundConfig.gapColor);
-            style.setProperty('--row-color', this._backgroundConfig.rowColor ?? defaultBackgroundConfig.rowColor);
-            style.setProperty('--column-color', this._backgroundConfig.columnColor ?? defaultBackgroundConfig.columnColor);
+            style.setProperty('--border-color', backgroundConfig.borderColor ?? defaultBackgroundConfig.borderColor);
+            style.setProperty('--gap-color', backgroundConfig.gapColor ?? defaultBackgroundConfig.gapColor);
+            style.setProperty('--row-color', backgroundConfig.rowColor ?? defaultBackgroundConfig.rowColor);
+            style.setProperty('--column-color', backgroundConfig.columnColor ?? defaultBackgroundConfig.columnColor);
         } else {
             style.removeProperty('--gap');
             style.removeProperty('--row-height');
@@ -478,10 +402,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     }
 
     private initSubscriptions() {
-        this.subscriptions = [
-            this._gridItems.changes.pipe(
+        this._gridItems.changes.pipe(
                 startWith(this._gridItems),
                 switchMap((gridItems: QueryList<KtdGridItemComponent>) => {
+                    this.syncSelectedItems();
                     return merge(
                         ...gridItems.map((gridItem) => gridItem.dragStart$.pipe(map((event) => ({event, gridItem, type: 'drag' as DragActionType})))),
                         ...gridItems.map((gridItem) => gridItem.resizeStart$.pipe(map((event) => ({
@@ -493,7 +417,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         const multipleSelection: KtdGridItemComponent[] | undefined = this.selectedItems && [...this.selectedItems];
                         // Emit drag or resize start events. Ensure that is start event is inside the zone.
                         this.ngZone.run(() => (type === 'drag' ? this.dragStarted : this.resizeStarted).emit(getDragResizeEventData(gridItem, this.layout, multipleSelection)));
-                        this.setGridBackgroundVisible(this._backgroundConfig?.show === 'whenDragging' || this._backgroundConfig?.show === 'always');
+                        this.setGridBackgroundVisible(this.backgroundConfig()?.show === 'whenDragging' || this.backgroundConfig()?.show === 'always');
                         // Perform drag sequence
                         let gridItemsSelected: KtdGridItemComponent[] = [gridItem];
                         if (multipleSelection && multipleSelection.some((currItem) => currItem.id === gridItem.id)) {
@@ -503,9 +427,10 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             map((layout) => ({layout, gridItem, type, multipleSelection})));
 
                     }));
-                })
+                }),
+                takeUntilDestroyed(this.destroyRef)
             ).subscribe(({layout, gridItem, type, multipleSelection} : {layout: KtdGridLayout, gridItem: KtdGridItemComponent, type: DragActionType, multipleSelection?: KtdGridItemComponent[]}) => {
-                this.layout = layout;
+                this.setInternalLayout(layout);
                 // Calculate new rendering data given the new layout.
                 this.calculateRenderData();
                 // Emit drag or resize end events.
@@ -513,10 +438,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                 // Notify that the layout has been updated.
                 this.layoutUpdated.emit(layout);
 
-                this.setGridBackgroundVisible(this._backgroundConfig?.show === 'always');
+                this.setGridBackgroundVisible(this.backgroundConfig()?.show === 'always');
             })
-
-        ];
     }
 
     /**
@@ -529,7 +452,8 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
     private performDragSequence$(gridItems: KtdGridItemComponent[], pointerDownEvent: MouseEvent | TouchEvent, type: DragActionType): Observable<KtdGridLayout> {
 
         return new Observable<KtdGridLayout>((observer: Observer<KtdGridLayout>) => {
-            const scrollableParent = typeof this.scrollableParent === 'string' ? this.document.getElementById(this.scrollableParent) : this.scrollableParent;
+            const scrollableParentInput = this.scrollableParent();
+            const scrollableParent = typeof scrollableParentInput === 'string' ? this.document.getElementById(scrollableParentInput) : scrollableParentInput;
             // Retrieve grid (parent) client rect.
             const gridElemClientRect: KtdClientRect = getMutableClientRect(this.elementRef.nativeElement as HTMLElement);
 
@@ -561,7 +485,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         pointerX: ktdPointerClientX(event),
                         pointerY: ktdPointerClientY(event)
                     })),
-                    ktdScrollIfNearElementClientRect$(scrollableParent, {scrollStep: this.scrollSpeed})
+                    ktdScrollIfNearElementClientRect$(scrollableParent, {scrollStep: this.scrollSpeed()})
                 )).pipe(
                     takeUntil(ktdPointerUp(this.document))
                 ).subscribe());
@@ -593,12 +517,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                         if (type === 'drag' && gridItems.length > 1) {
                             const {layout, draggedItemPos} = ktdGridItemsDragging(gridItems, {
                                 layout: currentLayout,
-                                rowHeight: this.rowHeight,
-                                height: this.height,
-                                cols: this.cols,
-                                preventCollision: this.preventCollision,
-                                gap: this.gap,
-                            }, this.compactType, {
+                                rowHeight: this.rowHeight(),
+                                height: this.height(),
+                                cols: this.cols(),
+                                preventCollision: this.preventCollision(),
+                                gap: this.gap(),
+                            }, this.compactType(), {
                                 pointerDownEvent,
                                 pointerDragEvent,
                                 gridElemClientRect,
@@ -613,12 +537,12 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             gridItems.forEach((gridItem)=>{
                                 const {layout, draggedItemPos} = calcNewStateFunc(gridItem, {
                                     layout: newLayout,
-                                    rowHeight: this.rowHeight,
-                                    height: this.height,
-                                    cols: this.cols,
-                                    preventCollision: this.preventCollision,
-                                    gap: this.gap,
-                                }, this.compactType, {
+                                    rowHeight: this.rowHeight(),
+                                    height: this.height(),
+                                    cols: this.cols(),
+                                    preventCollision: this.preventCollision(),
+                                    gap: this.gap(),
+                                }, this.compactType(), {
                                     pointerDownEvent,
                                     pointerDragEvent,
                                     gridElemClientRect,
@@ -630,14 +554,16 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             });
                         }
 
-                        this.gridCurrentHeight = this.height ?? (this.rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(newLayout, this.rowHeight, this.gap))
+                        const rowHeight = this.rowHeight();
+                        const gap = this.gap();
+                        this.gridCurrentHeight = this.height() ?? (rowHeight === 'fit' ? gridElemClientRect.height : getGridHeight(newLayout, rowHeight, gap))
                         this._gridItemsRenderData = layoutToRenderItems({
-                            cols: this.cols,
-                            rowHeight: this.rowHeight,
-                            height: this.height,
+                            cols: this.cols(),
+                            rowHeight,
+                            height: this.height(),
                             layout: newLayout,
-                            preventCollision: this.preventCollision,
-                            gap: this.gap,
+                            preventCollision: this.preventCollision(),
+                            gap,
                         }, gridElemClientRect.width, gridElemClientRect.height);
 
                         // Modify the position of the dragged item to be the once we want (for example the mouse position or whatever)
@@ -656,7 +582,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                             };
                         });
 
-                        this.setBackgroundCssVariables(this.rowHeight === 'fit' ? ktdGetGridItemRowHeight(newLayout, gridElemClientRect.height, this.gap) : this.rowHeight);
+                        this.setBackgroundCssVariables(rowHeight === 'fit' ? ktdGetGridItemRowHeight(newLayout, gridElemClientRect.height, gap) : rowHeight);
                         this.render();
 
                         gridItems.forEach((gridItem)=>{
@@ -734,7 +660,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
             const duration = getTransformTransitionDurationInMs(gridItem.elementRef.nativeElement);
 
             if (duration === 0) {
-                observer.next();
+                observer.next(undefined);
                 observer.complete();
                 return;
             }
@@ -745,7 +671,7 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
                     this.renderer.removeClass(gridItem.elementRef.nativeElement, 'ktd-grid-item-animating');
                     removeEventListener();
                     clearTimeout(timeout);
-                    observer.next();
+                    observer.next(undefined);
                     observer.complete();
                 }
             }) as EventListener;
@@ -786,6 +712,60 @@ export class KtdGridComponent implements OnChanges, AfterContentInit, AfterConte
         this.placeholder[gridItemId]?.remove();
         this.placeholderRef[gridItemId]?.destroy();
         this.placeholder[gridItemId] = this.placeholderRef[gridItemId] = null!;
+    }
+
+    private setInternalLayout(layout: KtdGridLayout) {
+        this._layout = layout;
+    }
+
+    private syncSelectedItems() {
+        if (!this._selectedItemsIds?.length || !this._gridItems) {
+            this.selectedItems = undefined;
+            return;
+        }
+
+        this.selectedItems = this._selectedItemsIds.map(
+            (layoutItemId: string) =>
+                this._gridItems.find(
+                    (gridItem: KtdGridItemComponent) =>
+                        gridItem.id === layoutItemId
+                )!
+        );
+    }
+
+    private applyBackgroundConfig(backgroundConfig: KtdGridBackgroundCfg | null) {
+        const classList = (this.elementRef.nativeElement as HTMLDivElement).classList;
+        backgroundConfig !== null ? classList.add('ktd-grid-background') : classList.remove('ktd-grid-background');
+        this.setGridBackgroundVisible(backgroundConfig?.show === 'always');
+    }
+
+    private handleInputStateChanges(changes: {
+        compactType: boolean;
+        cols: boolean;
+        layout: boolean;
+        rowHeight: boolean;
+        height: boolean;
+        gap: boolean;
+        backgroundConfig: boolean;
+    }) {
+        let needsCompactLayout = false;
+        let needsRecalculateRenderData = false;
+
+        if (changes.compactType || changes.cols || changes.layout) {
+            needsCompactLayout = true;
+        }
+
+        if (needsCompactLayout || changes.rowHeight || changes.height || changes.gap || changes.backgroundConfig) {
+            needsRecalculateRenderData = true;
+        }
+
+        if (needsCompactLayout && this.compactOnPropsChange()) {
+            this.compactLayout();
+        }
+
+        if (needsRecalculateRenderData) {
+            this.calculateRenderData();
+        }
     }
 
     static ngAcceptInputType_cols: NumberInput;

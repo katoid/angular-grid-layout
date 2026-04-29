@@ -5,6 +5,6 @@ export const CUSTOM_ROUTES: Routes = [
     {
         path: '',
         component: KtdCustomHandlesComponent,
-        data: {title: 'Angular Grid Layout - Custom handles'}
+        title: 'Angular Grid Layout - Custom handles'
     },
 ];

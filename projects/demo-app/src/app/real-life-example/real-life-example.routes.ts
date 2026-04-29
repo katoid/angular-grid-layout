@@ -5,6 +5,6 @@ export const REAL_LIFE_ROUTES: Routes = [
     {
         path: '',
         component: KtdRealLifeExampleComponent,
-        data: {title: 'Angular Grid Layout - Real life example'}
+        title: 'Angular Grid Layout - Real life example'
     },
 ];
